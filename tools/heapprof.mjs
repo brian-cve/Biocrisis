@@ -1,0 +1,19 @@
+// Perfil de asignaciones (muestreo del heap) durante la partida. Uso: node tools/heapprof.mjs
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+const ctx = await browser.newContext({ viewport: { width: 960, height: 600 } });
+const page = await ctx.newPage();
+const cdp = await ctx.newCDPSession(page);
+await page.goto('http://localhost:5173/?scene=Game');
+await page.waitForTimeout(2000);
+await page.evaluate(() => { const w = window.__bc.world; w.hp = 1e6; w.zombies.forEach((z, i) => { z.state = 2; z.x = w.player.x + 4 + i * 0.5; z.y = w.player.y; z.hp = 1e9; }); });
+await cdp.send('HeapProfiler.enable');
+await cdp.send('HeapProfiler.startSampling', { samplingInterval: 1024, includeObjectsCollectedByMajorGC: true, includeObjectsCollectedByMinorGC: true });
+await page.keyboard.down('d'); await page.waitForTimeout(10000); await page.keyboard.up('d');
+const { profile } = await cdp.send('HeapProfiler.stopSampling');
+const flat = new Map(); let total = 0;
+(function walk(n) { const k = `${n.callFrame.functionName || '(anónima)'} ${n.callFrame.url.split('/').slice(-2).join('/')}:${n.callFrame.lineNumber + 1}`; flat.set(k, (flat.get(k) ?? 0) + n.selfSize); total += n.selfSize; n.children.forEach(walk); })(profile.head);
+const rows = [...flat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 18);
+console.log(`total muestreado: ${(total / 1024).toFixed(0)} KB en 10 s (≈ ${(total / 1024 / 10).toFixed(0)} KB/s)`);
+for (const [k, v] of rows) console.log(`${(v / 1024).toFixed(0).padStart(7)} KB  ${k}`);
+await browser.close();

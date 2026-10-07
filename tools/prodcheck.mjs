@@ -1,0 +1,24 @@
+// Prueba del build de producción (npm run build && npm run preview): flujo completo con teclado, sin ganchos de desarrollo.
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+const errors = [], failed = [];
+page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) errors.push(`${m.type()}: ${m.text()}`); });
+page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+page.on('requestfailed', (r) => failed.push(r.url()));
+const external = new Set();
+page.on('request', (r) => { const u = new URL(r.url()); if (u.hostname !== 'localhost') external.add(u.hostname); });
+await page.goto('http://localhost:4173/');
+const tap = async (k, ms = 90) => { await page.keyboard.down(k); await page.waitForTimeout(ms); await page.keyboard.up(k); };
+const px = async () => page.evaluate(() => { const c = document.querySelector('canvas'); const g = document.createElement('canvas'); g.width = 64; g.height = 40; const x = g.getContext('2d'); x.drawImage(c, 0, 0, 64, 40); const d = x.getImageData(0, 0, 64, 40).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 30) n++; return n; });
+await page.waitForTimeout(800); await tap('Space'); await page.waitForTimeout(2000);
+console.log('título: píxeles encendidos', await px());
+await tap('Enter'); await page.waitForTimeout(1500); await tap('Space'); await page.waitForTimeout(1500); await tap('Enter'); await page.waitForTimeout(2500);
+console.log('partida: píxeles encendidos', await px());
+await page.keyboard.down('w'); await page.waitForTimeout(800); await page.keyboard.up('w'); await tap('Space'); await page.waitForTimeout(500);
+await page.screenshot({ path: '/private/tmp/claude-501/-Users-brian-Documents-Biocrisis/2ce99662-d3e0-48f8-aab2-d32d9d66a54b/scratchpad/prod_game.png' });
+const dev = await page.evaluate(() => ({ game: typeof window.__game, bc: typeof window.__bc, audio: typeof window.__audio }));
+console.log('ganchos de desarrollo en producción:', JSON.stringify(dev), '(deben ser "undefined")');
+console.log('peticiones a dominios externos:', external.size ? [...external] : 'ninguna', '| peticiones fallidas:', failed.length ? failed : 'ninguna');
+console.log(errors.length ? errors : 'consola limpia');
+await browser.close();

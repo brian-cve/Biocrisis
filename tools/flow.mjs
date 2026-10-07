@@ -1,0 +1,28 @@
+// Recorre el flujo de menús con teclado real y captura cada pantalla. Uso: node tools/flow.mjs <dir>
+import { chromium } from 'playwright';
+const dir = process.argv[2] ?? '.';
+const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+const errors = [];
+page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) errors.push(`${m.type()}: ${m.text()}`); });
+page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+await page.goto('http://localhost:5173/');
+const scenes = () => page.evaluate(() => window.__game.scene.getScenes(true).map((s) => s.scene.key));
+const tap = async (k, ms = 90) => { await page.keyboard.down(k); await page.waitForTimeout(ms); await page.keyboard.up(k); };
+const shot = async (n, wait = 400) => { await page.waitForTimeout(wait); await page.screenshot({ path: `${dir}/${n}.png` }); console.log(n, JSON.stringify(await scenes())); };
+
+await shot('f1_boot', 800);
+await tap('Space'); await shot('f2_title', 1800);
+await tap('ArrowDown'); await tap('ArrowDown'); await tap('Enter'); await shot('f3_options', 500);
+await tap('Escape'); await page.waitForTimeout(400);
+await tap('ArrowUp'); await tap('Enter'); await shot('f4_controls_desktop', 500);
+await tap('ArrowRight'); await shot('f5_controls_mobile', 300);
+await tap('Escape'); await page.waitForTimeout(400);
+await tap('ArrowUp'); await tap('Enter'); await shot('f6_intro', 2200);
+await tap('Space'); await shot('f7_controls_first', 1000);
+await tap('Enter'); await shot('f8_game', 1800);
+await tap('Escape'); await shot('f9_pause', 500);
+await tap('ArrowDown'); await tap('ArrowDown'); await tap('ArrowDown'); await tap('ArrowDown'); await tap('Enter'); await shot('f10_confirm', 400);
+await tap('Enter'); await shot('f11_back_to_title', 1500);
+console.log(errors.length ? errors : 'consola limpia');
+await browser.close();

@@ -1,0 +1,22 @@
+// Tasa de asignación de memoria JS durante la partida (sin forzar GC). Uso: node tools/alloc.mjs
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ args: ['--enable-precise-memory-info', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
+const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+const errors = [];
+page.on('pageerror', (e) => errors.push(e.message));
+await page.goto('http://localhost:5173/?scene=Game');
+await page.waitForTimeout(2000);
+await page.evaluate(() => { const w = window.__bc.world; w.hp = 1e6; w.zombies.forEach((z, i) => { z.state = 2; z.x = w.player.x + 4 + i * 0.5; z.y = w.player.y; z.hp = 1e9; }); });
+const sample = async (label, seconds, press) => {
+  if (press) await page.keyboard.down(press);
+  await page.evaluate(() => { window.gc(); window.__h = []; window.__iv = setInterval(() => window.__h.push(performance.memory.usedJSHeapSize), 50); });
+  await page.waitForTimeout(seconds * 1000);
+  if (press) await page.keyboard.up(press);
+  const r = await page.evaluate(() => { clearInterval(window.__iv); const h = window.__h; let up = 0, gcs = 0; for (let i = 1; i < h.length; i++) { const d = h[i] - h[i - 1]; if (d > 0) up += d; else if (d < -50000) gcs++; } return { kbPerSec: +(up / 1024 / (h.length * 0.05)).toFixed(0), gcs, endMB: +(h[h.length - 1] / 1048576).toFixed(1) }; });
+  console.log(label.padEnd(30), JSON.stringify(r));
+};
+await sample('quieto (con zombis persiguiendo)', 10);
+await sample('girando', 10, 'd');
+await sample('avanzando y disparando', 10, 'w');
+console.log(errors.length ? errors : 'sin errores');
+await browser.close();
