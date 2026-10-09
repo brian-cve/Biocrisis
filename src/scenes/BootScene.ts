@@ -17,6 +17,8 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     this.done = false;
     touchUI.setSuspended(true);
+    audio.init();
+    sfx.preload();
     registerIcons(this.textures);
     buildLogo(this.textures);
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x000000).setOrigin(0, 0);

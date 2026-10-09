@@ -32,9 +32,9 @@ other side you'll find a submachine gun, ammo crates... and the **Abomination**.
 - **Three weapons**: pistol, shotgun (spread of pellets with damage falloff) and an automatic-fire submachine gun.
 - **8-slot inventory** in classic survival-horror style, healing tonics and limited ammo.
 - **The key wakes the house**: the level's climax; the exit is slow to open and the finale is tense.
-- **Everything procedural**: textures, sprites, HUD, logo, sound effects and generative music are all created in code
-  (Canvas 2D and Web Audio). There isn't a single image or sound file in the game.
-- **Spatial audio**: groans, footsteps and doors are panned and attenuated by position; the music rises in intensity with danger.
+- **Procedural visuals**: textures, sprites, HUD and logo are all created in code (Canvas 2D).
+- **CC0 audio**: sound effects and music are free samples (about 6 MB) credited in [public/audio/CREDITS.md](public/audio/CREDITS.md).
+- **Spatial audio**: groans, footsteps and doors are panned and attenuated by position; the chase music fades in as the danger rises.
 - **Desktop and mobile** (landscape, with Game Boy-style touch controls) and gamepad support.
 - **100 % original content**: name, characters, house, logo and typography are all our own.
 
@@ -112,11 +112,11 @@ The **CONTROLS** screen (title and pause menus) shows both schemes and is genera
 ```
 src/engine/    DDA raycaster, Uint32Array renderer, procedural textures/sprites, z-buffer, overlay
 src/game/      map, world, zombie AI (A*), weapons, inventory, controls (single source), settings, rank
-src/audio/     Web Audio engine, SFX, spatial audio, game director; music/ = generative music
+src/audio/     Web Audio engine (sample playback), SFX table, spatial audio, game director; music/ = looped tracks with a chase crossfade
 src/ui/        HUD, menus, touch pad, unified input, logo and title art
 src/scenes/    Boot, Title, Controls, Options, Intro, Game, Pause, Inventory, GameOver, Win
 docs/          DECISIONS.md, ASSETS.md, BALANCE.md, FLOW.md, REVIEW.md
-tests/         unit tests (engine, AI, weapons, inventory, balance, music, controls, touch...)
+tests/         unit tests (engine, AI, weapons, inventory, balance, intensity, controls, touch...)
 tools/         real-browser verification scripts and balance simulation (see below)
 ```
 
@@ -128,8 +128,7 @@ They use Playwright (a dev dependency). The first time: `npx playwright install 
 |---|---|
 | `node tools/flow.mjs <dir>` | walks Boot -> Title -> Options -> Controls -> Intro -> Game -> Pause with screenshots |
 | `node tools/cycles.mjs <dir>` | 10 cycles of starting/abandoning a game + Game Over + Victory; measures leaks |
-| `node tools/musiccheck.mjs` | real music through an analyzer: levels, pulse, intensity, pause, silence, nodes |
-| `node tools/audiocheck.mjs` | audio engine: voice limit, ducking, silence, cleanup |
+| `tools/fetch-audio.sh` | re-downloads the CC0 audio sources and rebuilds `public/audio` (macOS) |
 | `node tools/mobile.mjs <dir>` | emulated mobile: real touch, multitouch, portrait, sizes, CPU x1/x4/x6/x10 |
 | `node tools/alloc.mjs`, `tools/heapprof.mjs` | allocation rate and heap profile |
 | `node tools/prodcheck.mjs` | production build (with `npm run preview`): flow, no external domains or dev hooks |

@@ -60,7 +60,7 @@ export class TitleScene extends Phaser.Scene {
       this.art.destroy();
       this.input.keyboard?.off('keydown-ESC', this.onEsc, this);
     });
-    this.rain = audio.loopNoise({ filter: { type: 'highpass', freq: 2400, q: 0.4 }, gain: 0.07 });
+    this.rain = audio.loop('music/wind.ogg', { gain: 0.35 });
     music.play('menu');
     fadeIn(this, 600);
   }

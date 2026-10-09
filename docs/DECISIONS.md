@@ -148,40 +148,23 @@ Log of technical decisions: the decision, discarded alternatives, and the reason
 - **Minimap:** optional and **off by default**: an always-visible map breaks the disorientation of an
   unfamiliar house and the tension of getting lost; it is kept as an accessibility aid.
 
-## D-018 Generative music (H5b)
-**Principle:** *textures and silences before melody.* Generative melody tends to sound bad (repetitive or shrill);
-here what carries the mood is the pad, the continuous bass, the reverb and the scarcity of notes.
+## D-018 Recorded audio (replaces generative music)
+The first version synthesized every effect and the music in code. It was replaced by free CC0 samples
+(credited in `public/audio/CREDITS.md`) because synthesized guns and groans sounded thin and generative melody is hard to get right.
 
-- **Clock:** the sequencer schedules with `AudioContext.currentTime`, not `setInterval`. `MusicEngine.tick()` is called
-  every Phaser frame and schedules the next **0.8 s** of notes with absolute audio-clock times: the rhythm
-  doesn't depend on FPS. If the scheduler falls behind by >0.4 s (hidden tab, hitch) it **resyncs** instead of
-  firing a burst of overdue notes.
-- **Pure/audio separation:** `composer.ts` (what plays), `theory.ts` (scales/chords) and `intensity.ts` are pure TS with a seeded
-  RNG and tests (determinism, scale membership, density, layers); `synth.ts` and `index.ts` only play.
-- **Menu (54 BPM, C minor):** progression Cm7-Abmaj7-Fm7-G, one chord every 2 bars. Pad (2 detuned saws +
-  triangle, filtered, 1.6 s attack), continuous bass overlapping by 2 bars, an occasional low piano note and a **very sparse**
-  bell arpeggio (~ 1 in 4 beats, <= 3 per bar, a short walk over the chord + ninth, silence
-  in the last bar of each 8-bar phrase). Convolution reverb with a noise-generated impulse (3.4 s, dark tail).
-- **Exploration (Phrygian D):** drones with beating, and between 7 and 20 s of silence, a random event: dissonant cluster
-  (minor 2nd or tritone, slow swell, >= 12 s between clusters), a low piano note in the scale, or a filtered creak; more than
-  a third of the turns are pure silence. A different seed per game -> it never repeats exactly, but keeps its character.
-- **Chase (108 BPM) in layers by intensity 0..1:** low pulse (>0.08) -> hi-hats and toms (>0.35/0.45) ->
-  high strings in minor 2nds with tremolo (>0.55). Intensity rises in ~1.6 s with zombies alert/chasing/attacking
-  (closer = more) and **falls in ~8 s** as things calm down. The chase layer enters by crossfade and exploration recedes.
-  The pulse is only scheduled while audible (saves CPU).
-- **Stingers:** Game Over (dry hit + low dissonant cluster + saw drop, ~ 6 s) and Victory (warm C major chord +
-  rising bells, ~ 8 s). They silence the other layers.
-- **Pause and mute:** the music goes through the `music` bus: on pause it drops x0.3 (~ -10 dB) and the mute button
-  zeroes it (verified with an analyzer: -120 dBFS).
-- **CPU/nodes:** cap of 44 live music sources; every voice is disconnected on `onended`. Layers have their own gain and
-  their own send to the reverb (the crossfade also shuts off the reverb tail). The reverb node is single and persistent.
-
-**Browser measurements (analyzer on the master):** menu ~ -23.5 dBFS (peak 0.5, no clipping); exploration ~ -26
-dBFS (peak 0.13-0.17); chase ~ -23 dBFS with peaks 0.53 (percussive); the pulse shows in the envelope
-(autocorrelation at 556 ms = 0.73 versus ~ 0.2 at unrelated lags); pause ~ -15 dB; silence -120 dB; stinger audible
-and silence afterwards; music nodes bounded (menu 13-36, exploration 4-13) and **0 after shutting off** (<= 50 s: the long
-drones finish their tail). *I couldn't listen to it: the check is instrumental; the aesthetic criterion (does it sound good?)
-is left to the player's ear.*
+- **Playback:** `audio.play(file, {gain, rate, pan, delay, dur})` runs an `AudioBufferSourceNode` through the same
+  `sfx / ambient / music` buses, so volume, mute and ducking are unchanged. Voices are capped at 28 and disconnected on `onended`.
+- **Loading:** `BootScene` creates the context and calls `sfx.preload()`, so every sample is decoded before the first tap.
+  A sample that is not loaded yet, or fails to decode, is skipped silently.
+- **Variety:** `sfx.ts` holds banks of files per sound; a call picks one at random and varies `rate`. The submachine gun
+  reuses the pistol sample at a higher rate and cut short; the runner and boss groans are zombie samples at higher and lower rates.
+- **Formats:** effects are mono 22 kHz WAV (guns, zombies, heartbeat) or OGG (doors, steps, items); music is AAC (`.m4a`).
+  The OGG files cannot be decoded by old Safari versions; they would just be silent there.
+- **Music:** `music/index.ts` loops three tracks (menu, exploration, chase). `tick()` runs every frame and eases each layer's
+  level toward its target; the chase track rises with `intensity` (`intensity.ts`, unchanged: rises in ~1.6 s, falls in ~8 s)
+  while exploration recedes. A layer's source is stopped once it is silent.
+- **Stingers:** Game Over and Victory are short effects (`sfx.gameOver`, `sfx.victory`) and the music fades out.
+- *The samples were chosen by name and length, not by listening; the mapping lives in one table (`BANK` in `sfx.ts`).*
 
 ## D-019 Touch controls (H6)
 - **DOM/CSS overlay** (`ui/touchUI.ts`), not canvas: it inherits `touch-action: none`, safe areas (`env(safe-area-inset-*)`) and

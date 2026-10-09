@@ -11,7 +11,7 @@ What works has been measured; what's weak is stated. Ordered by importance.
   the real ergonomics of thumbs. **Proposal:** a 30-minute pass on a mid-range Android and an iPhone.
 - **Physical gamepad**: implemented, untested.
 - **The music and SFX have not been listened to**: they were measured (levels, peaks, pulse, intensity, silence) but whether they
-  *sound good* is a human judgment. The parameters are isolated in `composer.ts`/`synth.ts`/`sfx.ts`.
+  *sound good* is a human judgment. The sample-to-sound mapping is isolated in the `BANK` table in `sfx.ts`.
 
 ## 2. Balance
 - The skill curve exists (clumsy 40 %, skilled ~ 98 %), but the tactical bot is superhuman; **the real difficulty for
@@ -59,10 +59,10 @@ What works has been measured; what's weak is stated. Ordered by importance.
 - Monospaced text of 8-12 px on 320x200 (~ 24 px actual at 960x600): readable on desktop, tight on small
   phones. HUD colors (green/amber/red) were designed to not rely on color alone (there is Fine/Caution/Danger text).
 
-## 7. Procedural art and audio
+## 7. Procedural art and recorded audio
 - Zombies are **32x32 billboards with 5 poses**, with no per-angle rotation: they look the same from the front as from behind.
 - The **textures repeat a lot** (5 wall, 4 floor): the house feels uniform. The brick is still somewhat oversaturated.
-- The music is subtle by design (textures and silences); a player expecting melody will find it sparse.
+- The audio is third-party CC0 material chosen without listening; some samples may need swapping (see `BANK` in `sfx.ts`).
 - The font is a system font (monospace); only the logo has its own typography.
 
 ## 8. Scope and technical debt

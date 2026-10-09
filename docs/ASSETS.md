@@ -1,4 +1,4 @@
-# ASSETS (everything procedural, zero external files)
+# ASSETS (visuals procedural, audio from CC0 samples)
 
 | Asset | Generation | Module |
 |---|---|---|
@@ -7,4 +7,4 @@
 | 64x64 floors: wood, tile, stone, carpet; ceiling with beams | same | `engine/textures.ts` |
 | 32x32 sprites: key, tonic, bullets, shells, shotgun, lamp, plant, barrel | primitives (rect/disc/line) + outline | `engine/sprites.ts` |
 | Zombies, first-person weapons, HUD, icons, logo, bitmap font | pending (H4-H5) | - |
-| SFX and music | pending (H5/H5b), Web Audio | `audio/` |
+| SFX and music | CC0 samples in `public/audio` (see `CREDITS.md`), played with Web Audio | `audio/` |

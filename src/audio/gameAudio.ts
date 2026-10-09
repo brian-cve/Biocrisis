@@ -2,7 +2,7 @@ import { LoopHandle, audio } from './engine';
 import { sfx } from './sfx';
 import { Spatial, spatialParams } from './spatial';
 import { World, WorldEvent } from '../game/world';
-import { ZState } from '../game/zombie';
+import { RUNNER, ZState } from '../game/zombie';
 
 const STRIDE = 1.15;
 const NEAR: Spatial = { pan: 0, gain: 1 };
@@ -13,7 +13,6 @@ export class GameAudio {
   private lastX: number;
   private lastY: number;
   private heart = 0;
-  private drip = 6;
   private lastHit = 0;
   private readonly groan: number[];
   private readonly prev: ZState[];
@@ -24,7 +23,7 @@ export class GameAudio {
     this.groan = world.zombies.map(() => 3 + Math.random() * 6);
     this.prev = world.zombies.map((z) => z.state);
     world.onEvent = (e, x, y) => this.onEvent(e, x, y);
-    this.wind = audio.loopNoise({ filter: { type: 'bandpass', freq: 320, q: 0.6 }, gain: 0.14, lfoRate: 0.07, lfoDepth: 140 });
+    this.wind = audio.loop('music/wind.ogg', { gain: 0.5 });
   }
 
   private sp(x?: number, y?: number): Spatial {
@@ -79,7 +78,7 @@ export class GameAudio {
 
     w.zombies.forEach((z, i) => {
       const sp = this.sp(z.x, z.y);
-      const runner = z.def.name === 'Corredor';
+      const runner = z.def === RUNNER;
       const boss = z.def.boss === true;
       if (this.groan[i] === undefined) {
         this.groan[i] = 2 + Math.random() * 2;
@@ -106,14 +105,6 @@ export class GameAudio {
         this.heart = 0.45 + (w.hp / 30) * 0.65;
       }
     } else this.heart = 0;
-
-    this.drip -= dt;
-    if (this.drip <= 0) {
-      const a = Math.random() * Math.PI * 2;
-      const d = 5 + Math.random() * 6;
-      sfx.drip(this.sp(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d));
-      this.drip = 5 + Math.random() * 9;
-    }
   }
 
   dispose(): void {
