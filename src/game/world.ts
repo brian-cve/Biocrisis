@@ -7,7 +7,8 @@ import { BOSS_SPAWN, DECOR_SPAWNS, FINAL_EXIT, ITEM_SPAWNS, ItemKind, START, ZOM
 import { Pathfinder } from './pathfinding';
 import { MoveInput, Player } from './player';
 import { Rng } from '../engine/rng';
-import { AmmoPool, PISTOL, SHOTGUN, SMG, Weapon, WeaponId, falloff, findTarget, spreadAngles } from './weapons';
+import { resolveShot } from './shot';
+import { AmmoPool, PISTOL, SHOTGUN, SMG, Weapon, WeaponId, spreadAngles } from './weapons';
 import { BOSS, RUNNER, WALKER, ZContext, Zombie } from './zombie';
 
 const MESSAGE_SECONDS = 2.5;
@@ -176,30 +177,13 @@ export class World {
     const p = this.player;
     this.makeNoise(p.x, p.y, def.noise);
 
-    let aim = p.angle;
-    const assist = this.aimAssist > 0 ? findTarget(this.map, this.zombies, p.x, p.y, p.angle, def.range, this.aimAssist) : null;
-    if (assist) aim = Math.atan2(assist.target.y - p.y, assist.target.x - p.x);
-
     const offsets = spreadAngles(def.pellets, def.spread, this.rand, this.spread);
-    let anyHit = false;
-    let killedAny = false;
-    let hitZ: Zombie | null = null;
-    const tol = def.pellets > 1 ? 0 : assist ? 0.001 : this.aimAssist;
-    for (let i = 0; i < def.pellets; i++) {
-      const a = aim + offsets[i];
-      const hit = findTarget(this.map, this.zombies, p.x, p.y, a, def.range, tol);
-      if (!hit) continue;
-      anyHit = true;
-      hitZ = hit.target;
-      const dmg = def.damage * falloff(def, hit.dist);
-      if (hit.target.hurt(dmg, def.stagger, Math.cos(a), Math.sin(a), def.knock)) {
-        killedAny = true;
-        this.stats.kills++;
-      }
+    const { hit, kills } = resolveShot(this.map, this.zombies, p, def, this.aimAssist, offsets);
+    this.stats.kills += kills;
+    if (hit) {
+      this.stats.hits++;
+      this.emit(kills > 0 ? 'zombieKill' : 'zombieHit', hit.x, hit.y);
     }
-    if (anyHit) this.stats.hits++;
-    if (killedAny) this.emit('zombieKill', hitZ!.x, hitZ!.y);
-    else if (anyHit) this.emit('zombieHit', hitZ!.x, hitZ!.y);
   }
 
   reload(): void {

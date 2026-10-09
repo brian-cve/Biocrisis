@@ -10,7 +10,7 @@ export interface AmmoPool {
 
 export type WeaponId = 'pistol' | 'shotgun' | 'smg';
 
-interface WeaponDef {
+export interface WeaponDef {
   id: WeaponId;
   name: string;
   ammo: AmmoType;
