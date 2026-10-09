@@ -22,11 +22,11 @@ export interface ItemDef {
   sprite: SpriteId;
   scale: number;
   message: string;
-  /** Inventory slot the item occupies; absent for ammo, which goes straight to the pool. */
+  // Inventory slot the item occupies; absent for ammo, which goes straight to the pool.
   slot?: InvItem;
   bullets?: number;
   shells?: number;
-  /** Magazine the weapon starts with when first picked up. */
+  // Magazine the weapon starts with when first picked up.
   mag?: { weapon: WeaponId; rounds: number };
 }
 

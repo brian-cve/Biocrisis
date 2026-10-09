@@ -2,11 +2,11 @@ type BusName = 'sfx' | 'ambient' | 'music';
 
 export interface PlayOpts {
   gain?: number;
-  /** Playback speed; also shifts pitch. */
+  // Playback speed; also shifts pitch.
   rate?: number;
   pan?: number;
   delay?: number;
-  /** Cut the sample after this many seconds (with a short fade). */
+  // Cut the sample after this many seconds (with a short fade).
   dur?: number;
   bus?: BusName;
 }
@@ -39,7 +39,7 @@ class AudioEngine {
     return this.ctx !== null && this.ctx.state === 'running';
   }
 
-  /** Creates the context (suspended until a user gesture) so samples can be decoded early. */
+  // Creates the context (suspended until a user gesture) so samples can be decoded early.
   init(): void {
     if (this.ctx) return;
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -57,7 +57,7 @@ class AudioEngine {
     if (this.ctx?.state === 'suspended') void this.ctx.resume();
   }
 
-  /** Fetches and decodes a file under public/audio once; resolves null if it cannot be loaded. */
+  // Fetches and decodes a file under public/audio once; resolves null if it cannot be loaded.
   load(file: string): Promise<AudioBuffer | null> {
     const hit = this.loading.get(file);
     if (hit) return hit;
@@ -99,7 +99,7 @@ class AudioEngine {
     set(this.buses.music, this.vol.musicVolume * (this.ducked ? 0.3 : 1));
   }
 
-  /** One-shot playback of a loaded sample. Silently ignored until the file has loaded. */
+  // One-shot playback of a loaded sample. Silently ignored until the file has loaded.
   play(file: string, o: PlayOpts = {}): void {
     const c = this.ctx;
     const buf = this.buffers.get(file);
@@ -136,7 +136,7 @@ class AudioEngine {
     src.stop(end + 0.02);
   }
 
-  /** Looping playback with a fade-in; starts as soon as the file is available. */
+  // Looping playback with a fade-in; starts as soon as the file is available.
   loop(file: string, o: { gain: number; bus?: BusName; fade?: number }): LoopHandle {
     let stopped = false;
     let stopNow: (() => void) | null = null;

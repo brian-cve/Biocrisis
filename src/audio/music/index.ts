@@ -51,7 +51,7 @@ class MusicEngine {
     return 0;
   }
 
-  /** Called every frame: moves each layer toward its target level and starts or stops its source. */
+  // Called every frame: moves each layer toward its target level and starts or stops its source.
   tick(): void {
     const ctx = audio.ctx;
     if (!ctx || ctx.state !== 'running') return;

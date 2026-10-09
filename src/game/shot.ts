@@ -9,7 +9,7 @@ interface Shooter {
 }
 
 export interface ShotResult {
-  /** The last zombie that was hit, or null if every pellet missed. */
+  // The last zombie that was hit, or null if every pellet missed.
   hit: Zombie | null;
   kills: number;
 }

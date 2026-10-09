@@ -37,7 +37,7 @@ const play = (bank: string[], o: PlayOpts = {}): void => audio.play(pick(bank), 
 const at = (sp: Spatial, floor: number, gain: number, o: PlayOpts = {}): PlayOpts => ({ ...o, pan: sp.pan, gain: gain * Math.max(floor, sp.gain) });
 
 export const sfx = {
-  /** Starts fetching every sample so they are ready by the first shot. */
+  // Starts fetching every sample so they are ready by the first shot.
   preload(): void {
     for (const f of FILES) void audio.load(f);
   },
