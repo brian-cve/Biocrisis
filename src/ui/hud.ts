@@ -10,7 +10,7 @@ import { WeaponId } from '../game/weapons';
 /** Acciones principales de la barra superior (sin movimiento), con etiqueta corta. */
 const HINTS: readonly [Action, string, string][] = [
   ['fire', 'ESP', 'Disparar'],
-  ['interact', 'F', 'Usar'],
+  ['interact', 'F', 'Usar/Abrir puerta'],
   ['reload', 'R', 'Recargar'],
   ['heal', 'H', 'Curar'],
   ['inventory', 'I', 'Inventario'],
