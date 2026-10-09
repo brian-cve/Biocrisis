@@ -18,5 +18,5 @@ for (const s of spots) {
   await page.screenshot({ path: `${dir}/${s.name}.png` });
 }
 const fps = await page.evaluate(() => Math.round(window.__bc.game.loop.actualFps));
-console.log('fps', fps, errors.length ? errors : 'consola limpia');
+console.log('fps', fps, errors.length ? errors : 'clean console');
 await browser.close();

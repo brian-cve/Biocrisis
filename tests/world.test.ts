@@ -13,8 +13,8 @@ function runFor(w: World, seconds: number, input = idle): void {
   for (let i = 0; i < seconds * 60; i++) w.update(input, 1 / 60);
 }
 
-describe('objetos, llave y puerta de salida', () => {
-  it('recoger la llave activa hasKey', () => {
+describe('items, key and exit door', () => {
+  it('picking up the key sets hasKey', () => {
     const w = new World();
     const k = ITEM_SPAWNS.find((s) => s.kind === ItemKind.Key)!;
     w.player.x = k.x;
@@ -24,7 +24,7 @@ describe('objetos, llave y puerta de salida', () => {
     expect(w.items.find((i) => i.kind === ItemKind.Key)!.taken).toBe(true);
   });
 
-  it('cada objeto se recoge una sola vez', () => {
+  it('each item is picked up only once', () => {
     const w = new World();
     const t = ITEM_SPAWNS.find((s) => s.kind === ItemKind.Tonic)!;
     w.player.x = t.x;
@@ -33,19 +33,19 @@ describe('objetos, llave y puerta de salida', () => {
     expect(w.tonics).toBe(1);
   });
 
-  it('sin llave la puerta de la arena no cede', () => {
+  it('without the key the arena door does not budge', () => {
     const w = new World();
     w.player.x = 3.5;
     w.player.y = 18.5;
     w.player.angle = Math.PI / 2;
     w.interact();
-    expect(w.message).toBe('Necesitas una llave');
+    expect(w.message).toBe('You need a key');
     runFor(w, 2);
     expect(w.map.doorOpen![19 * 20 + 3]).toBe(0);
     expect(w.boss).toBeNull();
   });
 
-  it('con la llave la puerta cede y el jefe despierta en la arena', () => {
+  it('with the key the door opens and the boss wakes in the arena', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     w.inventory.add(InvItem.Key);
@@ -64,7 +64,7 @@ describe('objetos, llave y puerta de salida', () => {
     expect(w.won).toBe(false);
   });
 
-  it('abrir la puerta dos veces no crea dos jefes', () => {
+  it('opening the door twice does not create two bosses', () => {
     const w = new World();
     w.inventory.add(InvItem.Key);
     w.doors.unlock(3, 19);
@@ -74,7 +74,7 @@ describe('objetos, llave y puerta de salida', () => {
     expect(w.zombies.filter((z) => z.def.boss).length).toBe(1);
   });
 
-  it('vencer al jefe desbloquea la salida real, y cruzarla gana', () => {
+  it('defeating the boss unlocks the real exit, and crossing it wins', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     w.inventory.add(InvItem.Key);
@@ -84,7 +84,7 @@ describe('objetos, llave y puerta de salida', () => {
     w.player.y = 33.2;
     w.player.angle = Math.PI / 2;
     w.interact();
-    expect(w.message).toBe('La salida está sellada');
+    expect(w.message).toBe('The exit is sealed');
     w.boss!.hurt(1e9, 0, 1, 0);
     runFor(w, 0.1);
     expect(w.bossDefeated).toBe(true);
@@ -97,7 +97,7 @@ describe('objetos, llave y puerta de salida', () => {
 });
 
 describe('sprites', () => {
-  it('SpriteBatch ordena de lejos a cerca y reutiliza objetos', () => {
+  it('SpriteBatch sorts far to near and reuses objects', () => {
     const b = new SpriteBatch();
     b.add(2, 0, 0, 1);
     b.add(8, 0, 0, 1);
@@ -110,7 +110,7 @@ describe('sprites', () => {
     expect(b.items[0]).toBe(first);
   });
 
-  it('todas las texturas de sprite tienen píxeles opacos y transparentes', () => {
+  it('all sprite textures have opaque and transparent pixels', () => {
     const t = buildSpriteTextures();
     expect(t.length).toBe(SPRITE_COUNT);
     for (const tex of t) {
@@ -120,7 +120,7 @@ describe('sprites', () => {
   });
 });
 
-describe('z-buffer de columna', () => {
+describe('column z-buffer', () => {
   const W = 64, H = 40;
   function setup() {
     const flats = buildFlatTextures();
@@ -131,7 +131,7 @@ describe('z-buffer de columna', () => {
   }
   const map = createHouse();
 
-  it('un sprite delante de la pared se dibuja', () => {
+  it('a sprite in front of the wall is drawn', () => {
     const { r, px, cam } = setup();
     const base = new Uint32Array(px.length);
     const b0 = new SpriteBatch();
@@ -143,7 +143,7 @@ describe('z-buffer de columna', () => {
     expect(px.some((v, i) => v !== base[i])).toBe(true);
   });
 
-  it('un sprite tras una pared no se ve', () => {
+  it('a sprite behind a wall is not visible', () => {
     const { r, px, cam } = setup();
     const base = new Uint32Array(px.length);
     r.render(cam, map, new SpriteBatch());

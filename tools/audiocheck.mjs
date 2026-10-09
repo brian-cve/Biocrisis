@@ -35,5 +35,5 @@ const r = await page.evaluate(async () => {
   return out;
 });
 console.log(JSON.stringify(r, null, 1));
-console.log(errors.length ? errors : 'consola limpia');
+console.log(errors.length ? errors : 'clean console');
 await browser.close();

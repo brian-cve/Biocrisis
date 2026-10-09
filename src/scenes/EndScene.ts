@@ -26,19 +26,19 @@ abstract class EndScene extends Phaser.Scene {
       g.fillStyle(col, 1).fillRect(0, y, SCREEN_W, 4);
     }
     const title = this.add
-      .text(SCREEN_W / 2, 14, win ? 'ESCAPASTE' : 'HAS MUERTO', { fontFamily: 'monospace', fontSize: '22px', color: win ? '#9ab49c' : '#9a3a30', stroke: '#050706', strokeThickness: 4 })
+      .text(SCREEN_W / 2, 14, win ? 'YOU ESCAPED' : 'YOU DIED', { fontFamily: 'monospace', fontSize: '22px', color: win ? '#9ab49c' : '#9a3a30', stroke: '#050706', strokeThickness: 4 })
       .setOrigin(0.5, 0);
     if (!win) this.flicker = title;
-    this.add.text(SCREEN_W / 2, 44, win ? 'La puerta se cierra tras de ti. Amanece.' : 'La casa guarda otro cuerpo más.', { fontFamily: 'monospace', fontSize: '8px', color: '#56705f' }).setOrigin(0.5, 0);
+    this.add.text(SCREEN_W / 2, 44, win ? 'The door closes behind you. Dawn breaks.' : 'The house keeps one more body.', { fontFamily: 'monospace', fontSize: '8px', color: '#56705f' }).setOrigin(0.5, 0);
 
     const s = this.stats;
     const acc = s.shots > 0 ? Math.round((s.hits / s.shots) * 100) : 0;
     const rows: [string, string][] = [
-      ['TIEMPO', formatTime(s.seconds)],
-      ['BALAS USADAS', String(s.shots)],
-      ['PRECISIÓN', `${acc}%`],
-      ['ZOMBIS ELIMINADOS', `${s.kills} / ${s.zombies}`],
-      ['TÓNICOS USADOS', String(s.tonicsUsed)],
+      ['TIME', formatTime(s.seconds)],
+      ['BULLETS USED', String(s.shots)],
+      ['ACCURACY', `${acc}%`],
+      ['ZOMBIES KILLED', `${s.kills} / ${s.zombies}`],
+      ['TONICS USED', String(s.tonicsUsed)],
     ];
     rows.forEach(([k, v], i) => {
       this.add.text(70, 62 + i * 12, k, { fontFamily: 'monospace', fontSize: '10px', color: '#6f8a78' });
@@ -46,19 +46,19 @@ abstract class EndScene extends Phaser.Scene {
     });
     if (win) {
       const r = rank(s);
-      this.add.text(SCREEN_W / 2, 126, `RANGO ${r}`, { fontFamily: 'monospace', fontSize: '16px', color: r === 'A' ? '#c4b040' : r === 'B' ? '#9ab49c' : '#7a2824', stroke: '#050706', strokeThickness: 3 }).setOrigin(0.5, 0);
+      this.add.text(SCREEN_W / 2, 126, `RANK ${r}`, { fontFamily: 'monospace', fontSize: '16px', color: r === 'A' ? '#c4b040' : r === 'B' ? '#9ab49c' : '#7a2824', stroke: '#050706', strokeThickness: 3 }).setOrigin(0.5, 0);
     }
 
     this.menu = new MenuList(
       this,
       win
         ? [
-            { label: 'JUGAR DE NUEVO', onSelect: () => this.go('Game') },
-            { label: 'MENÚ PRINCIPAL', onSelect: () => this.go('Title') },
+            { label: 'PLAY AGAIN', onSelect: () => this.go('Game') },
+            { label: 'MAIN MENU', onSelect: () => this.go('Title') },
           ]
         : [
-            { label: 'REINTENTAR', onSelect: () => this.go('Game') },
-            { label: 'MENÚ PRINCIPAL', onSelect: () => this.go('Title') },
+            { label: 'RETRY', onSelect: () => this.go('Game') },
+            { label: 'MAIN MENU', onSelect: () => this.go('Title') },
           ],
       { x: SCREEN_W / 2, y: win ? 154 : 140, spacing: 16, fontSize: 10, align: 'center', colors: ['#d8d4c4', '#6f8a78'] },
     );

@@ -36,7 +36,7 @@ export function falloff(def: WeaponDef, dist: number): number {
 
 export const PISTOL: WeaponDef = {
   id: 'pistol',
-  name: 'Pistola',
+  name: 'Pistol',
   ammo: 'bullets',
   magSize: 12,
   damage: 10,
@@ -55,7 +55,7 @@ export const PISTOL: WeaponDef = {
 
 export const SHOTGUN: WeaponDef = {
   id: 'shotgun',
-  name: 'Escopeta',
+  name: 'Shotgun',
   ammo: 'shells',
   magSize: 4,
   damage: 7,
@@ -74,7 +74,7 @@ export const SHOTGUN: WeaponDef = {
 
 export const SMG: WeaponDef = {
   id: 'smg',
-  name: 'Metralleta',
+  name: 'Submachine gun',
   ammo: 'bullets',
   magSize: 30,
   damage: 9,

@@ -50,7 +50,7 @@ export class MenuList {
       });
       this.texts.push(t);
     });
-    this.cursor = scene.add.text(0, 0, '▶', { fontFamily: 'monospace', fontSize: size, color: '#9a3a30' });
+    this.cursor = scene.add.text(0, 0, '>', { fontFamily: 'monospace', fontSize: size, color: '#9a3a30' });
     this.keys = scene.input.keyboard!.addKeys('UP,DOWN,LEFT,RIGHT,W,S,A,D,ENTER,SPACE,ESC,BACKSPACE') as Record<string, Phaser.Input.Keyboard.Key>;
     this.pad = new PadNav(scene);
     this.refresh();

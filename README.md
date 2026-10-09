@@ -5,7 +5,7 @@
 **First-person survival horror, right in your browser.**
 A house at night, scarce ammo, zombies that can hear you... and something huge behind the last door.
 
-[**▶ Play online**](https://brian-cve.github.io/Biocrisis/) · [Controls](#controls-desktop) · [Run locally](#running-locally)
+[**Play online**](https://brian-cve.github.io/Biocrisis/) | [Controls](#controls-desktop) | [Run locally](#running-locally)
 
 ![BioCrisis title screen](docs/media/titulo.gif)
 
@@ -20,7 +20,7 @@ other side you'll find a submachine gun, ammo crates... and the **Abomination**.
 | | |
 |---|---|
 | ![Walking through the house toward the key](docs/media/llave.gif) | ![Shooting a runner with the pistol](docs/media/zombi.gif) |
-| **Explore** a 20×20 house with doors, corridors to flee through and items to pick up. | **Pick your fights.** Slow, tough shamblers and fast, fragile runners; there isn't enough ammo for all of them. |
+| **Explore** a 20x20 house with doors, corridors to flee through and items to pick up. | **Pick your fights.** Slow, tough shamblers and fast, fragile runners; there isn't enough ammo for all of them. |
 | ![Opening the arena door](docs/media/arena.gif) | ![Fighting the boss with the submachine gun](docs/media/jefe.gif) |
 | **The foyer door** requires the key. Once opened, the boss wakes up. | **The final fight**: automatic SMG fire, cover between pillars and a boss that enrages below 50 % health. |
 
@@ -64,8 +64,8 @@ kill everything: pick your fights.
 ### Controls (desktop)
 | Action | Keys |
 |---|---|
-| Move forward / backward | `W` `↑` / `S` `↓` |
-| Turn | `A` `←` / `D` `→` (or mouse, "Mouse turning" option) |
+| Move forward / backward | `W` `up` / `S` `down` |
+| Turn | `A` `<-` / `D` `->` (or mouse, "Mouse turning" option) |
 | Strafe | `Q` / `E` |
 | Fire (the SMG fires in bursts while held) | `Space` or click |
 | Reload | `R` |
@@ -93,17 +93,17 @@ The **CONTROLS** screen (title and pause menus) shows both schemes and is genera
    `hostname -I` (Linux).
 3. On the phone, open `http://<IP>:5173` in landscape and tap the screen to start (this unlocks audio).
 4. If it doesn't load, check the computer's firewall (port 5173).
-5. Remote debugging: Android → `chrome://inspect` over USB; iOS → Safari › Develop › your iPhone.
+5. Remote debugging: Android -> `chrome://inspect` over USB; iOS -> Safari > Develop > your iPhone.
 6. Notes: on iOS the silent switch mutes web audio; `navigator.vibrate` doesn't exist in iOS Safari (no
    vibration); there is no fullscreen mode or PWA yet.
 
 ## How performance was measured
 
-- **Target:** 60 FPS on desktop, ≥ 30 stable FPS on a mid-range phone.
-- **Method:** Chromium with mobile emulation (`isMobile`, `hasTouch`, 844×390) and `Emulation.setCPUThrottlingRate`
-  (checked with a microbenchmark: ×4 → 4× slower). Worst-case scene: 6 zombies chasing, chase music, the player turning.
+- **Target:** 60 FPS on desktop, >= 30 stable FPS on a mid-range phone.
+- **Method:** Chromium with mobile emulation (`isMobile`, `hasTouch`, 844x390) and `Emulation.setCPUThrottlingRate`
+  (checked with a microbenchmark: x4 -> 4x slower). Worst-case scene: 6 zombies chasing, chase music, the player turning.
   Real Phaser FPS every 250 ms and per-frame cost from `step` to `postrender`.
-- **Result:** 60.5–60.7 FPS average (minimum 60.3) with CPU ×1, ×4, ×6 and ×10; per-frame cost ≈ 1.3 ms (max 2.9 ms).
+- **Result:** 60.5-60.7 FPS average (minimum 60.3) with CPU x1, x4, x6 and x10; per-frame cost ~ 1.3 ms (max 2.9 ms).
   Details and limitations in `docs/DECISIONS.md` (D-020, D-022). **It is not a substitute for a real device.**
 - Reproduce: with `npm run dev` running, `node tools/mobile.mjs <screenshots-folder>`.
 
@@ -116,7 +116,7 @@ src/audio/     Web Audio engine, SFX, spatial audio, game director; music/ = gen
 src/ui/        HUD, menus, touch pad, unified input, logo and title art
 src/scenes/    Boot, Title, Controls, Options, Intro, Game, Pause, Inventory, GameOver, Win
 docs/          DECISIONS.md, ASSETS.md, BALANCE.md, FLOW.md, REVIEW.md
-tests/         unit tests (engine, AI, weapons, inventory, balance, music, controls, touch…)
+tests/         unit tests (engine, AI, weapons, inventory, balance, music, controls, touch...)
 tools/         real-browser verification scripts and balance simulation (see below)
 ```
 
@@ -126,11 +126,11 @@ They use Playwright (a dev dependency). The first time: `npx playwright install 
 
 | Script | What it checks |
 |---|---|
-| `node tools/flow.mjs <dir>` | walks Boot → Title → Options → Controls → Intro → Game → Pause with screenshots |
+| `node tools/flow.mjs <dir>` | walks Boot -> Title -> Options -> Controls -> Intro -> Game -> Pause with screenshots |
 | `node tools/cycles.mjs <dir>` | 10 cycles of starting/abandoning a game + Game Over + Victory; measures leaks |
 | `node tools/musiccheck.mjs` | real music through an analyzer: levels, pulse, intensity, pause, silence, nodes |
 | `node tools/audiocheck.mjs` | audio engine: voice limit, ducking, silence, cleanup |
-| `node tools/mobile.mjs <dir>` | emulated mobile: real touch, multitouch, portrait, sizes, CPU ×1/×4/×6/×10 |
+| `node tools/mobile.mjs <dir>` | emulated mobile: real touch, multitouch, portrait, sizes, CPU x1/x4/x6/x10 |
 | `node tools/alloc.mjs`, `tools/heapprof.mjs` | allocation rate and heap profile |
 | `node tools/prodcheck.mjs` | production build (with `npm run preview`): flow, no external domains or dev hooks |
 | `node tools/capture-gifs.mjs <dir>` + `python3 tools/make_gifs.py <dir> docs/media` | regenerates this README's GIFs |
@@ -140,7 +140,7 @@ In development, `?scene=Game` (or any scene name) jumps straight to that scene.
 
 ## Documentation
 
-- `docs/DECISIONS.md` — every technical decision, discarded alternatives and why (including the naming risk).
-- `docs/BALANCE.md` — numbers, ammo budget, bot results and what was changed based on the measurements.
-- `docs/FLOW.md` — scene state machine. `docs/ASSETS.md` — what is generated and how.
-- `docs/REVIEW.md` — **an honest critical review**: what turned out weak and how to improve it.
+- `docs/DECISIONS.md` - every technical decision, discarded alternatives and why (including the naming risk).
+- `docs/BALANCE.md` - numbers, ammo budget, bot results and what was changed based on the measurements.
+- `docs/FLOW.md` - scene state machine. `docs/ASSETS.md` - what is generated and how.
+- `docs/REVIEW.md` - **an honest critical review**: what turned out weak and how to improve it.

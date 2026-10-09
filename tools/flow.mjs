@@ -23,5 +23,5 @@ await tap('Enter'); await shot('f8_game', 1800);
 await tap('Escape'); await shot('f9_pause', 500);
 await tap('ArrowDown'); await tap('ArrowDown'); await tap('ArrowDown'); await tap('ArrowDown'); await tap('Enter'); await shot('f10_confirm', 400);
 await tap('Enter'); await shot('f11_back_to_title', 1500);
-console.log(errors.length ? errors : 'consola limpia');
+console.log(errors.length ? errors : 'clean console');
 await browser.close();

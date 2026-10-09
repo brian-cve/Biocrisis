@@ -5,10 +5,10 @@ import { fadeIn } from '../ui/transition';
 import { touchState } from '../ui/touchState';
 
 const LINES = [
-  'Una noche de tormenta.\nUna casa abandonada.',
-  'Perdiste el camino.\nSolo hay una salida.',
-  'Encuentra la llave.\nAbre la puerta.',
-  'No hagas ruido.\nCada bala cuenta.',
+  'A stormy night.\nAn abandoned house.',
+  'You lost your way.\nThere is only one exit.',
+  'Find the key.\nOpen the door.',
+  'Stay quiet.\nEvery bullet counts.',
 ];
 const LINE_MS = 1900;
 
@@ -26,7 +26,7 @@ export class IntroScene extends Phaser.Scene {
     this.touchBase = touchState.total;
     this.cameras.main.setBackgroundColor(0x000000);
     this.text = this.add.text(SCREEN_W / 2, SCREEN_H / 2 - 10, '', { fontFamily: 'monospace', fontSize: '12px', color: '#9ab49c', align: 'center', lineSpacing: 6 }).setOrigin(0.5, 0.5).setAlpha(0);
-    this.add.text(SCREEN_W - 6, SCREEN_H - 12, 'pulsa para saltar', { fontFamily: 'monospace', fontSize: '8px', color: '#3f5549' }).setOrigin(1, 0);
+    this.add.text(SCREEN_W - 6, SCREEN_H - 12, 'press to skip', { fontFamily: 'monospace', fontSize: '8px', color: '#3f5549' }).setOrigin(1, 0);
 
     LINES.forEach((line, i) => {
       this.time.delayedCall(i * LINE_MS, () => {

@@ -24,22 +24,22 @@ export class TitleScene extends Phaser.Scene {
     this.art = new TitleArt(this);
     this.add.image(SCREEN_W / 2, 18, LOGO_KEY).setOrigin(0.5, 0);
     this.add
-      .text(SCREEN_W / 2, 66, 'UN HOMENAJE AL HORROR DE SUPERVIVENCIA', { fontFamily: 'monospace', fontSize: '8px', color: '#56705f' })
+      .text(SCREEN_W / 2, 66, 'A TRIBUTE TO SURVIVAL HORROR', { fontFamily: 'monospace', fontSize: '8px', color: '#56705f' })
       .setOrigin(0.5, 0);
 
     this.menu = new MenuList(
       this,
       [
-        { label: 'NUEVA PARTIDA', onSelect: () => this.startGame() },
-        { label: 'CONTROLES', onSelect: () => this.openOverlay('Controls') },
-        { label: 'OPCIONES', onSelect: () => this.openOverlay('Options') },
-        { label: 'CRÉDITOS', onSelect: () => this.toggleCredits(true) },
+        { label: 'NEW GAME', onSelect: () => this.startGame() },
+        { label: 'CONTROLS', onSelect: () => this.openOverlay('Controls') },
+        { label: 'OPTIONS', onSelect: () => this.openOverlay('Options') },
+        { label: 'CREDITS', onSelect: () => this.toggleCredits(true) },
       ],
       { x: 40, y: 118, spacing: 15, fontSize: 10, colors: ['#d8d4c4', '#6f8a78'] },
     );
 
     const bg = this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x050706, 0.92).setOrigin(0, 0);
-    const lines = this.add.text(SCREEN_W / 2, 50, 'BIOCRISIS\n\nDiseño, código, arte y sonido\ngenerados proceduralmente.\n\nHomenaje original al survival-horror\nclásico en primera persona.\nNo contiene material de terceros.\n\n[ Esc / clic para volver ]', {
+    const lines = this.add.text(SCREEN_W / 2, 50, 'BIOCRISIS\n\nDesign, code, art and sound\ngenerated procedurally.\n\nAn original tribute to classic\nfirst-person survival horror.\nContains no third-party material.\n\n[ Esc / click to go back ]', {
       fontFamily: 'monospace',
       fontSize: '10px',
       color: '#9ab49c',

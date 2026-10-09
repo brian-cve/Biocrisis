@@ -16,7 +16,7 @@ export class PauseScene extends Phaser.Scene {
     this.confirming = false;
     this.pKey = this.input.keyboard!.addKey('P');
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x050706, 0.78).setOrigin(0, 0).setInteractive();
-    this.title = this.add.text(SCREEN_W / 2, 34, 'PAUSA', { fontFamily: 'monospace', fontSize: '14px', color: '#9ab49c' }).setOrigin(0.5, 0);
+    this.title = this.add.text(SCREEN_W / 2, 34, 'PAUSED', { fontFamily: 'monospace', fontSize: '14px', color: '#9ab49c' }).setOrigin(0.5, 0);
     this.showMain();
     this.events.on('resume', () => {
       this.input.keyboard?.resetKeys();
@@ -27,15 +27,15 @@ export class PauseScene extends Phaser.Scene {
   private showMain(): void {
     this.menu?.destroy();
     this.confirming = false;
-    this.title.setText('PAUSA');
+    this.title.setText('PAUSED');
     this.menu = new MenuList(
       this,
       [
-        { label: 'REANUDAR', onSelect: () => this.resume() },
-        { label: 'CONTROLES', onSelect: () => this.openOverlay('Controls') },
-        { label: 'OPCIONES', onSelect: () => this.openOverlay('Options') },
-        { label: 'REINICIAR', onSelect: () => this.restart() },
-        { label: 'VOLVER AL MENÚ PRINCIPAL', onSelect: () => this.showConfirm() },
+        { label: 'RESUME', onSelect: () => this.resume() },
+        { label: 'CONTROLS', onSelect: () => this.openOverlay('Controls') },
+        { label: 'OPTIONS', onSelect: () => this.openOverlay('Options') },
+        { label: 'RESTART', onSelect: () => this.restart() },
+        { label: 'BACK TO MAIN MENU', onSelect: () => this.showConfirm() },
       ],
       { x: SCREEN_W / 2, y: 70, spacing: 16, fontSize: 10, align: 'center', onBack: () => this.resume(), colors: ['#d8d4c4', '#6f8a78'] },
     );
@@ -44,12 +44,12 @@ export class PauseScene extends Phaser.Scene {
   private showConfirm(): void {
     this.menu.destroy();
     this.confirming = true;
-    this.title.setText('¿ABANDONAR PARTIDA?');
+    this.title.setText('QUIT THIS GAME?');
     this.menu = new MenuList(
       this,
       [
-        { label: 'NO, SEGUIR JUGANDO', onSelect: () => this.showMain() },
-        { label: 'SÍ, VOLVER AL MENÚ', onSelect: () => this.toMenu() },
+        { label: 'NO, KEEP PLAYING', onSelect: () => this.showMain() },
+        { label: 'YES, BACK TO MENU', onSelect: () => this.toMenu() },
       ],
       { x: SCREEN_W / 2, y: 80, spacing: 18, fontSize: 10, align: 'center', onBack: () => this.showMain(), colors: ['#d8d4c4', '#6f8a78'] },
     );

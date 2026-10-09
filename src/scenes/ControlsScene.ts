@@ -48,8 +48,8 @@ export class ControlsScene extends Phaser.Scene {
 
   create(): void {
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, C.bg, 1).setOrigin(0, 0).setInteractive();
-    this.add.text(10, 6, 'CONTROLES', { fontFamily: FONT, fontSize: '10px', color: C.text });
-    const names = ['ESCRITORIO', 'MÓVIL'];
+    this.add.text(10, 6, 'CONTROLS', { fontFamily: FONT, fontSize: '10px', color: C.text });
+    const names = ['DESKTOP', 'MOBILE'];
     names.forEach((n, i) => {
       const t = this.add.text(118 + i * 88, 6, n, { fontFamily: FONT, fontSize: '10px', color: C.dim }).setInteractive({ useHandCursor: true });
       t.on('pointerdown', () => this.setTab(i));
@@ -60,14 +60,14 @@ export class ControlsScene extends Phaser.Scene {
 
     this.pages = [this.buildDesktop(), this.buildMobile()];
 
-    this.add.text(10, 175, 'OBJETIVO: encuentra la llave y escapa. La munición\nes escasa y los zombis oyen los disparos.', {
+    this.add.text(10, 175, 'GOAL: find the key and escape. Ammo is\nscarce and zombies hear gunshots.', {
       fontFamily: FONT,
       fontSize: '8px',
       color: C.warn,
       lineSpacing: 2,
     });
     const back = this.add
-      .text(SCREEN_W - 8, SCREEN_H - 12, this.first ? '[ENTER] CONTINUAR' : '[ESC] VOLVER', { fontFamily: FONT, fontSize: '10px', color: C.bright })
+      .text(SCREEN_W - 8, SCREEN_H - 12, this.first ? '[ENTER] CONTINUE' : '[ESC] BACK', { fontFamily: FONT, fontSize: '10px', color: C.bright })
       .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true });
     back.on('pointerdown', () => this.close());
@@ -118,7 +118,7 @@ export class ControlsScene extends Phaser.Scene {
       { y: 28, x: 10, keys: [['ESC', 'Esc', 18], ['ONE', '1', 13], ['TWO', '2', 13], ['THREE', '3', 13]] },
       { y: 43, x: 10, keys: [['TAB', 'Tab', 20], ['Q', 'Q', 13], ['W', 'W', 13], ['E', 'E', 13], ['R', 'R', 13], ['T', 'T', 13], ['Y', 'Y', 13], ['U', 'U', 13], ['I', 'I', 13], ['O', 'O', 13], ['P', 'P', 13]] },
       { y: 58, x: 16, keys: [['A', 'A', 13], ['S', 'S', 13], ['D', 'D', 13], ['F', 'F', 13], ['G', 'G', 13], ['H', 'H', 13]] },
-      { y: 73, x: 22, keys: [['SPACE', 'ESPACIO', 80]] },
+      { y: 73, x: 22, keys: [['SPACE', 'SPACE', 80]] },
     ];
     for (const r of rows) {
       let x = r.x;
@@ -128,12 +128,12 @@ export class ControlsScene extends Phaser.Scene {
       }
     }
     const ax = 116;
-    this.drawKey(c, g, ax + 15, 58, 13, 'UP', '↑');
-    this.drawKey(c, g, ax, 73, 13, 'LEFT', '←');
-    this.drawKey(c, g, ax + 15, 73, 13, 'DOWN', '↓');
-    this.drawKey(c, g, ax + 30, 73, 13, 'RIGHT', '→');
+    this.drawKey(c, g, ax + 15, 58, 13, 'UP', 'UP');
+    this.drawKey(c, g, ax, 73, 13, 'LEFT', 'LEFT');
+    this.drawKey(c, g, ax + 15, 73, 13, 'DOWN', 'DOWN');
+    this.drawKey(c, g, ax + 30, 73, 13, 'RIGHT', 'RIGHT');
 
-    const legend: [number, string][] = [[GROUP_COLOR.move, 'mover'], [GROUP_COLOR.combat, 'combate'], [GROUP_COLOR.use, 'usar']];
+    const legend: [number, string][] = [[GROUP_COLOR.move, 'move'], [GROUP_COLOR.combat, 'combat'], [GROUP_COLOR.use, 'use']];
     legend.forEach(([col, name], i) => {
       g.fillStyle(col, 1).fillRect(10 + i * 50, 93, 7, 7);
       c.add(this.add.text(20 + i * 50, 92, name, { fontFamily: FONT, fontSize: '8px', color: C.dim }));
@@ -142,10 +142,10 @@ export class ControlsScene extends Phaser.Scene {
     g.lineStyle(1, 0x56705f, 1).strokeRoundedRect(12, 106, 20, 28, 8);
     g.fillStyle(GROUP_COLOR.combat, 1).fillRoundedRect(13, 107, 9, 11, { tl: 7, tr: 0, bl: 0, br: 0 });
     g.lineStyle(1, 0x56705f, 1).lineBetween(12, 119, 32, 119).lineBetween(22, 107, 22, 119);
-    c.add(this.add.text(38, 106, 'Clic: disparar\nRueda: cambiar arma\nMover: girar (opcional)', { fontFamily: FONT, fontSize: '8px', color: C.text, lineSpacing: 2 }));
+    c.add(this.add.text(38, 106, 'Click: fire\nWheel: switch weapon\nMove: turn (optional)', { fontFamily: FONT, fontSize: '8px', color: C.text, lineSpacing: 2 }));
     const padActions = ['fire', 'interact', 'reload', 'heal', 'cycleWeapon'];
     const pad = CONTROLS.filter((b) => padActions.includes(b.action) && b.pad).map((b) => `${b.pad}: ${b.label.split(' ')[0].toLowerCase()}`);
-    c.add(this.add.text(10, 136, 'MANDO: stick mueve y gira · ' + pad.join(' · '), { fontFamily: FONT, fontSize: '8px', color: C.dim, wordWrap: { width: 152 }, lineSpacing: 1 }));
+    c.add(this.add.text(10, 136, 'GAMEPAD: stick moves and turns, ' + pad.join(', '), { fontFamily: FONT, fontSize: '8px', color: C.dim, wordWrap: { width: 152 }, lineSpacing: 1 }));
 
     const x0 = 172;
     CONTROLS.forEach((b, i) => {
@@ -201,8 +201,8 @@ export class ControlsScene extends Phaser.Scene {
     txt(sel.x, sel.y + 9, 'SELECT\n' + touchLabel('SELECT'), C.bright, 0.5, 0);
     txt(sta.x, sta.y + 9, 'START\n' + touchLabel('START'), C.bright, 0.5, 0);
     txt(dp.x, dp.y + 21, 'D-PAD', C.dim);
-    txt(bx + 80, by + 27, 'HORIZONTAL', '#3f5549');
-    txt(10, 165, 'Orientación recomendada: HORIZONTAL', C.dim, 0, 0);
+    txt(bx + 80, by + 27, 'LANDSCAPE', '#3f5549');
+    txt(10, 165, 'Recommended orientation: LANDSCAPE', C.dim, 0, 0);
 
     const x0 = 176;
     let y = 27;

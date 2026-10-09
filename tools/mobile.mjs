@@ -9,7 +9,7 @@ page.on('console', (m) => { if (['error', 'warning'].includes(m.type())) errors.
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 await page.goto('http://localhost:5173/');
 const active = () => page.evaluate(() => window.__game.scene.getScenes(true).map((s) => s.scene.key).join(','));
-const waitFor = async (key, ms = 8000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await active()).split(',').includes(key)) return; await page.waitForTimeout(50); } throw new Error(`timeout ${key}; activas=${await active()}`); };
+const waitFor = async (key, ms = 8000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await active()).split(',').includes(key)) return; await page.waitForTimeout(50); } throw new Error(`timeout ${key}; active=${await active()}`); };
 const shot = (n) => page.screenshot({ path: `${dir}/${n}.png` });
 const center = (sel) => page.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel);
 const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts });
@@ -18,21 +18,21 @@ const held = () => page.evaluate(() => JSON.stringify(Object.entries(window.__to
 
 await page.evaluate(async () => { window.__touch = (await import('/src/ui/touchState.ts')).touchState; });
 await page.waitForTimeout(600);
-console.log('Boot: mando visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '(debe ser false)');
+console.log('Boot: pad visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '(should be false)');
 await shot('t1_boot');
 await page.touchscreen.tap(400, 200); await waitFor('Title'); await page.waitForTimeout(1500);
-console.log('Título: mando visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '| pointer coarse =', await page.evaluate(() => matchMedia('(pointer: coarse)').matches));
+console.log('Title: pad visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '| pointer coarse =', await page.evaluate(() => matchMedia('(pointer: coarse)').matches));
 await shot('t2_title');
 
 const hits = await page.evaluate(() => [...document.querySelectorAll('.tc-hit, .tc-dpad .arm')].map((e) => { const r = e.getBoundingClientRect(); return { cls: e.className.replace('tc-hit ', '').slice(0, 24), w: Math.round(r.width), h: Math.round(r.height) }; }));
 const small = hits.filter((h) => h.w < 48 || h.h < 48);
-console.log('Zonas táctiles:', hits.length, '| menores de 48 px:', small.length ? JSON.stringify(small) : 'ninguna', '| mín', Math.min(...hits.map((h) => Math.min(h.w, h.h))), 'px');
+console.log('Touch zones:', hits.length, '| under 48 px:', small.length ? JSON.stringify(small) : 'none', '| min', Math.min(...hits.map((h) => Math.min(h.w, h.h))), 'px');
 
 await tapSel('.tc-dpad .down'); await page.waitForTimeout(150); await tapSel('.tc-dpad .up'); await page.waitForTimeout(150);
-await tapSel('.tc-a'); await waitFor('Intro'); console.log('A en NUEVA PARTIDA → Intro');
+await tapSel('.tc-a'); await waitFor('Intro'); console.log('A on NEW GAME -> Intro');
 await tapSel('.tc-b');
 await waitFor('Controls', 6000); await page.waitForTimeout(500); await shot('t3_controls_mobile');
-console.log('Controles: página móvil primero =', await page.evaluate(() => window.__game.scene.getScene('Controls').tab === 1));
+console.log('Controls: mobile page first =', await page.evaluate(() => window.__game.scene.getScene('Controls').tab === 1));
 await tapSel('.tc-a'); await waitFor('Game'); await page.waitForTimeout(1500); await shot('t4_game_landscape');
 
 const state = () => page.evaluate(() => { const w = window.__bc.world; return { x: +w.player.x.toFixed(2), y: +w.player.y.toFixed(2), a: +w.player.angle.toFixed(2), shots: w.stats.shots }; });
@@ -41,18 +41,18 @@ const s0 = await state();
 const dp = await page.evaluate(() => { const r = document.querySelector('.tc-dpad').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
 const f1 = { x: dp.x + dp.w * 0.28, y: dp.y + dp.h * 0.12, id: 1 };
 await touch('touchStart', [f1]); await page.waitForTimeout(300);
-console.log('dedo 1 en D-pad (diagonal):', await held());
+console.log('finger 1 on D-pad (diagonal):', await held());
 const A = await center('.tc-a');
 const f2 = { x: A.x, y: A.y, id: 2 };
 for (let i = 0; i < 3; i++) {
   await touch('touchStart', [f1, f2]); await page.waitForTimeout(120);
-  if (i === 0) console.log('dos dedos a la vez:', await held());
+  if (i === 0) console.log('two fingers at once:', await held());
   await touch('touchEnd', [f1]); await page.waitForTimeout(450);
 }
 await page.waitForTimeout(400);
 await touch('touchEnd', []); await page.waitForTimeout(250);
 const s1 = await state();
-console.log('multitouch → movió', Math.hypot(s1.x - s0.x, s1.y - s0.y).toFixed(2), 'celdas, giró', (s1.a - s0.a).toFixed(2), 'rad, disparos', s1.shots - s0.shots, '| botones atascados tras soltar:', await held());
+console.log('multitouch -> moved', Math.hypot(s1.x - s0.x, s1.y - s0.y).toFixed(2), 'cells, turned', (s1.a - s0.a).toFixed(2), 'rad, shots', s1.shots - s0.shots, '| stuck buttons after release:', await held());
 await shot('t5_multitouch');
 
 const syn = await page.evaluate(async () => {
@@ -68,24 +68,24 @@ const syn = await page.evaluate(async () => {
   await new Promise((r) => setTimeout(r, 100));
   return { heldUp, stillUp, aPresses: T.presses.A - p0, shots: w.stats.shots - shots0, moved: +Math.hypot(w.player.x - x0, w.player.y - y0).toFixed(2), released: !T.held.up };
 });
-console.log('Pointer Events con 2 pointerId:', JSON.stringify(syn));
+console.log('Pointer Events with 2 pointerIds:', JSON.stringify(syn));
 
 await page.evaluate(() => { window.__bc.world.weapon.mag = 5; });
 await tapSel('.tc-b'); await page.waitForTimeout(200);
-console.log('B contextual sin puerta → recarga:', await page.evaluate(() => window.__bc.world.weapon.reloading));
-await tapSel('.tc-r'); console.log('R curarse con vida llena → mensaje:', await page.evaluate(() => window.__bc.world.message));
-await tapSel('.tc-select'); await waitFor('Inventory'); await page.waitForTimeout(300); await shot('t6_inventory'); await tapSel('.tc-b'); await waitFor('Game'); console.log('SELECT abre inventario y B lo cierra');
-await tapSel('.tc-start'); await waitFor('Pause'); await shot('t7_pause'); await tapSel('.tc-b'); await waitFor('Game'); console.log('START pausa y B reanuda');
+console.log('contextual B with no door -> reload:', await page.evaluate(() => window.__bc.world.weapon.reloading));
+await tapSel('.tc-r'); console.log('R heal at full health -> message:', await page.evaluate(() => window.__bc.world.message));
+await tapSel('.tc-select'); await waitFor('Inventory'); await page.waitForTimeout(300); await shot('t6_inventory'); await tapSel('.tc-b'); await waitFor('Game'); console.log('SELECT opens inventory and B closes it');
+await tapSel('.tc-start'); await waitFor('Pause'); await shot('t7_pause'); await tapSel('.tc-b'); await waitFor('Game'); console.log('START pauses and B resumes');
 
 const t0 = await page.evaluate(() => window.__bc.world.time);
 await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(700);
-console.log('Vertical: aviso visible =', await page.evaluate(() => !document.querySelector('.tc-rotate').hidden));
+console.log('Portrait: warning visible =', await page.evaluate(() => !document.querySelector('.tc-rotate').hidden));
 const t1 = await page.evaluate(() => window.__bc.world.time); await page.waitForTimeout(800); const t2 = await page.evaluate(() => window.__bc.world.time);
-console.log('   mundo congelado (tiempo igual):', t1 === t2, `(${t1.toFixed(2)} → ${t2.toFixed(2)})`, '| audio:', await page.evaluate(() => window.__audio.ctx.state));
+console.log('   world frozen (same time):', t1 === t2, `(${t1.toFixed(2)} -> ${t2.toFixed(2)})`, '| audio:', await page.evaluate(() => window.__audio.ctx.state));
 await shot('t8_portrait');
 await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(900);
 const t3 = await page.evaluate(() => window.__bc.world.time); await page.waitForTimeout(600);
-console.log('Vuelta a horizontal: mundo avanza =', (await page.evaluate(() => window.__bc.world.time)) > t3, '| audio:', await page.evaluate(() => window.__audio.ctx.state));
+console.log('Back to landscape: world advances =', (await page.evaluate(() => window.__bc.world.time)) > t3, '| audio:', await page.evaluate(() => window.__audio.ctx.state));
 
 for (const [w, h, n] of [[667, 375, 'se'], [932, 430, 'max'], [740, 360, 'small'], [1024, 768, 'tablet']]) {
   await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(600); await shot(`t9_${n}_${w}x${h}`);
@@ -100,9 +100,9 @@ const perf = async (rate, label) => {
   await page.evaluate(() => { const w = window.__bc.world; w.hp = 1e6; w.zombies.forEach((z, i) => { z.state = 2; z.x = w.player.x + 3 + i * 0.4; z.y = w.player.y; z.hp = 1e9; }); window.__cost.t = 0; window.__cost.n = 0; window.__cost.max = 0; window.__cost.on = true; window.__fps = []; window.__iv = setInterval(() => window.__fps.push(window.__game.loop.actualFps), 250); });
   await page.keyboard.down('d'); await page.waitForTimeout(8000); await page.keyboard.up('d');
   const r = await page.evaluate(() => { window.__cost.on = false; clearInterval(window.__iv); const f = window.__fps.slice(4); const c = window.__cost; return { fpsAvg: +(f.reduce((a, b) => a + b, 0) / f.length).toFixed(1), fpsMin: +Math.min(...f).toFixed(1), msPerFrameAvg: +(c.t / c.n).toFixed(2), msMax: +c.max.toFixed(1), frames: c.n }; });
-  console.log(`CPU ×${rate} (${label}):`, JSON.stringify(r));
+  console.log(`CPU x${rate} (${label}):`, JSON.stringify(r));
 };
-await perf(1, 'sin límite'); await perf(4, 'gama media'); await perf(6, 'gama baja'); await perf(10, 'muy lenta');
+await perf(1, 'no limit'); await perf(4, 'mid range'); await perf(6, 'low range'); await perf(10, 'very slow');
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-console.log(errors.length ? errors : 'consola limpia');
+console.log(errors.length ? errors : 'clean console');
 await browser.close();

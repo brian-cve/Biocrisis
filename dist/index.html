@@ -1,16 +1,15 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>BioCrisis</title>
     <style>html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;background:#000;height:100%;margin:0;overflow:hidden}#stage{top:env(safe-area-inset-top,0px);right:env(safe-area-inset-right,0px);bottom:env(safe-area-inset-bottom,0px);left:env(safe-area-inset-left,0px);position:fixed}#game{width:100%;height:100%}#game canvas{image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;display:block}</style>
-    <script type="module" crossorigin src="./assets/index-DRH14uS7.js"></script>
+    <script type="module" crossorigin src="./assets/index-TxZlWdEr.js"></script>
   </head>
   <body>
     <div id="stage"><div id="game"></div></div>
     <script>
-      // iOS Safari ignora user-scalable=no: se bloquean a mano el zoom por pellizco y el de doble toque.
       (function () {
         var opts = { passive: false };
         var stop = function (e) { e.preventDefault(); };
@@ -20,7 +19,7 @@
         var last = 0;
         document.addEventListener('touchend', function (e) {
           var now = Date.now();
-          if (now - last < 350) e.preventDefault(); // dos toques seguidos (p. ej. disparar rápido) = zoom
+          if (now - last < 350) e.preventDefault();
           last = now;
         }, opts);
         document.addEventListener('dblclick', stop, opts);

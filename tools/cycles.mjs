@@ -7,7 +7,7 @@ page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 await page.goto('http://localhost:5173/');
 const active = () => page.evaluate(() => window.__game.scene.getScenes(true).map((s) => s.scene.key).join(','));
 const tap = async (k, ms = 90) => { await page.keyboard.down(k); await page.waitForTimeout(ms); await page.keyboard.up(k); };
-const waitFor = async (key, ms = 8000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await active()).split(',').includes(key)) return; await page.waitForTimeout(50); } throw new Error(`timeout esperando ${key}; activas=${await active()}`); };
+const waitFor = async (key, ms = 8000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await active()).split(',').includes(key)) return; await page.waitForTimeout(50); } throw new Error(`timed out waiting for ${key}; active=${await active()}`); };
 const metrics = () => page.evaluate(async () => {
   window.gc?.(); await new Promise((r) => setTimeout(r, 100)); window.gc?.();
   const g = window.__game;
@@ -44,7 +44,7 @@ for (let i = 1; i <= 10; i++) {
   await waitFor('Title'); await page.waitForTimeout(700);
   const m = await metrics();
   rows.push(m);
-  console.log(`ciclo ${i}`, JSON.stringify(m));
+  console.log(`cycle ${i}`, JSON.stringify(m));
 }
 await tap('Enter'); await waitFor('Intro'); await tap('Space'); await waitFor('Game'); await page.waitForTimeout(600);
 await page.evaluate(() => window.__bc.world.hurtPlayer(999));
@@ -64,6 +64,6 @@ console.log('final', JSON.stringify(last));
 
 const first = rows[1], end = rows[rows.length - 1];
 const grew = ['textures', 'sceneKeys', 'ptr', 'gsEvents', 'gameEvents'].filter((k) => end[k] > first[k]);
-console.log('crecimiento ciclo2→10:', grew.length ? grew : 'ninguno', `| heap ${first.heapMB}→${end.heapMB} MB`);
-console.log(errors.length ? errors : 'consola limpia');
+console.log('growth cycle2->10:', grew.length ? grew : 'none', `| heap ${first.heapMB}->${end.heapMB} MB`);
+console.log(errors.length ? errors : 'clean console');
 await browser.close();

@@ -58,7 +58,7 @@ export class InventoryScene extends Phaser.Scene {
   create(): void {
     registerIcons(this.textures);
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, COL_BG, 0.94).setOrigin(0, 0).setInteractive();
-    this.add.text(10, 8, 'INVENTARIO', { fontFamily: FONT, fontSize: '12px', color: COL_TEXT });
+    this.add.text(10, 8, 'INVENTORY', { fontFamily: FONT, fontSize: '12px', color: COL_TEXT });
     this.add.rectangle(10, 24, SCREEN_W - 20, 1, COL_EDGE).setOrigin(0, 0);
 
     for (let i = 0; i < INVENTORY_SLOTS; i++) {
@@ -78,15 +78,15 @@ export class InventoryScene extends Phaser.Scene {
     this.descText = this.add.text(rx, 62, '', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT, wordWrap: { width: SCREEN_W - rx - 10 }, lineSpacing: 2 });
     this.ammoText = this.add.text(rx, 132, '', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT });
 
-    this.add.text(GX, 124, 'SALUD', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
+    this.add.text(GX, 124, 'HEALTH', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
     this.add.rectangle(GX, 135, 156, 8, COL_SLOT).setOrigin(0, 0).setStrokeStyle(1, COL_EDGE);
     this.hpBar = this.add.rectangle(GX + 1, 136, 154, 6, 0x3f5549).setOrigin(0, 0);
     this.hpLabel = this.add.text(GX, 146, '', { fontFamily: FONT, fontSize: '10px', color: COL_TEXT });
     this.tonicText = this.add.text(GX + 90, 148, '', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
 
     this.statusText = this.add.text(GX, 168, '', { fontFamily: FONT, fontSize: '8px', color: '#c4b040', wordWrap: { width: SCREEN_W - 20 } });
-    this.add.text(GX, SCREEN_H - 12, '←↑↓→ mover   ENTER usar   ESC cerrar', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
-    const close = this.add.text(SCREEN_W - 10, SCREEN_H - 12, '[CERRAR]', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.add.text(GX, SCREEN_H - 12, 'ARROWS move   ENTER use   ESC close', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
+    const close = this.add.text(SCREEN_W - 10, SCREEN_H - 12, '[CLOSE]', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
     close.on('pointerdown', () => this.close());
 
     this.keys = this.input.keyboard!.addKeys('UP,DOWN,LEFT,RIGHT,W,A,S,D,ENTER,SPACE,F,ESC,I,TAB,BACKSPACE') as Record<string, Phaser.Input.Keyboard.Key>;
@@ -146,17 +146,17 @@ export class InventoryScene extends Phaser.Scene {
       case InvItem.Shotgun:
       case InvItem.Smg: {
         const id = item === InvItem.Pistol ? 'pistol' : item === InvItem.Shotgun ? 'shotgun' : 'smg';
-        if (w.equipped === id) this.status = `${ITEM_INFO[item].name} ya equipada`;
-        else this.status = w.switchTo(id) ? `${ITEM_INFO[item].name} equipada` : 'No se puede equipar ahora';
+        if (w.equipped === id) this.status = `${ITEM_INFO[item].name} already equipped`;
+        else this.status = w.switchTo(id) ? `${ITEM_INFO[item].name} equipped` : 'Cannot equip right now';
         break;
       }
       case InvItem.Tonic: {
         const r = w.useTonic(true);
-        this.status = r === 'healed' ? `Te sientes mejor (+${TONIC_HEAL})` : r === 'full' ? 'Vida llena: el tónico no se gasta' : 'No se puede usar ahora';
+        this.status = r === 'healed' ? `You feel better (+${TONIC_HEAL})` : r === 'full' ? 'Health full: the tonic is not used' : 'Cannot use right now';
         break;
       }
       case InvItem.Key:
-        this.status = 'Pesa más de lo que parece. Seguro que abre la puerta de salida.';
+        this.status = 'Heavier than it looks. It must open the exit door.';
         break;
     }
     this.refresh();
@@ -188,7 +188,7 @@ export class InventoryScene extends Phaser.Scene {
 
     const sel = inv.slots[this.cursor];
     if (sel === null) {
-      this.nameText.setText('Ranura vacía');
+      this.nameText.setText('Empty slot');
       this.actionText.setText('');
       this.descText.setText('');
       this.ammoText.setText('');
@@ -197,19 +197,19 @@ export class InventoryScene extends Phaser.Scene {
       this.nameText.setText(info.name);
       this.actionText.setText(`[ENTER] ${info.action}`);
       this.descText.setText(info.description);
-      if (sel === InvItem.Pistol) this.ammoText.setText(`Cargador ${w.weapons.pistol.mag}/${w.weapons.pistol.def.magSize}\nBalas ${w.ammo.bullets}${w.equipped === 'pistol' ? '\nEQUIPADA' : ''}`);
-      else if (sel === InvItem.Shotgun) this.ammoText.setText(`Cargador ${w.weapons.shotgun.mag}/${w.weapons.shotgun.def.magSize}\nCartuchos ${w.ammo.shells}${w.equipped === 'shotgun' ? '\nEQUIPADA' : ''}`);
-      else if (sel === InvItem.Smg) this.ammoText.setText(`Cargador ${w.weapons.smg.mag}/${w.weapons.smg.def.magSize}\nBalas ${w.ammo.bullets}${w.equipped === 'smg' ? '\nEQUIPADA' : ''}`);
-      else if (sel === InvItem.Tonic) this.ammoText.setText(`Unidades: ${inv.count(InvItem.Tonic)}`);
-      else this.ammoText.setText('Objeto clave');
+      if (sel === InvItem.Pistol) this.ammoText.setText(`Magazine ${w.weapons.pistol.mag}/${w.weapons.pistol.def.magSize}\nBullets ${w.ammo.bullets}${w.equipped === 'pistol' ? '\nEQUIPPED' : ''}`);
+      else if (sel === InvItem.Shotgun) this.ammoText.setText(`Magazine ${w.weapons.shotgun.mag}/${w.weapons.shotgun.def.magSize}\nShells ${w.ammo.shells}${w.equipped === 'shotgun' ? '\nEQUIPPED' : ''}`);
+      else if (sel === InvItem.Smg) this.ammoText.setText(`Magazine ${w.weapons.smg.mag}/${w.weapons.smg.def.magSize}\nBullets ${w.ammo.bullets}${w.equipped === 'smg' ? '\nEQUIPPED' : ''}`);
+      else if (sel === InvItem.Tonic) this.ammoText.setText(`Count: ${inv.count(InvItem.Tonic)}`);
+      else this.ammoText.setText('Key item');
     }
 
     const frac = w.hp / MAX_HP;
     this.hpBar.width = Math.max(0, Math.round(154 * frac));
     const label = w.healthLabel;
-    const color = label === 'Bien' ? 0x56a05f : label === 'Precaución' ? 0xc4b040 : 0xb02a24;
+    const color = label === 'Good' ? 0x56a05f : label === 'Caution' ? 0xc4b040 : 0xb02a24;
     this.hpBar.setFillStyle(color);
-    this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Bien' ? '#7ac080' : label === 'Precaución' ? '#c4b040' : '#d05048');
+    this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Good' ? '#7ac080' : label === 'Caution' ? '#c4b040' : '#d05048');
     this.tonicText.setText(`${w.hp}/${MAX_HP}`);
     this.statusText.setText(this.status);
   }

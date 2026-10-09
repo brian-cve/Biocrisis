@@ -40,7 +40,7 @@ await page.keyboard.up('w');
 await fresh();
 await world(() => { const w = window.__bc.world; w.hp = 1e6; for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; } const z = w.zombies[1]; z.x = 7.5; z.y = 7.5; z.hear(2.5, 7.5); });
 await put(2.5, 7.5, 0);
-await record('zombi', 50, async (i) => {
+await record('zombie', 50, async (i) => {
   if (i % 6 === 3 && i > 8) await key('Space', 60);
   else await sleep(30);
 });
@@ -83,5 +83,5 @@ await record('jefe', 48, async (i) => {
 });
 await page.keyboard.up('Space');
 
-console.log(errors.length ? errors : 'consola limpia');
+console.log(errors.length ? errors : 'clean console');
 await browser.close();

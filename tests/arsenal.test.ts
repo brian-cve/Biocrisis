@@ -19,12 +19,12 @@ function armed(): World {
   return w;
 }
 
-describe('inventario', () => {
-  it('tiene capacidad explícita de 8 ranuras', () => {
+describe('inventory', () => {
+  it('has an explicit capacity of 8 slots', () => {
     expect(INVENTORY_SLOTS).toBe(8);
     expect(new Inventory().capacity).toBe(8);
   });
-  it('añade en la primera ranura libre y no excede la capacidad', () => {
+  it('adds to the first free slot and does not exceed capacity', () => {
     const inv = new Inventory(3);
     expect(inv.add(InvItem.Pistol)).toBe(true);
     expect(inv.add(InvItem.Tonic)).toBe(true);
@@ -34,7 +34,7 @@ describe('inventario', () => {
     expect(inv.add(InvItem.Key)).toBe(false);
     expect(inv.count(InvItem.Tonic)).toBe(2);
   });
-  it('armas y llave son únicas; los tónicos no se apilan (una ranura cada uno)', () => {
+  it('weapons and key are unique; tonics do not stack (one slot each)', () => {
     const inv = new Inventory();
     inv.add(InvItem.Key);
     expect(inv.add(InvItem.Key)).toBe(false);
@@ -42,7 +42,7 @@ describe('inventario', () => {
     inv.add(InvItem.Tonic);
     expect(inv.used).toBe(3);
   });
-  it('quitar libera la ranura y reutiliza el hueco', () => {
+  it('removing frees the slot and the gap is reused', () => {
     const inv = new Inventory(2);
     inv.add(InvItem.Tonic);
     inv.add(InvItem.Key);
@@ -51,7 +51,7 @@ describe('inventario', () => {
     expect(inv.add(InvItem.Pistol)).toBe(true);
     expect(inv.slots[0]).toBe(InvItem.Pistol);
   });
-  it('el inventario lleno impide recoger y deja el objeto en el suelo', () => {
+  it('a full inventory prevents pickup and leaves the item on the floor', () => {
     const w = new World();
     while (!w.inventory.full) w.inventory.add(InvItem.Tonic);
     const t = ITEM_SPAWNS.find((s) => s.kind === ItemKind.Key)!;
@@ -60,28 +60,28 @@ describe('inventario', () => {
     step(w, 0.2);
     expect(w.hasKey).toBe(false);
     expect(w.items.find((i) => i.kind === ItemKind.Key)!.taken).toBe(false);
-    expect(w.message).toBe('Inventario lleno');
+    expect(w.message).toBe('Inventory full');
   });
 });
 
-describe('escopeta', () => {
+describe('shotgun', () => {
   const m = parseMap(['11111111111111', '10000000000001', '10000000000001', '10000000000001', '11111111111111']);
 
-  it('el abanico tiene N perdigones simétricos dentro del semiángulo', () => {
+  it('the spread has N symmetric pellets within the half-angle', () => {
     const a = spreadAngles(SHOTGUN.pellets, SHOTGUN.spread, new Rng(1).next.bind(new Rng(1))) as number[];
     expect(a.length).toBe(7);
     for (const v of a) expect(Math.abs(v)).toBeLessThanOrEqual(SHOTGUN.spread + 1e-9);
     expect(Math.min(...a)).toBeLessThan(-SHOTGUN.spread * 0.5);
     expect(Math.max(...a)).toBeGreaterThan(SHOTGUN.spread * 0.5);
   });
-  it('el daño decrece con la distancia y tiene un mínimo', () => {
+  it('damage falls off with distance and has a minimum', () => {
     expect(falloff(SHOTGUN, 1)).toBe(1);
     expect(falloff(SHOTGUN, 3)).toBeGreaterThan(falloff(SHOTGUN, 5));
     expect(falloff(SHOTGUN, 5)).toBeGreaterThan(falloff(SHOTGUN, 9));
     expect(falloff(SHOTGUN, 50)).toBeCloseTo(0.12, 5);
     expect(falloff(PISTOL, 15)).toBe(1);
   });
-  it('de cerca mata a un corredor de un cartucho y casi a un rezagado; de lejos hace poco', () => {
+  it('up close one shell kills a runner and nearly a shambler; at range it does little', () => {
     const dmgAt = (d: number) => {
       const w = new World();
       for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; }
@@ -99,7 +99,7 @@ describe('escopeta', () => {
     expect(dmgAt(2.5)).toBeGreaterThan(30);
     expect(dmgAt(7)).toBeLessThan(dmgAt(2.5) / 3);
   });
-  it('un perdigón fuera del cuerpo falla: a distancia solo acierta parte del abanico', () => {
+  it('a pellet outside the body misses: at range only part of the spread hits', () => {
     const z = new Zombie(WALKER, 9.5, 2.5);
     let hits = 0;
     const offs = spreadAngles(7, SHOTGUN.spread, () => 0.5) as number[];
@@ -107,13 +107,13 @@ describe('escopeta', () => {
     expect(hits).toBeGreaterThan(0);
     expect(hits).toBeLessThan(7);
   });
-  it('aturde y empuja más que la pistola', () => {
+  it('staggers and pushes more than the pistol', () => {
     const a = new Zombie(WALKER, 5, 5), b = new Zombie(WALKER, 5, 5);
     a.hurt(7, PISTOL.stagger, 1, 0, PISTOL.knock);
     b.hurt(7, SHOTGUN.stagger, 1, 0, SHOTGUN.knock);
     expect(b.stagger).toBeGreaterThan(a.stagger);
   });
-  it('cadencia lenta: no dispara dos veces seguidas', () => {
+  it('slow fire rate: cannot fire twice in a row', () => {
     const w = new Weapon(SHOTGUN);
     expect(w.fire()).toBe('fired');
     w.update(0.5, { bullets: 0, shells: 0 });
@@ -123,8 +123,8 @@ describe('escopeta', () => {
   });
 });
 
-describe('munición por tipo y recarga', () => {
-  it('las reservas son independientes: la escopeta no gasta balas', () => {
+describe('ammo by type and reload', () => {
+  it('reserves are independent: the shotgun does not use bullets', () => {
     const pool: AmmoPool = { bullets: 10, shells: 2 };
     const w = new Weapon(SHOTGUN, 0);
     w.startReload(pool);
@@ -132,7 +132,7 @@ describe('munición por tipo y recarga', () => {
     expect(w.mag).toBe(2);
     expect(pool).toEqual({ bullets: 10, shells: 0 });
   });
-  it('la escopeta recarga cartucho a cartucho y se puede interrumpir disparando', () => {
+  it('the shotgun reloads shell by shell and can be interrupted by firing', () => {
     const pool: AmmoPool = { bullets: 0, shells: 5 };
     const w = new Weapon(SHOTGUN, 1);
     w.startReload(pool);
@@ -143,7 +143,7 @@ describe('munición por tipo y recarga', () => {
     expect(w.reloading).toBe(false);
     expect(w.mag).toBe(1);
   });
-  it('recarga completa la escopeta hasta el cargador', () => {
+  it('a full reload fills the shotgun magazine', () => {
     const pool: AmmoPool = { bullets: 0, shells: 6 };
     const w = new Weapon(SHOTGUN, 0);
     w.startReload(pool);
@@ -155,13 +155,13 @@ describe('munición por tipo y recarga', () => {
   });
 });
 
-describe('cambio de arma', () => {
-  it('sin escopeta no se puede equipar', () => {
+describe('weapon switching', () => {
+  it('cannot equip the shotgun without owning it', () => {
     const w = new World();
     expect(w.switchTo('shotgun')).toBe(false);
     expect(w.equipped).toBe('pistol');
   });
-  it('recoger la escopeta la añade al inventario con 2 cartuchos cargados', () => {
+  it('picking up the shotgun adds it to the inventory with 2 shells loaded', () => {
     const w = new World();
     const s = ITEM_SPAWNS.find((i) => i.kind === ItemKind.Shotgun)!;
     w.player.x = s.x; w.player.y = s.y;
@@ -170,7 +170,7 @@ describe('cambio de arma', () => {
     expect(w.weapons.shotgun.mag).toBe(SHOTGUN_START_MAG);
     expect(w.equipped).toBe('pistol');
   });
-  it('cambiar durante la recarga la interrumpe y no gasta reserva', () => {
+  it('switching during a reload interrupts it and does not use reserve', () => {
     const w = armed();
     w.weapon.mag = 2;
     w.reload();
@@ -183,7 +183,7 @@ describe('cambio de arma', () => {
     step(w, 3);
     expect(w.weapons.pistol.mag).toBe(2);
   });
-  it('tras cambiar hay un bloqueo breve antes de disparar', () => {
+  it('after switching there is a short lock before firing', () => {
     const w = armed();
     w.switchTo('shotgun');
     w.fire();
@@ -192,7 +192,7 @@ describe('cambio de arma', () => {
     w.fire();
     expect(w.stats.shots).toBe(1);
   });
-  it('cycleWeapon alterna entre las armas poseídas', () => {
+  it('cycleWeapon alternates between owned weapons', () => {
     const w = armed();
     w.cycleWeapon();
     expect(w.equipped).toBe('shotgun');
@@ -202,7 +202,7 @@ describe('cambio de arma', () => {
   });
 });
 
-describe('medicina', () => {
+describe('medicine', () => {
   function hurt(): World {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
@@ -211,20 +211,20 @@ describe('medicina', () => {
     w.hurtPlayer(50);
     return w;
   }
-  it('cura una cantidad fija y consume un tónico', () => {
+  it('heals a fixed amount and consumes a tonic', () => {
     const w = hurt();
     expect(w.useTonic(true)).toBe('healed');
     expect(w.hp).toBe(50 + TONIC_HEAL);
     expect(w.tonics).toBe(1);
   });
-  it('nunca supera la vida máxima', () => {
+  it('never exceeds max health', () => {
     const w = hurt();
     w.hurtPlayer(-0);
     w.hp = MAX_HP - 10;
     w.useTonic(true);
     expect(w.hp).toBe(MAX_HP);
   });
-  it('con la vida llena no se consume', () => {
+  it('is not consumed at full health', () => {
     const w = new World();
     w.inventory.add(InvItem.Tonic);
     expect(w.useTonic()).toBe('full');
@@ -232,13 +232,13 @@ describe('medicina', () => {
     expect(w.tonics).toBe(1);
     expect(w.hp).toBe(MAX_HP);
   });
-  it('sin tónicos no hace nada', () => {
+  it('does nothing without tonics', () => {
     const w = new World();
     w.hurtPlayer(10);
     expect(w.useTonic()).toBe('none');
     expect(w.hp).toBe(90);
   });
-  it('en juego dura HEAL_TIME, el jugador se mueve pero no dispara y sigue vulnerable', () => {
+  it('in game it lasts HEAL_TIME; the player moves but cannot fire and stays vulnerable', () => {
     const w = hurt();
     expect(w.useTonic()).toBe('started');
     expect(w.useTonic()).toBe('busy');
@@ -254,12 +254,12 @@ describe('medicina', () => {
     expect(w.tonics).toBe(1);
     expect(w.hp).toBe(40 + TONIC_HEAL);
   });
-  it('etiquetas de estado: Bien / Precaución / Peligro', () => {
+  it('status labels: Good / Caution / Danger', () => {
     const w = new World();
-    expect(w.healthLabel).toBe('Bien');
+    expect(w.healthLabel).toBe('Good');
     w.hp = 50;
-    expect(w.healthLabel).toBe('Precaución');
+    expect(w.healthLabel).toBe('Caution');
     w.hp = 20;
-    expect(w.healthLabel).toBe('Peligro');
+    expect(w.healthLabel).toBe('Danger');
   });
 });

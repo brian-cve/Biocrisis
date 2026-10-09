@@ -9,36 +9,36 @@ import { InvItem } from '../src/game/inventory';
 
 const defs = ZOMBIE_SPAWNS.map((z) => (z.type === 'walker' ? WALKER : RUNNER));
 
-describe('invariantes de balance (docs/BALANCE.md)', () => {
+describe('balance invariants (docs/BALANCE.md)', () => {
   const bulletsNeeded = (d: typeof WALKER) => Math.ceil(d.hp / PISTOL.damage);
   const pistolSupply = PISTOL.magSize + START_RESERVE + ITEM_SPAWNS.filter((i) => i.kind === ItemKind.PistolAmmo).length * BOX_BULLETS;
   const shellSupply = SHOTGUN_START_MAG + BOX_SHELLS;
 
-  it('hay 4–7 zombis: 3 rezagados y 3 corredores', () => {
+  it('there are 4-7 zombies: 3 shamblers and 3 runners', () => {
     expect(ZOMBIE_SPAWNS.length).toBeGreaterThanOrEqual(4);
     expect(ZOMBIE_SPAWNS.length).toBeLessThanOrEqual(7);
     expect(defs.filter((d) => d === WALKER).length).toBe(3);
     expect(defs.filter((d) => d === RUNNER).length).toBe(3);
   });
-  it('con solo la pistola NO se puede matar a todos ni acertando siempre', () => {
+  it('with only the pistol you CANNOT kill everyone, even never missing', () => {
     const needed = defs.reduce((s, d) => s + bulletsNeeded(d), 0);
     expect(pistolSupply).toBeLessThan(needed);
   });
-  it('pero NO es imposible: pistola + escopeta bastan con margen para fallar algún tiro', () => {
+  it('but it is NOT impossible: pistol + shotgun suffice with margin to miss some shots', () => {
     const runners = defs.filter((d) => d === RUNNER).length;
     const walkerBullets = defs.filter((d) => d === WALKER).reduce((s, d) => s + bulletsNeeded(d), 0);
     expect(shellSupply).toBeGreaterThanOrEqual(runners);
     expect(pistolSupply).toBeGreaterThan(walkerBullets);
     expect(pistolSupply - walkerBullets).toBeLessThan(0.5 * walkerBullets);
   });
-  it('la escopeta tiene munición muy escasa', () => {
+  it('the shotgun has very scarce ammo', () => {
     expect(shellSupply).toBeLessThanOrEqual(5);
     expect(SHOTGUN.magSize).toBeLessThanOrEqual(6);
   });
-  it('hay vida extra para sobrevivir a un par de errores pero no a muchos: 2 tónicos', () => {
+  it('there is extra health to survive a couple of mistakes but not many: 2 tonics', () => {
     expect(ITEM_SPAWNS.filter((i) => i.kind === ItemKind.Tonic && i.y < 20).length).toBe(2);
   });
-  it('los zombis son más lentos que el jugador (se puede huir de ellos andando de frente)', async () => {
+  it('zombies are slower than the player (you can outrun them walking forward)', async () => {
     const { MOVE_SPEED } = await import('../src/game/player');
     expect(WALKER.speed).toBeLessThan(MOVE_SPEED * 0.6);
     expect(RUNNER.speed).toBeLessThan(MOVE_SPEED);
@@ -46,8 +46,8 @@ describe('invariantes de balance (docs/BALANCE.md)', () => {
   });
 });
 
-describe('clímax: la casa despierta', () => {
-  it('coger la llave alerta a todos los zombis vivos de la casa, estén donde estén', () => {
+describe('climax: the house wakes up', () => {
+  it('picking up the key alerts every living zombie in the house, wherever they are', () => {
     const w = new World();
     const events: string[] = [];
     w.onEvent = (e) => events.push(e);
@@ -62,7 +62,7 @@ describe('clímax: la casa despierta', () => {
     const farthest = Math.max(...w.zombies.map((z) => Math.hypot(z.x - key.x, z.y - key.y)));
     expect(ALARM_RADIUS).toBeGreaterThan(farthest);
   });
-  it('un zombi muerto no se alerta', () => {
+  it('a dead zombie is not alerted', () => {
     const w = new World();
     w.zombies[0].hurt(1e9, 0, 1, 0);
     const key = ITEM_SPAWNS.find((i) => i.kind === ItemKind.Key)!;
@@ -71,7 +71,7 @@ describe('clímax: la casa despierta', () => {
     w.update({ forward: 0, strafe: 0, turn: 0 }, 1 / 60);
     expect(w.zombies[0].dead).toBe(true);
   });
-  it('la puerta de salida tarda ~1 s en ser transitable (tensión del final)', () => {
+  it('the exit door takes ~1 s to become passable (end tension)', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     w.inventory.add(InvItem.Key);

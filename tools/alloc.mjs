@@ -17,5 +17,5 @@ const sample = async (label, seconds, press) => {
 await sample('quieto (con zombis persiguiendo)', 10);
 await sample('girando', 10, 'd');
 await sample('avanzando y disparando', 10, 'w');
-console.log(errors.length ? errors : 'sin errores');
+console.log(errors.length ? errors : 'no errors');
 await browser.close();

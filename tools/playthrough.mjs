@@ -32,5 +32,5 @@ await shot('p7_exit_open');
 await page.keyboard.down('w'); await page.waitForTimeout(1500); await page.keyboard.up('w');
 await shot('p8_win');
 const st = await page.evaluate(() => ({ key: window.__bc.world.hasKey, won: window.__bc.world.won, boss: !!window.__bc.world.boss, smg: window.__bc.world.weapon.def.id, fps: Math.round(window.__bc.game.loop.actualFps) }));
-console.log(JSON.stringify(st), errors.length ? errors : 'consola limpia');
+console.log(JSON.stringify(st), errors.length ? errors : 'clean console');
 await browser.close();

@@ -8,12 +8,12 @@ import { Action } from '../game/controls';
 import { WeaponId } from '../game/weapons';
 
 const HINTS: readonly [Action, string, string][] = [
-  ['fire', 'ESP', 'Disparar'],
-  ['interact', 'F', 'Usar/Abrir puerta'],
-  ['reload', 'R', 'Recargar'],
-  ['heal', 'H', 'Curar'],
-  ['inventory', 'I', 'Inventario'],
-  ['pause', 'P', 'Pausa'],
+  ['fire', 'SPC', 'Fire'],
+  ['interact', 'F', 'Use/Open door'],
+  ['reload', 'R', 'Reload'],
+  ['heal', 'H', 'Heal'],
+  ['inventory', 'I', 'Inventory'],
+  ['pause', 'P', 'Pause'],
 ];
 
 const FONT = 'monospace';
@@ -47,7 +47,7 @@ export class Hud {
     this.buildHints(scene);
     this.vignette = scene.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x8a0000, 0).setOrigin(0, 0).setDepth(5);
     scene.add.rectangle(0, y0, SCREEN_W, 24, 0x050706, 0.62).setOrigin(0, 0).setDepth(10);
-    scene.add.text(6, y0 + 3, 'VIDA', { fontFamily: FONT, fontSize: '8px', color: '#56705f' }).setDepth(11);
+    scene.add.text(6, y0 + 3, 'HEALTH', { fontFamily: FONT, fontSize: '8px', color: '#56705f' }).setDepth(11);
     scene.add.rectangle(6, y0 + 13, BAR_W + 2, 7, 0x16201c).setOrigin(0, 0).setStrokeStyle(1, 0x2e4038).setDepth(11);
     this.hpBar = scene.add.rectangle(7, y0 + 14, BAR_W, 5, 0x56a05f).setOrigin(0, 0).setDepth(12);
     this.hpText = scene.add.text(6 + BAR_W + 6, y0 + 11, '', { fontFamily: FONT, fontSize: '8px', color: '#9ab49c' }).setDepth(11);
@@ -94,11 +94,11 @@ export class Hud {
     const low = w.hp <= 30 && !w.dead;
     this.hpBar.width = Math.max(0, Math.min(BAR_W, Math.round(BAR_W * frac)));
     const label = w.healthLabel;
-    const color = label === 'Bien' ? 0x56a05f : label === 'Precaución' ? 0xc4b040 : 0xb02a24;
+    const color = label === 'Good' ? 0x56a05f : label === 'Caution' ? 0xc4b040 : 0xb02a24;
     this.hpBar.setFillStyle(color);
     const blink = low && Math.sin(this.t * 10) < 0;
     this.hpBar.setAlpha(blink ? 0.25 : 1);
-    this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Bien' ? '#7ac080' : label === 'Precaución' ? '#c4b040' : '#d05048');
+    this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Good' ? '#7ac080' : label === 'Caution' ? '#c4b040' : '#d05048');
     this.hpLabel.setAlpha(blink ? 0.3 : 1);
     this.hpText.setText(String(w.hp));
 
@@ -121,7 +121,7 @@ export class Hud {
     if (showBoss) {
       this.bossBar.width = Math.max(1, Math.round(BOSS_BAR_W * (b.hp / b.maxHp)));
       this.bossBar.setFillStyle(b.enraged ? 0xe04a30 : 0xb02a24);
-      this.bossName.setText(b.enraged ? `${b.def.name.toUpperCase()} - ENFURECIDA` : b.def.name.toUpperCase());
+      this.bossName.setText(b.enraged ? `${b.def.name.toUpperCase()} - ENRAGED` : b.def.name.toUpperCase());
     }
 
     this.message.setText(w.messageTime > 0 ? w.message : '');

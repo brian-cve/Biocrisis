@@ -4,27 +4,27 @@ import { Doors } from '../src/game/doors';
 import { HOUSE_ROWS, START, createHouse } from '../src/game/map';
 import { circleHitsWall } from '../src/game/collision';
 
-describe('la casa', () => {
+describe('the house', () => {
   const map = createHouse();
 
-  it('mide 20x35 (casa + arena del jefe) y tiene borde sólido', () => {
+  it('is 20x35 (house + boss arena) and has a solid border', () => {
     expect(map.width).toBe(20);
     expect(map.height).toBe(35);
     for (let x = 0; x < 20; x++) for (const y of [0, 34]) expect(map.cells[y * 20 + x]).not.toBe(0);
     for (let y = 0; y < 35; y++) for (const x of [0, 19]) expect(map.cells[y * 20 + x]).not.toBe(0);
   });
 
-  it('todas las celdas de pared usan ids válidos (1-6)', () => {
+  it('all wall cells use valid ids (1-6)', () => {
     for (const r of HOUSE_ROWS) for (const ch of r) expect(Number(ch)).toBeLessThanOrEqual(6);
   });
 
-  it('el inicio está libre y la puerta de la arena se ve desde él', () => {
+  it('the start is free and the arena door is visible from it', () => {
     expect(circleHitsWall(map, START.x, START.y, 0.25)).toBe(false);
     const h = castRay(map, START.x, START.y, Math.cos(START.angle), Math.sin(START.angle), makeRayHit());
     expect(h.cell).toBe(CELL_BOSS_DOOR);
   });
 
-  it('todo el interior es alcanzable desde el inicio (BFS, puertas pasables)', () => {
+  it('the whole interior is reachable from the start (BFS, passable doors)', () => {
     const seen = new Set<number>();
     const q = [[Math.floor(START.x), Math.floor(START.y)]];
     seen.add(q[0][1] * 20 + q[0][0]);
@@ -49,8 +49,8 @@ describe('la casa', () => {
   });
 });
 
-describe('puertas', () => {
-  it('se abren con animación y dejan pasar al jugador', () => {
+describe('doors', () => {
+  it('open with animation and let the player through', () => {
     const map = createHouse();
     const doors = new Doors(map);
     expect(circleHitsWall(map, 8.5, 15.5, 0.25)).toBe(true);
@@ -60,7 +60,7 @@ describe('puertas', () => {
     expect(circleHitsWall(map, 8.5, 15.5, 0.25)).toBe(false);
   });
 
-  it('un rayo cruza el hueco de una puerta abierta pero no la cerrada', () => {
+  it('a ray crosses the gap of an open door but not a closed one', () => {
     const map = createHouse();
     const doors = new Doors(map);
     const closed = castRay(map, 6.5, 15.5, 1, 0, makeRayHit());
@@ -71,7 +71,7 @@ describe('puertas', () => {
     expect(open.mapX).toBeGreaterThan(8);
   });
 
-  it('la puerta de la arena y la salida real empiezan cerradas con llave', () => {
+  it('the arena door and the real exit start locked', () => {
     const doors = new Doors(createHouse());
     expect(doors.use(3, 19)).toBe('locked');
     expect(doors.use(9, 34)).toBe('locked');
@@ -81,7 +81,7 @@ describe('puertas', () => {
     expect(doors.at(9, 34)!.exit).toBe(true);
   });
 
-  it('no se cierra si hay alguien en la celda', () => {
+  it('does not close if someone is in the cell', () => {
     const doors = new Doors(createHouse());
     doors.use(8, 15);
     expect(doors.use(8, 15, () => true)).toBe('blocked');

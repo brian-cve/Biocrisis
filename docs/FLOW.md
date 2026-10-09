@@ -1,6 +1,6 @@
-# FLOW — scene state machine
+# FLOW - scene state machine
 
-Phaser scenes: `Boot · Title · Controls · Options · Intro · Game · Pause · Inventory · GameOver · Win`.
+Phaser scenes: `Boot | Title | Controls | Options | Intro | Game | Pause | Inventory | GameOver | Win`.
 `Controls`, `Options`, `Pause` and `Inventory` are **overlays** (the originating scene is paused and resumed when they
 close, without losing state). The rest replace one another with a fade to black (`ui/transition.ts`).
 

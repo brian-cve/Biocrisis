@@ -7,8 +7,8 @@ import { BOSS, ZState, Zombie } from '../src/game/zombie';
 
 const idle = { forward: 0, strafe: 0, turn: 0 };
 
-describe('arena del jefe', () => {
-  it('hay metralleta y munición de sobra en la arena para matar al jefe', () => {
+describe('boss arena', () => {
+  it('the arena has an SMG and plenty of ammo to kill the boss', () => {
     const arena = ITEM_SPAWNS.filter((i) => i.y >= 20);
     expect(arena.some((i) => i.kind === ItemKind.Smg)).toBe(true);
     const bullets = arena.filter((i) => i.kind === ItemKind.BulletCrate).length * CRATE_BULLETS + SMG.magSize;
@@ -16,27 +16,27 @@ describe('arena del jefe', () => {
     expect(bullets).toBeGreaterThan(needed * 2);
   });
 
-  it('el jefe casi no se aturde ni se empuja con disparos', () => {
+  it('the boss barely staggers or gets pushed by shots', () => {
     const b = new Zombie(BOSS, 5, 5);
     b.hurt(9, SMG.stagger, 1, 0, SMG.knock);
     expect(b.stagger).toBeLessThan(0.02);
     expect(b.state).toBe(ZState.Chase);
   });
 
-  it('se puede huir del jefe andando, incluso enfurecido', async () => {
+  it('the boss can be outwalked, even enraged', async () => {
     const { MOVE_SPEED } = await import('../src/game/player');
     expect(BOSS.speed).toBeLessThan(MOVE_SPEED * 0.7);
     expect(BOSS.speed * 1.45).toBeLessThan(MOVE_SPEED);
   });
 
-  it('se enfurece por debajo de la mitad de vida', () => {
+  it('enrages below half health', () => {
     const b = new Zombie(BOSS, 5, 5);
     expect(b.enraged).toBe(false);
     b.hurt(BOSS.hp * 0.55, 0, 1, 0);
     expect(b.enraged).toBe(true);
   });
 
-  it('coger la metralleta la equipa con cargador lleno y la pone en el ciclo de armas', () => {
+  it('picking up the SMG equips it with a full magazine and adds it to the weapon cycle', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     const s = ITEM_SPAWNS.find((i) => i.kind === ItemKind.Smg)!;
@@ -51,7 +51,7 @@ describe('arena del jefe', () => {
     expect(w.equipped).toBe('pistol');
   });
 
-  it('las cajas de la arena dan mucha más munición que las de la casa', () => {
+  it('arena crates give much more ammo than the house ones', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     const before = w.ammo.bullets;
@@ -62,7 +62,7 @@ describe('arena del jefe', () => {
     expect(w.ammo.bullets).toBe(before + CRATE_BULLETS);
   });
 
-  it('la metralleta, mantenida, derrota a un jefe inmóvil en pocos segundos', () => {
+  it('the SMG, held down, defeats a stationary boss in a few seconds', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     w.inventory.add(InvItem.Smg);

@@ -11,5 +11,5 @@ await page.waitForTimeout(500);
 await page.waitForTimeout(300);
 await page.screenshot({ path: out });
 const fps = await page.evaluate(() => document.querySelector('canvas') ? 'canvas ok' : 'no canvas');
-console.log(fps, errors.length ? errors : 'consola limpia');
+console.log(fps, errors.length ? errors : 'clean console');
 await browser.close();

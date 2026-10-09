@@ -12,40 +12,40 @@ export const INVENTORY_COLS = 4;
 
 export interface InvItemInfo {
   name: string;
-  action: 'EQUIPAR' | 'USAR' | 'EXAMINAR';
+  action: 'EQUIP' | 'USE' | 'EXAMINE';
   description: string;
   key: boolean;
 }
 
 export const ITEM_INFO: Record<InvItem, InvItemInfo> = {
   [InvItem.Pistol]: {
-    name: 'Pistola',
-    action: 'EQUIPAR',
-    description: 'Pistola semiautomática. Precisa y silenciosa para la casa, pero de poco daño. Ideal para ahorrar y para tiros lejanos.',
+    name: 'Pistol',
+    action: 'EQUIP',
+    description: 'Semi-automatic pistol. Accurate and quiet, but low damage. Good for saving ammo and long shots.',
     key: false,
   },
   [InvItem.Shotgun]: {
-    name: 'Escopeta',
-    action: 'EQUIPAR',
-    description: 'Escopeta de bombeo. Devastadora a corta distancia, casi inútil de lejos. Los cartuchos escasean.',
+    name: 'Shotgun',
+    action: 'EQUIP',
+    description: 'Pump-action shotgun. Devastating up close, nearly useless at range. Shells are scarce.',
     key: false,
   },
   [InvItem.Smg]: {
-    name: 'Metralleta',
-    action: 'EQUIPAR',
-    description: 'Metralleta compacta de fuego automático. Mantén el disparo para barrer: gasta las balas de la pistola muy deprisa.',
+    name: 'Submachine gun',
+    action: 'EQUIP',
+    description: 'Compact automatic submachine gun. Hold fire to sweep: burns through pistol bullets very fast.',
     key: false,
   },
   [InvItem.Tonic]: {
-    name: 'Tónico',
-    action: 'USAR',
-    description: 'Frasco de tónico verde. Cura una cantidad fija de vida; no lo desperdicies con la vida llena.',
+    name: 'Tonic',
+    action: 'USE',
+    description: 'Bottle of green tonic. Heals a fixed amount of health; do not waste it at full health.',
     key: false,
   },
   [InvItem.Key]: {
-    name: 'Llave de latón',
-    action: 'EXAMINAR',
-    description: 'Una llave de latón pesada, con un símbolo grabado. Abre la puerta de salida de la casa.',
+    name: 'Brass key',
+    action: 'EXAMINE',
+    description: 'A heavy brass key with an engraved symbol. Opens the exit door of the house.',
     key: true,
   },
 };

@@ -70,14 +70,14 @@ const ITEM_SPRITE: Record<ItemKind, SpriteId> = {
 const ITEM_SCALE: Partial<Record<ItemKind, number>> = { [ItemKind.BulletCrate]: 0.46, [ItemKind.ShellCrate]: 0.46, [ItemKind.Smg]: 0.4 };
 
 const ITEM_MESSAGE: Record<ItemKind, string> = {
-  [ItemKind.Key]: 'Has encontrado la llave... algo se mueve en la casa',
-  [ItemKind.Tonic]: 'Tónico recogido',
-  [ItemKind.PistolAmmo]: 'Balas recogidas',
-  [ItemKind.ShotgunShells]: 'Cartuchos recogidos',
-  [ItemKind.Shotgun]: 'Has encontrado una escopeta',
-  [ItemKind.Smg]: 'Metralleta. Mantén el disparo para ráfagas',
-  [ItemKind.BulletCrate]: 'Caja de munición: +40 balas',
-  [ItemKind.ShellCrate]: 'Caja de cartuchos: +8',
+  [ItemKind.Key]: 'You found the key... something stirs in the house',
+  [ItemKind.Tonic]: 'Tonic picked up',
+  [ItemKind.PistolAmmo]: 'Bullets picked up',
+  [ItemKind.ShotgunShells]: 'Shells picked up',
+  [ItemKind.Shotgun]: 'You found a shotgun',
+  [ItemKind.Smg]: 'Submachine gun. Hold fire for bursts',
+  [ItemKind.BulletCrate]: 'Ammo crate: +40 bullets',
+  [ItemKind.ShellCrate]: 'Shell crate: +8',
 };
 
 export class World {
@@ -179,14 +179,14 @@ export class World {
     this.boss = b;
     this.zombies.push(b);
     b.hear(this.player.x, this.player.y);
-    this.say('Algo enorme despierta...');
+    this.say('Something huge awakens...');
     this.emit('bossWake', b.x, b.y);
   }
 
   private defeatBoss(): void {
     this.bossDefeated = true;
     this.doors.unlock(FINAL_EXIT.x, FINAL_EXIT.y);
-    this.say('El monstruo cae. La salida está libre');
+    this.say('The monster falls. The exit is open');
     this.emit('bossDead', this.boss!.x, this.boss!.y);
   }
 
@@ -244,7 +244,7 @@ export class World {
   switchTo(id: WeaponId): boolean {
     if (this.handsBusy() || id === this.equipped) return false;
     if (!this.owns(id)) {
-      this.say(id === 'shotgun' ? 'No tienes la escopeta' : id === 'smg' ? 'No tienes la metralleta' : 'No tienes esa arma');
+      this.say(id === 'shotgun' ? 'You do not have the shotgun' : id === 'smg' ? 'You do not have the submachine gun' : 'You do not have that weapon');
       return false;
     }
     this.weapon.cancelReload();
@@ -272,11 +272,11 @@ export class World {
     if (this.dead || this.won) return 'busy';
     if (this.healTimer > 0) return 'busy';
     if (this.tonics === 0) {
-      this.say('No tienes tónicos');
+      this.say('You have no tonics');
       return 'none';
     }
     if (this.hp >= MAX_HP) {
-      this.say('Vida llena');
+      this.say('Health full');
       return 'full';
     }
     if (instant) {
@@ -293,12 +293,12 @@ export class World {
     if (this.dead || !this.inventory.removeOne(InvItem.Tonic)) return;
     this.hp = Math.min(MAX_HP, this.hp + TONIC_HEAL);
     this.stats.tonicsUsed++;
-    this.say('Te sientes mejor');
+    this.say('You feel better');
     this.emit('heal');
   }
 
-  get healthLabel(): 'Bien' | 'Precaución' | 'Peligro' {
-    return this.hp > 60 ? 'Bien' : this.hp > 30 ? 'Precaución' : 'Peligro';
+  get healthLabel(): 'Good' | 'Caution' | 'Danger' {
+    return this.hp > 60 ? 'Good' : this.hp > 30 ? 'Caution' : 'Danger';
   }
 
   makeNoise(x: number, y: number, radius: number): void {
@@ -333,7 +333,7 @@ export class World {
       if (dx * dx + dy * dy > PICKUP_RADIUS * PICKUP_RADIUS) continue;
       const slot = it.kind === ItemKind.Key ? InvItem.Key : it.kind === ItemKind.Tonic ? InvItem.Tonic : it.kind === ItemKind.Shotgun ? InvItem.Shotgun : it.kind === ItemKind.Smg ? InvItem.Smg : null;
       if (slot !== null && !this.inventory.add(slot)) {
-        if (this.messageTime <= 0) this.say('Inventario lleno');
+        if (this.messageTime <= 0) this.say('Inventory full');
         continue;
       }
       it.taken = true;
@@ -364,12 +364,12 @@ export class World {
     if (d.locked) {
       if (d.boss && this.hasKey) {
         this.doors.unlock(d.x, d.y);
-        this.say('La llave gira. Del otro lado se oye algo respirar...');
+        this.say('The key turns. Something breathes on the other side...');
       } else if (d.exit) {
-        this.say('La salida está sellada');
+        this.say('The exit is sealed');
         return;
       } else {
-        this.say('Necesitas una llave');
+        this.say('You need a key');
         return;
       }
     }

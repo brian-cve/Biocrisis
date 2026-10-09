@@ -30,7 +30,7 @@ export interface ZombieDef {
 }
 
 export const WALKER: ZombieDef = {
-  name: 'Rezagado',
+  name: 'Shambler',
   hp: 70,
   speed: 0.95,
   radius: 0.3,
@@ -44,7 +44,7 @@ export const WALKER: ZombieDef = {
 };
 
 export const RUNNER: ZombieDef = {
-  name: 'Corredor',
+  name: 'Runner',
   hp: 35,
   speed: 1.75,
   radius: 0.26,
@@ -58,7 +58,7 @@ export const RUNNER: ZombieDef = {
 };
 
 export const BOSS: ZombieDef = {
-  name: 'Abominación',
+  name: 'Abomination',
   hp: 650,
   speed: 1.15,
   radius: 0.42,

@@ -95,7 +95,7 @@ export class TouchUI {
     this.rotate = document.createElement('div');
     this.rotate.className = 'tc-rotate';
     this.rotate.hidden = true;
-    this.rotate.innerHTML = '<div class="phone"></div><h1>GIRA EL DISPOSITIVO</h1><p>BioCrisis se juega en horizontal</p>';
+    this.rotate.innerHTML = '<div class="phone"></div><h1>ROTATE YOUR DEVICE</h1><p>BioCrisis is played in landscape</p>';
     this.rotate.addEventListener('contextmenu', (e) => e.preventDefault());
     document.body.appendChild(this.rotate);
 
@@ -150,7 +150,7 @@ export class TouchUI {
     el.className = cls;
     el.dataset.btn = b;
     el.innerHTML = pill ? `<i></i><small>${b}</small>` : `${b}<small>${touchLabel(b)}</small>`;
-    if (pill) el.querySelector('small')!.textContent = `${b} ${touchLabel(b)}`;
+    if (pill) el.querySelector('small')!.textContent = `${b} ${touchLabel(b)}`;
     this.root.appendChild(el);
     const ids = new Set<number>();
     const up = (e: PointerEvent) => {
@@ -184,7 +184,7 @@ export class TouchUI {
     const mid = document.createElement('div');
     mid.className = 'mid';
     el.appendChild(mid);
-    const arrows: Record<string, string> = { up: '▲', down: '▼', left: '◀', right: '▶' };
+    const arrows: Record<string, string> = { up: '^', down: 'v', left: '<', right: '>' };
     for (const d of ['up', 'down', 'left', 'right'] as const) {
       const a = document.createElement('div');
       a.className = `arm ${d}`;

@@ -9,11 +9,11 @@ import { World } from '../src/game/world';
 
 const idle = { forward: 0, strafe: 0, turn: 0 };
 
-describe('línea de visión', () => {
+describe('line of sight', () => {
   const m = parseMap(['11111', '10001', '10101', '10001', '11111']);
-  it('ve en espacio abierto', () => expect(hasLineOfSight(m, 1.5, 1.5, 3.5, 1.5)).toBe(true));
-  it('una pared bloquea', () => expect(hasLineOfSight(m, 1.5, 2.5, 3.5, 2.5)).toBe(false));
-  it('una puerta cerrada bloquea y abierta no', () => {
+  it('sees in open space', () => expect(hasLineOfSight(m, 1.5, 1.5, 3.5, 1.5)).toBe(true));
+  it('a wall blocks it', () => expect(hasLineOfSight(m, 1.5, 2.5, 3.5, 2.5)).toBe(false));
+  it('a closed door blocks it and an open one does not', () => {
     const h = createHouse();
     const d = new Doors(h);
     expect(hasLineOfSight(h, 6.5, 15.5, 9.5, 15.5)).toBe(false);
@@ -27,14 +27,14 @@ describe('A*', () => {
   const m = parseMap(['1111111', '1000001', '1011101', '1000001', '1111111']);
   const pf = new Pathfinder(m.width, m.height);
   const out = new Int16Array(64);
-  it('rodea obstáculos', () => {
+  it('goes around obstacles', () => {
     const n = pf.find(m, 1, 2, 5, 2, out);
     expect(n).toBeGreaterThan(4);
     expect(out[n - 1]).toBe(2 * 7 + 5);
     for (let i = 0; i < n; i++) expect(m.cells[out[i]]).toBe(0);
   });
-  it('devuelve -1 si el destino es una pared', () => expect(pf.find(m, 1, 1, 0, 0, out)).toBe(-1));
-  it('atraviesa puertas pero no la de salida', () => {
+  it('returns -1 if the destination is a wall', () => expect(pf.find(m, 1, 1, 0, 0, out)).toBe(-1));
+  it('goes through doors but not the exit', () => {
     const h = createHouse();
     const p = new Pathfinder(20, 20);
     const o = new Int16Array(200);
@@ -43,9 +43,9 @@ describe('A*', () => {
   });
 });
 
-describe('arma: cargador, recarga y reserva', () => {
+describe('weapon: magazine, reload and reserve', () => {
   const pool = (b: number): AmmoPool => ({ bullets: b, shells: 0 });
-  it('dispara y descuenta cargador; respeta la cadencia', () => {
+  it('fires and deducts from the magazine; respects the fire rate', () => {
     const w = new Weapon(PISTOL);
     expect(w.fire()).toBe('fired');
     expect(w.mag).toBe(11);
@@ -53,11 +53,11 @@ describe('arma: cargador, recarga y reserva', () => {
     w.update(0.4, pool(0));
     expect(w.fire()).toBe('fired');
   });
-  it('sin balas en el cargador hace "dry"', () => {
+  it('with an empty magazine it clicks "dry"', () => {
     const w = new Weapon(PISTOL, 0);
     expect(w.fire()).toBe('dry');
   });
-  it('recargar transfiere de la reserva y no excede el cargador', () => {
+  it('reloading transfers from reserve and does not exceed the magazine', () => {
     const w = new Weapon(PISTOL, 4);
     const p = pool(20);
     expect(w.startReload(p)).toBe('reloadStart');
@@ -66,7 +66,7 @@ describe('arma: cargador, recarga y reserva', () => {
     expect(w.mag).toBe(12);
     expect(p.bullets).toBe(12);
   });
-  it('con reserva insuficiente carga lo que hay; sin reserva no recarga', () => {
+  it('with insufficient reserve it loads what there is; with none it does not reload', () => {
     const w = new Weapon(PISTOL, 0);
     const p = pool(5);
     w.startReload(p);
@@ -75,7 +75,7 @@ describe('arma: cargador, recarga y reserva', () => {
     expect(p.bullets).toBe(0);
     expect(new Weapon(PISTOL, 3).startReload(pool(0))).toBe('none');
   });
-  it('no se dispara mientras se recarga y cancelar no consume reserva', () => {
+  it('cannot fire while reloading and cancelling does not use reserve', () => {
     const w = new Weapon(PISTOL, 3);
     const p = pool(10);
     w.startReload(p);
@@ -89,35 +89,35 @@ describe('arma: cargador, recarga y reserva', () => {
 describe('hitscan', () => {
   const m = parseMap(['1111111111', '1000000001', '1000000001', '1111111111']);
   const z = (x: number, y: number) => new Zombie(WALKER, x, y);
-  it('acierta al zombi en la línea de tiro y elige el más cercano', () => {
+  it('hits the zombie in the line of fire and picks the nearest', () => {
     const a = z(4.5, 1.5), b = z(7.5, 1.5);
     const h = findTarget(m, [b, a], 1.5, 1.5, 0, 20, 0);
     expect(h?.target).toBe(a);
     expect(h?.dist).toBeCloseTo(3, 5);
   });
-  it('falla si se apunta fuera, salvo con ayuda de puntería', () => {
+  it('misses when aimed outside, unless aim assist is on', () => {
     const a = z(4.5, 1.5);
     expect(findTarget(m, [a], 1.5, 1.5, 0.25, 20, 0)).toBeNull();
     expect(findTarget(m, [a], 1.5, 1.5, 0.2, 20, 0.15)).not.toBeNull();
   });
-  it('una pared de por medio bloquea el disparo', () => {
+  it('a wall in between blocks the shot', () => {
     const w = parseMap(['11111111', '10010001', '11111111']);
     expect(findTarget(w, [z(5.5, 1.5)], 1.5, 1.5, 0, 20, 0)).toBeNull();
   });
-  it('no apunta a zombis muertos', () => {
+  it('does not target dead zombies', () => {
     const a = z(4.5, 1.5);
     a.hurt(999, 0, 1, 0);
     expect(findTarget(m, [a], 1.5, 1.5, 0, 20, 0)).toBeNull();
   });
 });
 
-describe('zombis', () => {
+describe('zombies', () => {
   function ctx(px: number, py: number, zs: Zombie[]): ZContext & { damage: number } {
     const map = createHouse();
     const c = { map, doors: new Doors(map), pathfinder: new Pathfinder(20, 20), px, py, others: zs, damage: 0, damagePlayer(n: number) { c.damage += n; } };
     return c;
   }
-  it('un rezagado tarda 7 balazos y un corredor 4', () => {
+  it('a shambler takes 7 bullets and a runner 4', () => {
     const w = new Zombie(WALKER, 5, 5);
     const r = new Zombie(RUNNER, 5, 5);
     for (let i = 0; i < 6; i++) expect(w.hurt(PISTOL.damage, 0, 1, 0)).toBe(false);
@@ -126,7 +126,7 @@ describe('zombis', () => {
     for (let i = 0; i < 3; i++) expect(r.hurt(PISTOL.damage, 0, 1, 0)).toBe(false);
     expect(r.hurt(PISTOL.damage, 0, 1, 0)).toBe(true);
   });
-  it('ve al jugador → alerta → persecución → ataque y daña', () => {
+  it('sees the player -> alert -> chase -> attack and damages', () => {
     const z = new Zombie(WALKER, 3.5, 15.5);
     const c = ctx(6.5, 15.5, [z]);
     z.update(c, 1 / 60);
@@ -139,7 +139,7 @@ describe('zombis', () => {
     expect(reachedAttack).toBe(true);
     expect(c.damage).toBe(WALKER.damage);
   });
-  it('no ve ni oye a través de una puerta cerrada, pero un ruido lo alerta', () => {
+  it('neither sees nor hears through a closed door, but a noise alerts it', () => {
     const z = new Zombie(WALKER, 12.5, 15.5);
     const c = ctx(6.5, 15.5, [z]);
     for (let i = 0; i < 30; i++) z.update(c, 1 / 60);
@@ -147,7 +147,7 @@ describe('zombis', () => {
     z.hear(6.5, 15.5);
     expect(z.state).toBe(ZState.Alert);
   });
-  it('persigue a través de puertas abriéndolas', () => {
+  it('chases through doors by opening them', () => {
     const z = new Zombie(RUNNER, 12.5, 15.5);
     const c = ctx(6.5, 15.5, [z]);
     z.hear(6.5, 15.5);
@@ -157,7 +157,7 @@ describe('zombis', () => {
     }
     expect(z.x).toBeLessThan(8);
   });
-  it('dos zombis no se apilan', () => {
+  it('two zombies do not stack', () => {
     const a = new Zombie(WALKER, 5.5, 8.5);
     const b = new Zombie(WALKER, 5.6, 8.5);
     const c = ctx(1.5, 8.5, [a, b]);
@@ -171,8 +171,8 @@ describe('zombis', () => {
   });
 });
 
-describe('World: combate', () => {
-  it('disparar gasta bala, cuenta estadística y mata a un corredor en 4 impactos', () => {
+describe('World: combat', () => {
+  it('firing uses a bullet, counts the stat and kills a runner in 4 hits', () => {
     const w = new World();
     const z = w.zombies[1];
     w.player.x = z.x - 3;
@@ -191,14 +191,14 @@ describe('World: combate', () => {
     expect(w.stats.shots).toBe(4);
     expect(w.weapon.mag).toBe(8);
   });
-  it('un disparo alerta a zombis lejanos', () => {
+  it('a shot alerts distant zombies', () => {
     const w = new World();
     w.player.x = 6.5;
     w.player.y = 9.5;
     w.fire();
     expect(w.zombies[0].state).not.toBe(ZState.Idle);
   });
-  it('el daño al jugador lo mata y detiene el mundo', () => {
+  it('damage kills the player and stops the world', () => {
     const w = new World();
     w.hurtPlayer(60);
     expect(w.dead).toBe(false);
@@ -209,7 +209,7 @@ describe('World: combate', () => {
     w.update(idle, 1);
     expect(w.time).toBe(t);
   });
-  it('recarga automática al intentar disparar con el cargador vacío', () => {
+  it('auto-reload when trying to fire with an empty magazine', () => {
     const w = new World();
     w.weapon.mag = 0;
     w.fire();
@@ -217,9 +217,9 @@ describe('World: combate', () => {
   });
 });
 
-describe('los zombis son sólidos para el jugador', () => {
+describe('zombies are solid to the player', () => {
   const fwd = { forward: 1, strafe: 0, turn: 0 };
-  it('un zombi vivo en el pasillo de una celda cierra el paso; muerto, no', () => {
+  it('a live zombie in a one-cell corridor blocks the way; a dead one does not', () => {
     const w = new World();
     for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
     const z = w.zombies[2];
@@ -232,7 +232,7 @@ describe('los zombis son sólidos para el jugador', () => {
     for (let i = 0; i < 60 * 4; i++) w.update(fwd, 1 / 60);
     expect(w.player.y).toBeGreaterThan(9);
   });
-  it('retroceder es más lento que avanzar', () => {
+  it('moving backward is slower than forward', () => {
     const a = new World(), b = new World();
     for (const w of [a, b]) for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; }
     a.player.x = b.player.x = 4.5; a.player.y = b.player.y = 17.5; a.player.angle = b.player.angle = 0;
