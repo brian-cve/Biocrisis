@@ -69,7 +69,6 @@ export function createHouse(): GridMap {
 
 export const START = { x: 6.5, y: 15.5, angle: Math.atan2(4, -3) };
 
-export const BOSS_DOOR = { x: 3, y: 19 };
 export const FINAL_EXIT = { x: 9, y: 34 };
 export const BOSS_SPAWN = { x: 9.5, y: 30.5 };
 

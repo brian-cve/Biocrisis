@@ -132,7 +132,6 @@ export const enum Floor {
   Stone = 2,
   Carpet = 3,
 }
-export const FLOOR_TYPE_COUNT = 4;
 
 function floorWood(): Texture {
   return make((x, y, set) => {

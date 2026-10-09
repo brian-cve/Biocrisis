@@ -19,5 +19,5 @@
     "vite": "8.3.2",
     "vitest": "5.0.3"
   },
-  "description": "BioCrisis: homenaje original de survival-horror con raycasting (Phaser 3 + Vite + TypeScript). Arte y audio 100 % procedurales."
+  "description": "BioCrisis: an original raycasting survival-horror tribute (Phaser 3 + Vite + TypeScript). 100% procedural art and audio."
 }

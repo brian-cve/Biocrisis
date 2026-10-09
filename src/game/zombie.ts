@@ -90,6 +90,7 @@ const DOOR_PAUSE = 0.15;
 const REPATH = 0.5;
 const EN_ROUTE_LOST = 0.2;
 const GIVE_UP = 12;
+const SIGHT_CHECK = 0.1;
 const HEAR_STEPS = 5.5;
 const HEAR_IDLE = 4;
 
@@ -108,6 +109,8 @@ export class Zombie {
   private attackT = 0;
   private attackHit = false;
   private repath = 0;
+  private sightT = 0;
+  private canSee = false;
   private doorTimer = 0;
   private readonly path = new Int16Array(200);
   private pathLen = 0;
@@ -184,7 +187,12 @@ export class Zombie {
     const dx = ctx.px - this.x;
     const dy = ctx.py - this.y;
     const dist = hyp(dx, dy);
-    const sees = dist <= 20 && hasLineOfSight(ctx.map, this.x, this.y, ctx.px, ctx.py);
+    this.sightT -= dt;
+    if (this.sightT <= 0) {
+      this.sightT = SIGHT_CHECK;
+      this.canSee = dist <= 20 && hasLineOfSight(ctx.map, this.x, this.y, ctx.px, ctx.py);
+    }
+    const sees = this.canSee && dist <= 20;
 
     switch (this.state) {
       case ZState.Idle:

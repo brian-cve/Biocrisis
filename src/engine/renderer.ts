@@ -81,6 +81,8 @@ export class Renderer {
     const rx = cam.dirX + cam.planeX;
     const ry = cam.dirY + cam.planeY;
     const floors = map.floors;
+    const mw = map.width;
+    const mh = map.height;
     for (let y = half + 1; y < h; y++) {
       const rowDist = half / (y - half);
       const stepX = (rowDist * (rx - lx)) / w;
@@ -93,18 +95,24 @@ export class Renderer {
       const rowC = yc * w;
       const by = (y & 3) << 2;
       const byc = (yc & 3) << 2;
+      let lastCell = -2;
+      let flat = floorTex[0];
       for (let x = 0; x < w; x++) {
         const cx = fx | 0;
         const cy = fy | 0;
         const tx = ((fx * TEX_SIZE) | 0) & (TEX_SIZE - 1);
         const ty = ((fy * TEX_SIZE) | 0) & (TEX_SIZE - 1);
         const ti = tx * TEX_SIZE + ty;
-        const ft = floors !== undefined && fx >= 0 && fy >= 0 && cx < map.width && cy < map.height ? floors[cy * map.width + cx] : 0;
+        const cell = fx >= 0 && fy >= 0 && cx < mw && cy < mh ? cy * mw + cx : -1;
+        if (cell !== lastCell) {
+          lastCell = cell;
+          flat = floors !== undefined && cell >= 0 ? floorTex[floors[cell]] : floorTex[0];
+        }
         let lf = (lightBase + BAYER4[(x & 3) + by] * 1.5) | 0;
         if (lf >= LIGHT_LEVELS) lf = LIGHT_LEVELS - 1;
         let lc = (lightBase + 0.8 + BAYER4[(x & 3) + byc] * 1.5) | 0;
         if (lc >= LIGHT_LEVELS) lc = LIGHT_LEVELS - 1;
-        pixels[rowF + x] = SHADE[lf * PALETTE_SIZE + floorTex[ft][ti]];
+        pixels[rowF + x] = SHADE[lf * PALETTE_SIZE + flat[ti]];
         pixels[rowC + x] = SHADE[lc * PALETTE_SIZE + ceilTex[ti]];
         fx += stepX;
         fy += stepY;

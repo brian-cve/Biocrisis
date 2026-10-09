@@ -51,7 +51,7 @@ export class GameScene extends Phaser.Scene {
     this.endTimer = 0;
     this.lockUntil = this.time.now + 300;
     this.fixed = new FixedStep(60);
-    this.world = new World();
+    this.world = new World((Math.random() * 0x7fffffff) | 0);
     this.disposers = [];
 
     if (this.textures.exists(FB)) this.textures.remove(FB);

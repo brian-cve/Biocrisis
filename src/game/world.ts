@@ -108,6 +108,7 @@ export class World {
   dead = false;
   hurtFlash = 0;
   private readonly rng: Rng;
+  private readonly spread = new Float64Array(16);
 
   constructor(seed = 20240601) {
     this.rng = new Rng(seed);
@@ -118,6 +119,8 @@ export class World {
       if (d.boss && r === 'opened') this.startBossFight();
     };
   }
+
+  private readonly rand = (): number => this.rng.next();
 
   get weapon(): Weapon {
     return this.weapons[this.equipped];
@@ -214,7 +217,7 @@ export class World {
     const assist = this.aimAssist > 0 ? findTarget(this.map, this.zombies, p.x, p.y, p.angle, def.range, this.aimAssist) : null;
     if (assist) aim = Math.atan2(assist.target.y - p.y, assist.target.x - p.x);
 
-    const offsets = spreadAngles(def.pellets, def.spread, () => this.rng.next());
+    const offsets = spreadAngles(def.pellets, def.spread, this.rand, this.spread);
     let anyHit = false;
     let killedAny = false;
     let hitZ: Zombie | null = null;
