@@ -8,7 +8,7 @@ export interface AmmoPool {
   shells: number;
 }
 
-export type WeaponId = 'pistol' | 'shotgun';
+export type WeaponId = 'pistol' | 'shotgun' | 'smg';
 
 export interface WeaponDef {
   id: WeaponId;
@@ -34,6 +34,8 @@ export interface WeaponDef {
   perShell: boolean;
   /** Disparar interrumpe la recarga (si queda algo cargado). */
   interruptReload: boolean;
+  /** Fuego automático: dispara mientras se mantiene el botón. */
+  auto: boolean;
 }
 
 /** Factor de daño por distancia: pleno de cerca, decreciente hasta un mínimo (solo escopeta lo usa de verdad). */
@@ -58,6 +60,7 @@ export const PISTOL: WeaponDef = {
   knock: 1.2,
   perShell: false,
   interruptReload: false,
+  auto: false,
 };
 
 /** Escopeta: 7 perdigones de 7 en abanico; letal de cerca, casi inútil a más de ~6 celdas. */
@@ -77,9 +80,30 @@ export const SHOTGUN: WeaponDef = {
   knock: 3.5,
   perShell: true,
   interruptReload: true,
+  auto: false,
 };
 
-export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = { pistol: PISTOL, shotgun: SHOTGUN };
+/** Metralleta: ráfaga continua de balas ligeras (comparte munición con la pistola); poco empuje, mucho ruido. */
+export const SMG: WeaponDef = {
+  id: 'smg',
+  name: 'Metralleta',
+  ammo: 'bullets',
+  magSize: 30,
+  damage: 9,
+  cooldown: 0.085,
+  reloadTime: 1.6,
+  range: 18,
+  stagger: 0.05,
+  noise: 11,
+  pellets: 1,
+  spread: 0,
+  knock: 0.25,
+  perShell: false,
+  interruptReload: false,
+  auto: true,
+};
+
+export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = { pistol: PISTOL, shotgun: SHOTGUN, smg: SMG };
 
 /** Ángulos (relativos al centro) de un abanico de `n` perdigones, repartidos con algo de azar. */
 export function spreadAngles(n: number, spread: number, rand: () => number, out: Float64Array | number[] = []): Float64Array | number[] {

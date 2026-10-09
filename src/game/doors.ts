@@ -1,4 +1,4 @@
-import { CELL_EXIT, GridMap, cellAt, isDoorCell } from '../engine/raycast';
+import { CELL_BOSS_DOOR, CELL_EXIT, GridMap, cellAt, isDoorCell } from '../engine/raycast';
 
 export const DOOR_SPEED = 1.8; // aperturas completas por segundo
 /** La puerta de salida es pesada: tarda ~1 s en ser transitable, el tiempo justo para que se acerque un zombi. */
@@ -10,6 +10,8 @@ export interface Door {
   locked: boolean;
   /** Puerta de salida (más lenta). */
   exit: boolean;
+  /** Puerta de la arena del jefe (cerrada con llave, también lenta). */
+  boss: boolean;
   open: number;
   target: 0 | 1;
 }
@@ -28,7 +30,7 @@ export class Doors {
       for (let x = 0; x < map.width; x++) {
         const c = cellAt(map, x, y);
         if (!isDoorCell(c)) continue;
-        const d: Door = { x, y, locked: c === CELL_EXIT, exit: c === CELL_EXIT, open: 0, target: 0 };
+        const d: Door = { x, y, locked: c === CELL_EXIT || c === CELL_BOSS_DOOR, exit: c === CELL_EXIT, boss: c === CELL_BOSS_DOOR, open: 0, target: 0 };
         this.list.push(d);
         this.byCell.set(y * map.width + x, d);
       }
@@ -68,7 +70,7 @@ export class Doors {
     const arr = this.map.doorOpen!;
     for (const d of this.list) {
       if (d.open === d.target) continue;
-      const step = (d.exit ? EXIT_DOOR_SPEED : DOOR_SPEED) * dt;
+      const step = (d.exit || d.boss ? EXIT_DOOR_SPEED : DOOR_SPEED) * dt;
       d.open = d.target === 1 ? Math.min(1, d.open + step) : Math.max(0, d.open - step);
       arr[d.y * this.map.width + d.x] = d.open;
     }

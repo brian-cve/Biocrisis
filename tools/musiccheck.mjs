@@ -69,7 +69,7 @@ await page.evaluate(() => window.__audio.setVolumes({ musicVolume: 0.7, sfxVolum
 await page.evaluate(() => { const w = window.__bc.world; w.hp = 3; w.hurtPlayer(10); });
 await waitFor('GameOver', 8000); m0 = await mark(); await page.waitForTimeout(6000); await report('G sting game over 6 s', m0);
 m0 = await mark(); await page.waitForTimeout(5000); await report('G tras el sting', m0);
-await page.screenshot({ path: '/private/tmp/claude-501/-Users-brian-Documents-Biocrisis/2ce99662-d3e0-48f8-aab2-d32d9d66a54b/scratchpad/m_end.png' });
+await page.screenshot({ path: './m_end.png' });
 // limpieza: nodos de música deben volver a 0 tras apagar todo
 await page.waitForTimeout(50000); console.log('nodos de música 50 s después de parar:', (await music()).musicNodes, '| voces', await page.evaluate(() => window.__audio.voices));
 console.log(errors.length ? errors : 'consola limpia');

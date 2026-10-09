@@ -66,7 +66,7 @@ Lo que funciona está medido; lo que está flojo, dicho. Ordenado por importanci
 - La fuente es del sistema (monoespaciada); solo el logo tiene tipografía propia.
 
 ## 8. Alcance y deuda técnica
-- Un solo nivel y una sola partida; sin guardado (fuera de alcance por el prompt).
+- Un solo nivel y una sola partida; sin guardado (fuera de alcance del proyecto).
 - `tools/` es un conjunto de scripts útiles pero **no son tests automáticos de CI**: dependen del servidor y de Playwright.
   Convertirlos en una suite E2E con aserciones y `npm run e2e` sería lo siguiente.
 - `GameScene` concentra bastante (render, entrada, fin de partida, ajustes): se podría dividir.

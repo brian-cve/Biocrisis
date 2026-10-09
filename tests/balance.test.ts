@@ -37,7 +37,7 @@ describe('invariantes de balance (docs/BALANCE.md)', () => {
     expect(SHOTGUN.magSize).toBeLessThanOrEqual(6);
   });
   it('hay vida extra para sobrevivir a un par de errores pero no a muchos: 2 tónicos', () => {
-    expect(ITEM_SPAWNS.filter((i) => i.kind === ItemKind.Tonic).length).toBe(2);
+    expect(ITEM_SPAWNS.filter((i) => i.kind === ItemKind.Tonic && i.y < 20).length).toBe(2); // en la casa; la arena del jefe añade otros 2
   });
   it('los zombis son más lentos que el jugador (se puede huir de ellos andando de frente)', async () => {
     const { MOVE_SPEED } = await import('../src/game/player');

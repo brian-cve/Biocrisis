@@ -25,8 +25,10 @@ npm run sim          # simulación de balance con un jugador automático (ver do
 
 ## Cómo se juega
 
-**Objetivo:** encuentra la llave (zona más lejana: el dormitorio), abre la puerta de salida —la ves desde el inicio— y
-cruza. **Aviso:** al coger la llave la casa despierta. La munición no da para matar a todos: elige tus peleas.
+**Objetivo:** encuentra la llave (zona más lejana: el dormitorio) y abre la puerta del recibidor —la ves desde el inicio—.
+**Aviso:** al coger la llave la casa despierta, y al abrir esa puerta despierta algo mucho peor: una gran sala con un jefe, una
+metralleta y munición de sobra. Derrótalo para abrir la salida real, al fondo. Fuera de la arena la munición no da para matar a
+todos: elige tus peleas.
 
 ### Controles (escritorio)
 | Acción | Teclas |
@@ -34,13 +36,13 @@ cruza. **Aviso:** al coger la llave la casa despierta. La munición no da para m
 | Avanzar / retroceder | `W` `↑` / `S` `↓` |
 | Girar | `A` `←` / `D` `→` (o ratón, opción "Giro con ratón") |
 | Strafe | `Q` / `E` |
-| Disparar | `Espacio` o clic |
+| Disparar (la metralleta dispara en ráfaga si mantienes) | `Espacio` o clic |
 | Recargar | `R` |
 | Usar / abrir puerta | `F` |
-| Pistola / escopeta | `1` / `2` (o rueda del ratón) |
+| Pistola / escopeta / metralleta | `1` / `2` / `3` (o rueda del ratón) |
 | Curarse (tónico) | `H` |
 | Inventario | `I` o `Tab` |
-| Pausa | `Esc` |
+| Pausa | `P` |
 
 Mando: stick izquierdo mueve y gira (derecho también gira), A dispara, B usa, X recarga, Y/RB cura, LB cambia de arma, SELECT
 inventario, START pausa. *(Implementado, no probado con un mando físico.)*

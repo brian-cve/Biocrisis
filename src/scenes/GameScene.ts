@@ -4,13 +4,14 @@ import { music } from '../audio/music';
 import { IntensityTracker, worldIntensity } from '../audio/music/intensity';
 import { audio } from '../audio/engine';
 import { Bmp } from '../engine/draw';
-import { WeaponArt, blit, bmpFromTexture, buildPistolArt, buildShotgunArt } from '../engine/overlay';
+import { WeaponArt, blit, bmpFromTexture, buildPistolArt, buildShotgunArt, buildSmgArt } from '../engine/overlay';
 import { Camera } from '../engine/raycast';
 import { SCREEN_H, SCREEN_W, Renderer } from '../engine/renderer';
 import { SpriteBatch, SpriteId, buildSpriteTextures } from '../engine/sprites';
 import { buildFlatTextures, buildWallTextures } from '../engine/textures';
 import { FixedStep } from '../game/fixedStep';
 import { settings } from '../game/settings';
+import { WeaponId } from '../game/weapons';
 import { AIM_ASSIST, HEAL_TIME, SWITCH_LOCK, World } from '../game/world';
 import { GameInput } from '../ui/gameInput';
 import { touchUI } from '../ui/touchUI';
@@ -29,7 +30,7 @@ export class GameScene extends Phaser.Scene {
   world!: World;
   private cam: Camera = { x: 0, y: 0, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66 };
   private rc!: Renderer;
-  private arts!: Record<'pistol' | 'shotgun', WeaponArt>;
+  private arts!: Record<WeaponId, WeaponArt>;
   private tonicBmp!: Bmp;
   private batch = new SpriteBatch();
   private fixed = new FixedStep(60);
@@ -64,7 +65,7 @@ export class GameScene extends Phaser.Scene {
     const flats = buildFlatTextures();
     const sprites = buildSpriteTextures();
     this.tonicBmp = bmpFromTexture(sprites[SpriteId.Tonic]);
-    this.arts = { pistol: buildPistolArt(), shotgun: buildShotgunArt() };
+    this.arts = { pistol: buildPistolArt(), shotgun: buildShotgunArt(), smg: buildSmgArt() };
     this.rc = new Renderer(new Uint32Array(this.image.data.buffer), buildWallTextures(), flats.floors, flats.ceiling, sprites);
     this.add.image(0, 0, FB).setOrigin(0, 0);
 
@@ -90,6 +91,12 @@ export class GameScene extends Phaser.Scene {
     music.play('explore');
 
     this.events.on('resume', this.onResume, this);
+    // con el ratón capturado, el navegador gasta el primer Esc en soltarlo y no entrega la tecla: se trata como pausa
+    const onLockChange = () => {
+      if (!document.pointerLockElement && this.scene.isActive() && !this.world.dead && !this.world.won && !this.ending && this.time.now >= this.lockUntil) this.openPause();
+    };
+    document.addEventListener('pointerlockchange', onLockChange);
+    this.disposers.push(() => document.removeEventListener('pointerlockchange', onLockChange));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.dispose());
     if (import.meta.env.DEV) {
       (window as unknown as { __bc: GameScene }).__bc = this;
@@ -153,11 +160,12 @@ export class GameScene extends Phaser.Scene {
       if (gi.pressed('inventory')) return this.openInventory();
     }
     if (canAct) {
-      if (gi.pressed('fire')) w.fire();
+      if (w.weapon.def.auto ? gi.held('fire') : gi.pressed('fire')) w.fire();
       if (gi.pressed('reload')) w.reload();
       if (gi.pressed('interact')) w.interact();
       if (gi.pressed('weapon1')) w.switchTo('pistol');
       if (gi.pressed('weapon2')) w.switchTo('shotgun');
+      if (gi.pressed('weapon3')) w.switchTo('smg');
       if (gi.pressed('cycleWeapon')) w.cycleWeapon();
       if (gi.pressed('heal')) w.useTonic();
     }
@@ -194,6 +202,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private openPause(): void {
+    if (document.pointerLockElement) document.exitPointerLock();
     audio.setDucked(true);
     this.scene.launch('Pause');
     this.scene.pause();

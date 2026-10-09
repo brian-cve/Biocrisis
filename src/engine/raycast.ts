@@ -13,9 +13,11 @@ export interface GridMap {
 
 export const CELL_DOOR = 4;
 export const CELL_EXIT = 5;
+/** Puerta de la arena del jefe: pide la llave y, al abrirse, despierta al jefe. */
+export const CELL_BOSS_DOOR = 6;
 
 export function isDoorCell(cell: number): boolean {
-  return cell === CELL_DOOR || cell === CELL_EXIT;
+  return cell === CELL_DOOR || cell === CELL_EXIT || cell === CELL_BOSS_DOOR;
 }
 
 export interface Camera {

@@ -12,7 +12,7 @@ const GROUP_COLOR = { move: 0x3f6b4c, combat: 0x7a2824, use: 0x806b40, none: 0x1
 function groupOf(keyName: string): keyof typeof GROUP_COLOR {
   const acts = actionsForKey(keyName).map((b) => b.action);
   if (acts.length === 0) return 'none';
-  if (acts.some((a) => ['fire', 'reload', 'weapon1', 'weapon2', 'cycleWeapon'].includes(a))) return 'combat';
+  if (acts.some((a) => ['fire', 'reload', 'weapon1', 'weapon2', 'weapon3', 'cycleWeapon'].includes(a))) return 'combat';
   if (acts.some((a) => ['forward', 'back', 'turnLeft', 'turnRight', 'strafeLeft', 'strafeRight'].includes(a))) return 'move';
   return 'use';
 }
@@ -126,8 +126,8 @@ export class ControlsScene extends Phaser.Scene {
 
     // teclado en miniatura con la distribución real; las teclas usadas se colorean por tipo de acción
     const rows: { y: number; x: number; keys: [string, string, number][] }[] = [
-      { y: 28, x: 10, keys: [['ESC', 'Esc', 18], ['ONE', '1', 13], ['TWO', '2', 13]] },
-      { y: 43, x: 10, keys: [['TAB', 'Tab', 20], ['Q', 'Q', 13], ['W', 'W', 13], ['E', 'E', 13], ['R', 'R', 13], ['T', 'T', 13], ['Y', 'Y', 13], ['U', 'U', 13], ['I', 'I', 13]] },
+      { y: 28, x: 10, keys: [['ESC', 'Esc', 18], ['ONE', '1', 13], ['TWO', '2', 13], ['THREE', '3', 13]] },
+      { y: 43, x: 10, keys: [['TAB', 'Tab', 20], ['Q', 'Q', 13], ['W', 'W', 13], ['E', 'E', 13], ['R', 'R', 13], ['T', 'T', 13], ['Y', 'Y', 13], ['U', 'U', 13], ['I', 'I', 13], ['O', 'O', 13], ['P', 'P', 13]] },
       { y: 58, x: 16, keys: [['A', 'A', 13], ['S', 'S', 13], ['D', 'D', 13], ['F', 'F', 13], ['G', 'G', 13], ['H', 'H', 13]] },
       { y: 73, x: 22, keys: [['SPACE', 'ESPACIO', 80]] },
     ];

@@ -7,6 +7,7 @@ export class PauseScene extends Phaser.Scene {
   private menu!: MenuList;
   private title!: Phaser.GameObjects.Text;
   private confirming = false;
+  private pKey!: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super('Pause');
@@ -14,6 +15,7 @@ export class PauseScene extends Phaser.Scene {
 
   create(): void {
     this.confirming = false;
+    this.pKey = this.input.keyboard!.addKey('P');
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x050706, 0.78).setOrigin(0, 0).setInteractive();
     this.title = this.add.text(SCREEN_W / 2, 34, 'PAUSA', { fontFamily: 'monospace', fontSize: '14px', color: '#9ab49c' }).setOrigin(0.5, 0);
     this.showMain();
@@ -55,6 +57,8 @@ export class PauseScene extends Phaser.Scene {
   }
 
   update(_t: number, delta: number): void {
+    // P también reanuda (misma tecla que abre la pausa)
+    if (this.menu.enabled && !this.confirming && Phaser.Input.Keyboard.JustDown(this.pKey)) return this.resume();
     this.menu.update(delta / 1000);
   }
 

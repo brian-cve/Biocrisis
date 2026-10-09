@@ -33,25 +33,63 @@ describe('objetos, llave y puerta de salida', () => {
     expect(w.tonics).toBe(1);
   });
 
-  it('sin llave la puerta de salida no cede', () => {
+  it('sin llave la puerta de la arena no cede', () => {
     const w = new World();
-    w.player.x = 1.6;
-    w.player.y = 15.5;
-    w.player.angle = Math.PI;
+    w.player.x = 3.5;
+    w.player.y = 18.5;
+    w.player.angle = Math.PI / 2;
     w.interact();
     expect(w.message).toBe('Necesitas una llave');
     runFor(w, 2);
-    expect(w.map.doorOpen![15 * 20 + 0]).toBe(0);
+    expect(w.map.doorOpen![19 * 20 + 3]).toBe(0);
+    expect(w.boss).toBeNull();
   });
 
-  it('con la llave se puede salir y ganar', () => {
+  it('con la llave la puerta cede y el jefe despierta en la arena', () => {
+    const w = new World();
+    for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
+    w.inventory.add(InvItem.Key);
+    w.player.x = 3.5;
+    w.player.y = 18.5;
+    w.player.angle = Math.PI / 2;
+    const events: string[] = [];
+    w.onEvent = (e) => events.push(e);
+    w.interact();
+    expect(w.boss).not.toBeNull();
+    expect(events).toContain('bossWake');
+    expect(w.zombies).toContain(w.boss!);
+    expect(w.boss!.y).toBeGreaterThan(20);
+    runFor(w, 1);
+    expect(w.map.doorOpen![19 * 20 + 3]).toBeGreaterThan(0.5);
+    expect(w.won).toBe(false);
+  });
+
+  it('abrir la puerta dos veces no crea dos jefes', () => {
     const w = new World();
     w.inventory.add(InvItem.Key);
-    w.player.x = 1.6;
-    w.player.y = 15.5;
-    w.player.angle = Math.PI;
+    w.doors.unlock(3, 19);
+    w.doors.use(3, 19);
+    w.doors.use(3, 19);
+    w.doors.use(3, 19);
+    expect(w.zombies.filter((z) => z.def.boss).length).toBe(1);
+  });
+
+  it('vencer al jefe desbloquea la salida real, y cruzarla gana', () => {
+    const w = new World();
+    for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
+    w.inventory.add(InvItem.Key);
+    w.doors.unlock(3, 19);
+    w.doors.use(3, 19);
+    w.player.x = 9.5;
+    w.player.y = 33.2;
+    w.player.angle = Math.PI / 2;
     w.interact();
-    runFor(w, 1.5); // se abre
+    expect(w.message).toBe('La salida está sellada');
+    w.boss!.hurt(1e9, 0, 1, 0);
+    runFor(w, 0.1);
+    expect(w.bossDefeated).toBe(true);
+    w.interact();
+    runFor(w, 1.5);
     expect(w.won).toBe(false);
     runFor(w, 1.5, { forward: 1, strafe: 0, turn: 0 });
     expect(w.won).toBe(true);

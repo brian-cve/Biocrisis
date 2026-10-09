@@ -15,6 +15,7 @@ export class GameAudio {
   private lastY: number;
   private heart = 0;
   private drip = 6;
+  private lastHit = 0;
   private readonly groan: number[];
   private readonly prev: ZState[];
 
@@ -36,13 +37,20 @@ export class GameAudio {
   private onEvent(e: WorldEvent, x?: number, y?: number): void {
     const w = this.world;
     switch (e) {
-      case 'shot': sfx.pistol(); break;
+      case 'shot': if (w.equipped === 'smg') sfx.smg(); else sfx.pistol(); break;
+      case 'bossWake': sfx.bossRoar(this.sp(x, y)); break;
+      case 'bossDead': sfx.bossDie(this.sp(x, y)); break;
       case 'shotgunShot': sfx.shotgun(); sfx.pump(0.55); break;
       case 'dry': sfx.dry(); break;
-      case 'reloadStart': if (w.equipped === 'pistol') sfx.reload(); break;
+      case 'reloadStart': if (w.equipped !== 'shotgun') sfx.reload(); break;
       case 'shell': sfx.shell(); break;
       case 'switch': sfx.switchWeapon(); break;
-      case 'zombieHit': sfx.zombieHit(this.sp(x, y)); break;
+      case 'zombieHit': {
+        const now = performance.now();
+        if (now - this.lastHit > 110) sfx.zombieHit(this.sp(x, y)); // las ráfagas no saturan las voces
+        this.lastHit = now;
+        break;
+      }
       case 'zombieKill': sfx.zombieDie(this.sp(x, y)); break;
       case 'playerHurt': sfx.playerHurt(); break;
       case 'playerDead': sfx.playerDead(); break;
@@ -75,8 +83,14 @@ export class GameAudio {
     w.zombies.forEach((z, i) => {
       const sp = this.sp(z.x, z.y);
       const runner = z.def.name === 'Corredor';
+      const boss = z.def.boss === true;
+      // el jefe aparece a mitad de partida: sus temporizadores se crean al verlo por primera vez
+      if (this.groan[i] === undefined) {
+        this.groan[i] = 2 + Math.random() * 2;
+        this.prev[i] = z.state;
+      }
       if (z.state !== this.prev[i]) {
-        if (z.state === ZState.Alert) sfx.groan(sp, runner);
+        if (z.state === ZState.Alert) { if (!boss) sfx.groan(sp, runner); }
         else if (z.state === ZState.Attack) sfx.zombieAttack(sp);
         this.prev[i] = z.state;
       }
@@ -84,7 +98,7 @@ export class GameAudio {
       this.groan[i] -= dt;
       if (this.groan[i] <= 0) {
         const active = z.state === ZState.Chase || z.state === ZState.Attack;
-        if (active || sp.gain > 0.05) sfx.groan(sp, runner);
+        if (active || sp.gain > 0.05) sfx.groan(sp, runner, boss);
         this.groan[i] = active ? 2.5 + Math.random() * 2.5 : 9 + Math.random() * 10;
       }
     });

@@ -9,8 +9,9 @@ export const enum Wall {
   Brick = 3,
   Door = 4,
   LockedDoor = 5,
+  BossDoor = 6,
 }
-export const WALL_TEXTURE_COUNT = 6;
+export const WALL_TEXTURE_COUNT = 7;
 
 /** Textura de índices de paleta, almacenada por columnas: idx = texX * 64 + texY. */
 export type Texture = Uint8Array;
@@ -132,6 +133,7 @@ export function buildWallTextures(seed = 1337): Texture[] {
   out[Wall.Brick] = brick();
   out[Wall.Door] = door();
   out[Wall.LockedDoor] = lockedDoor();
+  out[Wall.BossDoor] = lockedDoor();
   return out;
 }
 

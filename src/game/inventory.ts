@@ -5,6 +5,7 @@ export const enum InvItem {
   Shotgun = 1,
   Tonic = 2,
   Key = 3,
+  Smg = 4,
 }
 
 export const INVENTORY_SLOTS = 8;
@@ -30,6 +31,12 @@ export const ITEM_INFO: Record<InvItem, InvItemInfo> = {
     name: 'Escopeta',
     action: 'EQUIPAR',
     description: 'Escopeta de bombeo. Devastadora a corta distancia, casi inútil de lejos. Los cartuchos escasean.',
+    key: false,
+  },
+  [InvItem.Smg]: {
+    name: 'Metralleta',
+    action: 'EQUIPAR',
+    description: 'Metralleta compacta de fuego automático. Mantén el disparo para barrer: gasta las balas de la pistola muy deprisa.',
     key: false,
   },
   [InvItem.Tonic]: {

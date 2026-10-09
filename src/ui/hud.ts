@@ -4,9 +4,23 @@ import { InvItem } from '../game/inventory';
 import { MAX_HP, World } from '../game/world';
 import { CELL_EXIT, isDoorCell } from '../engine/raycast';
 import { iconKey, registerIcons } from './icons';
+import { Action } from '../game/controls';
+import { WeaponId } from '../game/weapons';
+
+/** Acciones principales de la barra superior (sin movimiento), con etiqueta corta. */
+const HINTS: readonly [Action, string, string][] = [
+  ['fire', 'ESP', 'Disparar'],
+  ['interact', 'F', 'Usar'],
+  ['reload', 'R', 'Recargar'],
+  ['heal', 'H', 'Curar'],
+  ['inventory', 'I', 'Inventario'],
+  ['pause', 'P', 'Pausa'],
+];
 
 const FONT = 'monospace';
 const BAR_W = 70;
+const BOSS_BAR_W = 140;
+const WEAPON_ICON: Record<WeaponId, InvItem> = { pistol: InvItem.Pistol, shotgun: InvItem.Shotgun, smg: InvItem.Smg };
 
 /** HUD del juego: vida, arma y munición, tónicos, llave, mensajes, mira y minimapa opcional. */
 export class Hud {
@@ -23,12 +37,16 @@ export class Hud {
   private cross: Phaser.GameObjects.Graphics;
   private mini: Phaser.GameObjects.Graphics;
   private vignette: Phaser.GameObjects.Rectangle;
+  private bossBack: Phaser.GameObjects.Rectangle;
+  private bossBar: Phaser.GameObjects.Rectangle;
+  private bossName: Phaser.GameObjects.Text;
   private t = 0;
   minimap = false;
 
   constructor(scene: Phaser.Scene) {
     registerIcons(scene.textures);
     const y0 = SCREEN_H - 24;
+    this.buildHints(scene);
     this.vignette = scene.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x8a0000, 0).setOrigin(0, 0).setDepth(5);
     scene.add.rectangle(0, y0, SCREEN_W, 24, 0x050706, 0.62).setOrigin(0, 0).setDepth(10);
     scene.add.text(6, y0 + 3, 'VIDA', { fontFamily: FONT, fontSize: '8px', color: '#56705f' }).setDepth(11);
@@ -39,7 +57,7 @@ export class Hud {
     this.tonicIcon = scene.add.image(122, y0 + 4, iconKey(InvItem.Tonic)).setOrigin(0, 0).setScale(0.6).setDepth(11);
     this.tonicText = scene.add.text(142, y0 + 10, '', { fontFamily: FONT, fontSize: '10px', color: '#9ab49c' }).setDepth(11);
     this.keyIcon = scene.add.image(168, y0 + 4, iconKey(InvItem.Key)).setOrigin(0, 0).setScale(0.6).setDepth(11).setVisible(false);
-    this.weaponIcon = scene.add.image(SCREEN_W - 98, y0 + 2, iconKey(InvItem.Pistol)).setOrigin(0, 0).setScale(0.75).setDepth(11);
+    this.weaponIcon = scene.add.image(SCREEN_W - 118, y0 + 2, iconKey(InvItem.Pistol)).setOrigin(0, 0).setScale(0.75).setDepth(11);
     this.ammoText = scene.add.text(SCREEN_W - 6, y0 + 3, '', { fontFamily: FONT, fontSize: '12px', color: '#c4c4be' }).setOrigin(1, 0).setDepth(11);
     this.ammoSub = scene.add.text(SCREEN_W - 6, y0 + 15, '', { fontFamily: FONT, fontSize: '8px', color: '#56705f' }).setOrigin(1, 0).setDepth(11);
     this.message = scene.add.text(SCREEN_W / 2, y0 - 14, '', { fontFamily: FONT, fontSize: '10px', color: '#c4c4be', stroke: '#050706', strokeThickness: 3 }).setOrigin(0.5, 0).setDepth(11);
@@ -50,6 +68,28 @@ export class Hud {
     this.cross.lineBetween(SCREEN_W / 2, SCREEN_H / 2 - 4, SCREEN_W / 2, SCREEN_H / 2 - 1);
     this.cross.lineBetween(SCREEN_W / 2, SCREEN_H / 2 + 2, SCREEN_W / 2, SCREEN_H / 2 + 5);
     this.mini = scene.add.graphics().setDepth(11);
+    // barra de vida del jefe (solo durante el combate)
+    this.bossBack = scene.add.rectangle(SCREEN_W / 2, 24, BOSS_BAR_W + 2, 7, 0x16201c).setStrokeStyle(1, 0x7a2824).setDepth(11).setVisible(false);
+    this.bossBar = scene.add.rectangle(SCREEN_W / 2 - BOSS_BAR_W / 2, 24, BOSS_BAR_W, 5, 0xb02a24).setOrigin(0, 0.5).setDepth(12).setVisible(false);
+    this.bossName = scene.add.text(SCREEN_W / 2, 14, '', { fontFamily: FONT, fontSize: '7px', color: '#d05048', stroke: '#050706', strokeThickness: 2 }).setOrigin(0.5, 0).setDepth(12).setVisible(false);
+  }
+
+  /** Barra superior con los botones de acción principales (tecla resaltada + nombre). */
+  private buildHints(scene: Phaser.Scene): void {
+    scene.add.rectangle(0, 0, SCREEN_W, 11, 0x050706, 0.55).setOrigin(0, 0).setDepth(10);
+    const style = { fontFamily: FONT, fontSize: '7px' };
+    const items = HINTS.map(([, k, label]) => ({
+      key: scene.add.text(0, 2, k, { ...style, color: '#c4b040' }).setDepth(11),
+      label: scene.add.text(0, 2, label, { ...style, color: '#9ab49c' }).setDepth(11),
+    }));
+    const gap = 8;
+    const total = items.reduce((n, it) => n + it.key.width + 2 + it.label.width, 0) + gap * (items.length - 1);
+    let x = Math.round((SCREEN_W - total) / 2);
+    for (const it of items) {
+      it.key.setX(x);
+      it.label.setX(x + it.key.width + 2);
+      x += it.key.width + 2 + it.label.width + gap;
+    }
   }
 
   update(w: World, dt: number): void {
@@ -72,11 +112,22 @@ export class Hud {
     this.keyIcon.setVisible(w.hasKey);
 
     const wp = w.weapon;
-    this.weaponIcon.setTexture(iconKey(w.equipped === 'pistol' ? InvItem.Pistol : InvItem.Shotgun));
+    this.weaponIcon.setTexture(iconKey(WEAPON_ICON[w.equipped]));
     const reserve = wp.def.ammo === 'bullets' ? w.ammo.bullets : w.ammo.shells;
     this.ammoText.setText(wp.reloading ? '...' : `${wp.mag}`);
     this.ammoText.setColor(wp.mag === 0 && !wp.reloading ? '#d05048' : '#c4c4be');
     this.ammoSub.setText(`${wp.def.name}  /${reserve}`);
+
+    const b = w.boss;
+    const showBoss = b !== null && !b.dead;
+    this.bossBack.setVisible(showBoss);
+    this.bossBar.setVisible(showBoss);
+    this.bossName.setVisible(showBoss);
+    if (showBoss) {
+      this.bossBar.width = Math.max(1, Math.round(BOSS_BAR_W * (b.hp / b.maxHp)));
+      this.bossBar.setFillStyle(b.enraged ? 0xe04a30 : 0xb02a24);
+      this.bossName.setText(b.enraged ? `${b.def.name.toUpperCase()} - ENFURECIDA` : b.def.name.toUpperCase());
+    }
 
     this.message.setText(w.messageTime > 0 ? w.message : '');
     this.message.setAlpha(Math.min(1, w.messageTime * 2));
@@ -92,7 +143,7 @@ export class Hud {
   private drawMinimap(w: World): void {
     const s = 3;
     const x0 = SCREEN_W - w.map.width * s - 6;
-    const y0 = 6;
+    const y0 = 16;
     const g = this.mini;
     g.fillStyle(0x050706, 0.55);
     g.fillRect(x0 - 2, y0 - 2, w.map.width * s + 4, w.map.height * s + 4);

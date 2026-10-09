@@ -101,6 +101,51 @@ export function buildShotgunArt(): WeaponArt {
   return { idle: shotgunBody(0, 0), recoil: shotgunBody(3, 0), pump: shotgunBody(0, 7), flash: bigFlash(), flashDx: 4, flashDy: -18 };
 }
 
+function smgBody(back: number): Bmp {
+  const b = new Bmp(40, 46);
+  const cx = 20;
+  // manga y mano trasera
+  b.rect(cx - 11, 37 + back, 22, 9, 3);
+  b.rect(cx - 11, 37 + back, 22, 1, 5);
+  b.rect(cx - 8, 30 + back, 16, 8, 13);
+  b.rect(cx - 8, 30 + back, 16, 1, 14);
+  // cargador largo bajo el cuerpo
+  b.rect(cx - 2, 28 + back, 5, 10, 23);
+  b.rect(cx - 2, 28 + back, 5, 1, 25);
+  // cuerpo: se estrecha hacia el frente
+  for (let y = 6; y < 30; y++) {
+    const half = 4 + Math.floor((y - 6) / 12);
+    b.rect(cx - half, y + back, half * 2 + 1, 1, y < 9 ? 27 : 22);
+    b.px(cx - half, y + back, 25);
+    b.px(cx + half, y + back, 23);
+  }
+  b.rect(cx - 1, 6 + back, 3, 23, 23); // riel superior
+  b.rect(cx - 3, 3 + back, 7, 4, 24); // cubrellamas
+  b.rect(cx - 3, 3 + back, 7, 1, 27);
+  b.px(cx - 1, 4 + back, 0);
+  b.px(cx + 1, 4 + back, 0);
+  b.rect(cx, 0 + back, 1, 4, 27); // punto de mira
+  b.rect(cx - 5, 18 + back, 2, 4, 27); // alza
+  b.rect(cx + 4, 18 + back, 2, 4, 27);
+  b.rect(cx - 8, 14 + back, 3, 6, 14); // mano delantera
+  return b.outline(0);
+}
+
+function smgFlash(): Bmp {
+  const b = new Bmp(20, 18);
+  b.disc(10, 11, 6, 30);
+  b.disc(10, 11, 4, 31);
+  b.disc(10, 11, 2, 27);
+  b.line(10, 11, 10, 0, 31);
+  b.line(10, 11, 2, 3, 30);
+  b.line(10, 11, 18, 3, 30);
+  return b;
+}
+
+export function buildSmgArt(): WeaponArt {
+  return { idle: smgBody(0), recoil: smgBody(2), flash: smgFlash(), flashDx: 10, flashDy: -14 };
+}
+
 /** Copia un índice de textura de sprite (32×32, por columnas) a un Bmp para dibujarlo como overlay. */
 export function bmpFromTexture(tex: Uint8Array, size = 32): Bmp {
   const b = new Bmp(size, size);

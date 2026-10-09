@@ -19,12 +19,12 @@ describe('controles (fuente única)', () => {
   });
   it('todas las acciones de juego son alcanzables en móvil salvo strafe y armas directas', () => {
     const noTouch = CONTROLS.filter((c) => c.touch === null).map((c) => c.action).sort();
-    expect(noTouch).toEqual(['strafeLeft', 'strafeRight', 'weapon1', 'weapon2']);
+    expect(noTouch).toEqual(['strafeLeft', 'strafeRight', 'weapon1', 'weapon2', 'weapon3']);
   });
   it('un cambio de tecla se refleja en las consultas derivadas', () => {
     expect(actionsForKey('H')[0].action).toBe('heal');
     expect(allKeyNames()).toContain('TAB');
-    expect(bindingFor('pause').keys).toEqual(['ESC']);
+    expect(bindingFor('pause').keys).toEqual(['P']);
     expect(touchLabel('A')).toBe('Disparar');
   });
 });

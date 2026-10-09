@@ -99,6 +99,9 @@ export class GameInput {
       if (held) this.heldSet.add(b.action);
       if (pressed) this.pressedSet.add(b.action);
     }
+    // ratón mantenido: fuego automático (no cuenta el clic que captura el puntero)
+    const ptr = this.scene.input.activePointer;
+    if (ptr.isDown && !(ptr.wasTouch && this.touchActive) && (!this.mouseLook || this.scene.input.mouse?.locked)) this.heldSet.add('fire');
     if (this.queued.size > 0) {
       this.queued.forEach((q) => this.pressedSet.add(q));
       this.queued.clear();

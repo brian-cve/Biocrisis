@@ -21,7 +21,7 @@ Registro de decisiones técnicas: decisión, alternativas descartadas, motivo.
 ## D-004 Puertas
 - **Modelo:** la puerta ocupa una celda y su panel desliza hacia +wallX; el DDA deja pasar el rayo si `wallX < apertura`.
   Sin geometría extra y sin asignaciones. Es sólida hasta apertura ≥ 0.8.
-- **Interacción:** tecla `F`. El prompt asigna `E` tanto a strafe como a "usar"; se resuelve dejando `E` para strafe
+- **Interacción:** tecla `F`. El diseño inicial asignaba `E` tanto a strafe como a "usar"; se resuelve dejando `E` para strafe
   (Q/E) y `F` para interactuar. En móvil será el botón B.
 - **Cierre:** no se puede cerrar una puerta con alguien dentro de su celda.
 - La puerta de salida empieza bloqueada; la llave llega en H3.
@@ -121,7 +121,7 @@ Registro de decisiones técnicas: decisión, alternativas descartadas, motivo.
   semántica en escritorio, mando y táctil. El **giro con ratón** (Pointer Lock) existe como opción (apagada).
 - **Una sola tabla** (`game/controls.ts`) alimenta el input, la pantalla de Controles y el overlay móvil; hay tests de que
   cada botón táctil tiene su acción (B = recargar/usar contextual, L = cambiar arma, R = curarse).
-- **`E` = strafe, `F` = usar:** el prompt asigna `E` a ambas; se resolvió así (ver D-004).
+- **`E` = strafe, `F` = usar:** el diseño inicial asignaba `E` a ambas; se resolvió así (ver D-004).
 - **Mando:** stick izquierdo mueve/gira, derecho gira, A dispara, B usa, X recarga, Y/RB cura, LB cambia arma, SELECT
   inventario, START pausa. *Implementado pero no probado con un mando físico* (no disponible aquí).
 
@@ -252,3 +252,14 @@ Ver `docs/BALANCE.md` para cifras y barridos. Decisiones de diseño que salieron
   (Graphics/`emit`) más un resto de boxing menor en `castHit`. No supera el presupuesto: el coste por frame sigue en ~1–3 ms.
   Honestamente: el requisito "sin asignaciones en el bucle caliente" se cumple en el *render* (z-buffer, sprites, suelos) pero
   **no al 100 %** en el juego completo.
+
+## Jefe final y arena (ampliación)
+- La puerta del recibidor (3,19) (`CELL_BOSS_DOOR`, id 6) pide la llave y da a una arena de 18×14 (filas 20-34) con columnas de
+  cobertura. El mapa pasa de 20×20 a 20×35; la salida real (9,34) queda sellada hasta vencer al jefe.
+- Abrir esa puerta crea al jefe (`World.startBossFight`, aparece en `BOSS_SPAWN`): se añade a `world.zombies` en ese momento, así
+  que la casa sin abrir sigue teniendo exactamente 6 zombis (balance y tests intactos).
+- Jefe (`BOSS`): 650 PV, velocidad 1.15 (se enfurece bajo el 50 %: ×1.45 velocidad y recuperación más corta; sigue siendo más
+  lento que el jugador, `MOVE_SPEED = 2.1`), 32 de daño, `poise` 0.12 (apenas se aturde/empuja) y nunca pierde el rastro.
+- Metralleta (`SMG`, tecla `3`, fuego automático al mantener, comparte balas con la pistola): 30 de cargador, 9 de daño.
+  Se recoge en la arena junto a la puerta. 6 cajas de 40 balas y 2 de 8 cartuchos + 2 tónicos repartidos por la arena.
+- `tools/bot.ts` aún asume la salida antigua (0,15): no sabe pelear contra el jefe.

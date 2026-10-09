@@ -18,10 +18,10 @@ stateDiagram-v2
     Intro --> Game: ya vistos / tras saltarla
     Controls --> Game: CONTINUAR (solo en la 1ª vez)
 
-    Game --> Pause: Esc / START (overlay)
+    Game --> Pause: P / START (overlay)
     Game --> Inventory: I / Tab / SELECT (overlay, mundo en pausa)
     Inventory --> Game: Esc / I / Tab / B
-    Pause --> Game: REANUDAR / Esc
+    Pause --> Game: REANUDAR / P / Esc
     Pause --> Controls: CONTROLES (overlay sobre la pausa)
     Pause --> Options: OPCIONES (overlay sobre la pausa)
     Controls --> Pause: VOLVER

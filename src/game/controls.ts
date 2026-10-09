@@ -15,6 +15,7 @@ export type Action =
   | 'interact'
   | 'weapon1'
   | 'weapon2'
+  | 'weapon3'
   | 'cycleWeapon'
   | 'heal'
   | 'inventory'
@@ -54,10 +55,11 @@ export const CONTROLS: readonly Binding[] = [
   { action: 'interact', label: 'Usar / abrir', keys: ['F'], keyLabels: ['F'], pad: 'B', padButton: 1, touch: 'B', touchShared: true },
   { action: 'weapon1', label: 'Pistola', keys: ['ONE'], keyLabels: ['1'], pad: null, padButton: null, touch: null },
   { action: 'weapon2', label: 'Escopeta', keys: ['TWO'], keyLabels: ['2'], pad: null, padButton: null, touch: null },
+  { action: 'weapon3', label: 'Metralleta', keys: ['THREE'], keyLabels: ['3'], pad: null, padButton: null, touch: null },
   { action: 'cycleWeapon', label: 'Cambiar arma', keys: [], keyLabels: ['Rueda'], pad: 'LB', padButton: 4, touch: 'L' },
   { action: 'heal', label: 'Curarse (tónico)', keys: ['H'], keyLabels: ['H'], pad: 'Y / RB', padButton: 3, touch: 'R' },
   { action: 'inventory', label: 'Inventario', keys: ['I', 'TAB'], keyLabels: ['I', 'TAB'], pad: 'SELECT', padButton: 8, touch: 'SELECT' },
-  { action: 'pause', label: 'Pausa', keys: ['ESC'], keyLabels: ['ESC'], pad: 'START', padButton: 9, touch: 'START' },
+  { action: 'pause', label: 'Pausa', keys: ['P'], keyLabels: ['P'], pad: 'START', padButton: 9, touch: 'START' },
 ];
 
 export function bindingFor(action: Action): Binding {

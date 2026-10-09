@@ -151,8 +151,9 @@ export class InventoryScene extends Phaser.Scene {
     const w = this.world;
     switch (item) {
       case InvItem.Pistol:
-      case InvItem.Shotgun: {
-        const id = item === InvItem.Pistol ? 'pistol' : 'shotgun';
+      case InvItem.Shotgun:
+      case InvItem.Smg: {
+        const id = item === InvItem.Pistol ? 'pistol' : item === InvItem.Shotgun ? 'shotgun' : 'smg';
         if (w.equipped === id) this.status = `${ITEM_INFO[item].name} ya equipada`;
         else this.status = w.switchTo(id) ? `${ITEM_INFO[item].name} equipada` : 'No se puede equipar ahora';
         break;
@@ -185,7 +186,7 @@ export class InventoryScene extends Phaser.Scene {
         this.slotTag[i].setText('');
       } else {
         icon.setTexture(iconKey(item)).setVisible(true);
-        const equipped = (item === InvItem.Pistol && w.equipped === 'pistol') || (item === InvItem.Shotgun && w.equipped === 'shotgun');
+        const equipped = (item === InvItem.Pistol && w.equipped === 'pistol') || (item === InvItem.Shotgun && w.equipped === 'shotgun') || (item === InvItem.Smg && w.equipped === 'smg');
         this.slotTag[i].setText(equipped ? 'E' : '');
       }
     }
@@ -206,6 +207,7 @@ export class InventoryScene extends Phaser.Scene {
       this.descText.setText(info.description);
       if (sel === InvItem.Pistol) this.ammoText.setText(`Cargador ${w.weapons.pistol.mag}/${w.weapons.pistol.def.magSize}\nBalas ${w.ammo.bullets}${w.equipped === 'pistol' ? '\nEQUIPADA' : ''}`);
       else if (sel === InvItem.Shotgun) this.ammoText.setText(`Cargador ${w.weapons.shotgun.mag}/${w.weapons.shotgun.def.magSize}\nCartuchos ${w.ammo.shells}${w.equipped === 'shotgun' ? '\nEQUIPADA' : ''}`);
+      else if (sel === InvItem.Smg) this.ammoText.setText(`Cargador ${w.weapons.smg.mag}/${w.weapons.smg.def.magSize}\nBalas ${w.ammo.bullets}${w.equipped === 'smg' ? '\nEQUIPADA' : ''}`);
       else if (sel === InvItem.Tonic) this.ammoText.setText(`Unidades: ${inv.count(InvItem.Tonic)}`);
       else this.ammoText.setText('Objeto clave');
     }

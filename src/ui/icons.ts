@@ -6,6 +6,7 @@ import { InvItem } from '../game/inventory';
 const ICON_SPRITE: Record<InvItem, number> = {
   [InvItem.Pistol]: PISTOL_ICON,
   [InvItem.Shotgun]: SpriteId.Shotgun,
+  [InvItem.Smg]: SpriteId.Smg,
   [InvItem.Tonic]: SpriteId.Tonic,
   [InvItem.Key]: SpriteId.Key,
 };
@@ -17,7 +18,7 @@ export function iconKey(item: InvItem): string {
 /** Convierte los sprites procedurales a texturas de Phaser para los menús (idempotente). */
 export function registerIcons(textures: Phaser.Textures.TextureManager): void {
   const sprites = buildSpriteTextures();
-  for (const item of [InvItem.Pistol, InvItem.Shotgun, InvItem.Tonic, InvItem.Key]) {
+  for (const item of [InvItem.Pistol, InvItem.Shotgun, InvItem.Smg, InvItem.Tonic, InvItem.Key]) {
     const key = iconKey(item);
     if (textures.exists(key)) continue;
     const tex = textures.createCanvas(key, SPR_SIZE, SPR_SIZE)!;

@@ -2,12 +2,12 @@ import { CELL_EXIT, GridMap } from '../engine/raycast';
 import { SpriteBatch, SpriteId } from '../engine/sprites';
 import { Doors } from './doors';
 import { INVENTORY_SLOTS, InvItem, Inventory } from './inventory';
-import { DECOR_SPAWNS, ITEM_SPAWNS, ItemKind, START, ZOMBIE_SPAWNS, createHouse } from './map';
+import { BOSS_SPAWN, DECOR_SPAWNS, FINAL_EXIT, ITEM_SPAWNS, ItemKind, START, ZOMBIE_SPAWNS, createHouse } from './map';
 import { Pathfinder } from './pathfinding';
 import { MoveInput, Player } from './player';
 import { Rng } from '../engine/rng';
-import { AmmoPool, PISTOL, SHOTGUN, Weapon, WeaponId, falloff, findTarget, spreadAngles } from './weapons';
-import { RUNNER, WALKER, ZContext, Zombie } from './zombie';
+import { AmmoPool, PISTOL, SHOTGUN, SMG, Weapon, WeaponId, falloff, findTarget, spreadAngles } from './weapons';
+import { BOSS, RUNNER, WALKER, ZContext, Zombie } from './zombie';
 
 export const PICKUP_RADIUS = 0.55;
 const MESSAGE_SECONDS = 2.5;
@@ -29,6 +29,13 @@ export const BOX_BULLETS = 4;
 export const BOX_SHELLS = 3;
 /** Cartuchos cargados al recoger la escopeta. */
 export const SHOTGUN_START_MAG = 2;
+/** Balas cargadas al recoger la metralleta. */
+export const SMG_START_MAG = 30;
+/** Contenido de las cajas grandes de la arena del jefe. */
+export const CRATE_BULLETS = 40;
+export const CRATE_SHELLS = 8;
+/** Orden de las armas al ciclar. */
+const WEAPON_ORDER: readonly WeaponId[] = ['pistol', 'shotgun', 'smg'];
 
 /** Eventos del mundo para audio/efectos (H5). */
 export type WorldEvent =
@@ -50,6 +57,8 @@ export type WorldEvent =
   | 'playerHurt'
   | 'playerDead'
   | 'pickup'
+  | 'bossWake'
+  | 'bossDead'
   | 'doorOpen';
 
 export interface Item {
@@ -65,7 +74,13 @@ const ITEM_SPRITE: Record<ItemKind, SpriteId> = {
   [ItemKind.PistolAmmo]: SpriteId.PistolAmmo,
   [ItemKind.ShotgunShells]: SpriteId.ShotgunShells,
   [ItemKind.Shotgun]: SpriteId.Shotgun,
+  [ItemKind.Smg]: SpriteId.Smg,
+  [ItemKind.BulletCrate]: SpriteId.PistolAmmo,
+  [ItemKind.ShellCrate]: SpriteId.ShotgunShells,
 };
+
+/** Escala del objeto en el mundo (las cajas grandes se ven más grandes). */
+const ITEM_SCALE: Partial<Record<ItemKind, number>> = { [ItemKind.BulletCrate]: 0.46, [ItemKind.ShellCrate]: 0.46, [ItemKind.Smg]: 0.4 };
 
 const ITEM_MESSAGE: Record<ItemKind, string> = {
   [ItemKind.Key]: 'Has encontrado la llave... algo se mueve en la casa',
@@ -73,6 +88,9 @@ const ITEM_MESSAGE: Record<ItemKind, string> = {
   [ItemKind.PistolAmmo]: 'Balas recogidas',
   [ItemKind.ShotgunShells]: 'Cartuchos recogidos',
   [ItemKind.Shotgun]: 'Has encontrado una escopeta',
+  [ItemKind.Smg]: 'Metralleta. Mantén el disparo para ráfagas',
+  [ItemKind.BulletCrate]: 'Caja de munición: +40 balas',
+  [ItemKind.ShellCrate]: 'Caja de cartuchos: +8',
 };
 
 /** Estado de una partida en TS puro: mapa, puertas, jugador, objetos y objetivo. */
@@ -85,9 +103,12 @@ export class World {
   readonly pathfinder = new Pathfinder(this.map.width, this.map.height);
   readonly zombies: Zombie[] = ZOMBIE_SPAWNS.map((s) => new Zombie(s.type === 'walker' ? WALKER : RUNNER, s.x, s.y));
   readonly inventory = new Inventory(INVENTORY_SLOTS);
-  readonly weapons: Record<WeaponId, Weapon> = { pistol: new Weapon(PISTOL), shotgun: new Weapon(SHOTGUN, 0) };
+  readonly weapons: Record<WeaponId, Weapon> = { pistol: new Weapon(PISTOL), shotgun: new Weapon(SHOTGUN, 0), smg: new Weapon(SMG, 0) };
   readonly ammo: AmmoPool = { bullets: START_RESERVE, shells: 0 };
   readonly stats = { shots: 0, hits: 0, kills: 0, tonicsUsed: 0 };
+  /** Jefe de la arena: aparece al abrir la puerta de la arena. */
+  boss: Zombie | null = null;
+  bossDefeated = false;
   /** Tolerancia angular de la ayuda de puntería (rad); 0 = desactivada. */
   aimAssist = AIM_ASSIST;
   /** Notifica eventos (con posición opcional en el mundo) a audio y efectos. */
@@ -115,6 +136,7 @@ export class World {
     this.doors.onUse = (d, r) => {
       const ev = r === 'opened' ? 'doorOpen' : r === 'closed' ? 'doorClose' : r === 'locked' ? 'doorLocked' : null;
       if (ev) this.emit(ev, d.x + 0.5, d.y + 0.5);
+      if (d.boss && r === 'opened') this.startBossFight();
     };
   }
 
@@ -169,9 +191,29 @@ export class World {
     this.zctx.px = this.player.x;
     this.zctx.py = this.player.y;
     for (const z of this.zombies) z.update(this.zctx, dt);
+    if (this.boss?.dead && !this.bossDefeated) this.defeatBoss();
     this.pickUp();
     // victoria: solo se puede estar dentro de la celda de salida si su puerta está abierta
     if (this.map.cells[Math.floor(this.player.y) * this.map.width + Math.floor(this.player.x)] === CELL_EXIT) this.won = true;
+  }
+
+  /** Se abre la puerta de la arena: el jefe despierta y viene a por el jugador. */
+  private startBossFight(): void {
+    if (this.boss) return;
+    const b = new Zombie(BOSS, BOSS_SPAWN.x, BOSS_SPAWN.y);
+    this.boss = b;
+    this.zombies.push(b);
+    b.hear(this.player.x, this.player.y);
+    this.say('Algo enorme despierta...');
+    this.emit('bossWake', b.x, b.y);
+  }
+
+  /** El jefe cae: se desbloquea la salida real de la casa. */
+  private defeatBoss(): void {
+    this.bossDefeated = true;
+    this.doors.unlock(FINAL_EXIT.x, FINAL_EXIT.y);
+    this.say('El monstruo cae. La salida está libre');
+    this.emit('bossDead', this.boss!.x, this.boss!.y);
   }
 
   /** ¿Puede el jugador manejar armas ahora? (no mientras se cura ni justo tras cambiar). */
@@ -232,7 +274,7 @@ export class World {
   switchTo(id: WeaponId): boolean {
     if (this.handsBusy() || id === this.equipped) return false;
     if (!this.owns(id)) {
-      this.say(id === 'shotgun' ? 'No tienes la escopeta' : 'No tienes esa arma');
+      this.say(id === 'shotgun' ? 'No tienes la escopeta' : id === 'smg' ? 'No tienes la metralleta' : 'No tienes esa arma');
       return false;
     }
     this.weapon.cancelReload();
@@ -244,11 +286,17 @@ export class World {
 
   /** Cicla entre las armas que se poseen (rueda del ratón / botón L). */
   cycleWeapon(): boolean {
-    return this.switchTo(this.equipped === 'pistol' ? 'shotgun' : 'pistol');
+    const n = WEAPON_ORDER.length;
+    const from = WEAPON_ORDER.indexOf(this.equipped);
+    for (let i = 1; i < n; i++) {
+      const id = WEAPON_ORDER[(from + i) % n];
+      if (this.owns(id)) return this.switchTo(id);
+    }
+    return false;
   }
 
   owns(id: WeaponId): boolean {
-    return this.inventory.has(id === 'pistol' ? InvItem.Pistol : InvItem.Shotgun);
+    return this.inventory.has(id === 'pistol' ? InvItem.Pistol : id === 'shotgun' ? InvItem.Shotgun : InvItem.Smg);
   }
 
   /**
@@ -321,7 +369,7 @@ export class World {
       const dx = it.x - p.x;
       const dy = it.y - p.y;
       if (dx * dx + dy * dy > PICKUP_RADIUS * PICKUP_RADIUS) continue;
-      const slot = it.kind === ItemKind.Key ? InvItem.Key : it.kind === ItemKind.Tonic ? InvItem.Tonic : it.kind === ItemKind.Shotgun ? InvItem.Shotgun : null;
+      const slot = it.kind === ItemKind.Key ? InvItem.Key : it.kind === ItemKind.Tonic ? InvItem.Tonic : it.kind === ItemKind.Shotgun ? InvItem.Shotgun : it.kind === ItemKind.Smg ? InvItem.Smg : null;
       if (slot !== null && !this.inventory.add(slot)) {
         if (this.messageTime <= 0) this.say('Inventario lleno');
         continue;
@@ -331,6 +379,9 @@ export class World {
         case ItemKind.PistolAmmo: this.ammo.bullets += BOX_BULLETS; break;
         case ItemKind.ShotgunShells: this.ammo.shells += BOX_SHELLS; break;
         case ItemKind.Shotgun: this.weapons.shotgun.mag = SHOTGUN_START_MAG; break;
+        case ItemKind.Smg: this.weapons.smg.mag = SMG_START_MAG; break;
+        case ItemKind.BulletCrate: this.ammo.bullets += CRATE_BULLETS; break;
+        case ItemKind.ShellCrate: this.ammo.shells += CRATE_SHELLS; break;
       }
       this.say(ITEM_MESSAGE[it.kind]);
       this.emit(it.kind === ItemKind.Key ? 'keyPickup' : 'pickup');
@@ -351,9 +402,12 @@ export class World {
     const cx = Math.floor(p.x);
     const cy = Math.floor(p.y);
     if (d.locked) {
-      if (this.map.cells[d.y * this.map.width + d.x] === CELL_EXIT && this.hasKey) {
+      if (d.boss && this.hasKey) {
         this.doors.unlock(d.x, d.y);
-        this.say('La llave gira. La puerta cede');
+        this.say('La llave gira. Del otro lado se oye algo respirar...');
+      } else if (d.exit) {
+        this.say('La salida está sellada');
+        return;
       } else {
         this.say('Necesitas una llave');
         return;
@@ -368,7 +422,7 @@ export class World {
     for (const d of DECOR_SPAWNS) batch.add(d.x, d.y, d.tex, d.scale, 0);
     const bob = 0.04 + Math.sin(this.time * 3) * 0.015;
     for (const it of this.items) {
-      if (!it.taken) batch.add(it.x, it.y, ITEM_SPRITE[it.kind], 0.32, bob);
+      if (!it.taken) batch.add(it.x, it.y, ITEM_SPRITE[it.kind], ITEM_SCALE[it.kind] ?? 0.32, bob);
     }
     for (const z of this.zombies) batch.add(z.x, z.y, z.sprite(), z.def.scale, 0);
   }

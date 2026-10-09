@@ -16,7 +16,7 @@ console.log('título: píxeles encendidos', await px());
 await tap('Enter'); await page.waitForTimeout(1500); await tap('Space'); await page.waitForTimeout(1500); await tap('Enter'); await page.waitForTimeout(2500);
 console.log('partida: píxeles encendidos', await px());
 await page.keyboard.down('w'); await page.waitForTimeout(800); await page.keyboard.up('w'); await tap('Space'); await page.waitForTimeout(500);
-await page.screenshot({ path: '/private/tmp/claude-501/-Users-brian-Documents-Biocrisis/2ce99662-d3e0-48f8-aab2-d32d9d66a54b/scratchpad/prod_game.png' });
+await page.screenshot({ path: './prod_game.png' });
 const dev = await page.evaluate(() => ({ game: typeof window.__game, bc: typeof window.__bc, audio: typeof window.__audio }));
 console.log('ganchos de desarrollo en producción:', JSON.stringify(dev), '(deben ser "undefined")');
 console.log('peticiones a dominios externos:', external.size ? [...external] : 'ninguna', '| peticiones fallidas:', failed.length ? failed : 'ninguna');
