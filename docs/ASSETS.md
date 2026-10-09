@@ -1,10 +1,10 @@
-# ASSETS (todo procedural, cero archivos externos)
+# ASSETS (everything procedural, zero external files)
 
-| Asset | Generación | Módulo |
+| Asset | Generation | Module |
 |---|---|---|
-| Paleta de 32 colores + LUT de niebla/sombreado | tabla fija + mezcla hacia niebla | `engine/palette.ts` |
-| Paredes 64×64: papel tapiz, madera, ladrillo, puerta, puerta con cerradura | funciones por píxel con hash determinista | `engine/textures.ts` |
-| Suelos 64×64: madera, baldosa, piedra, alfombra; techo con vigas | ídem | `engine/textures.ts` |
-| Sprites 32×32: llave, tónico, balas, cartuchos, escopeta, lámpara, planta, barril | primitivas (rect/disco/línea) + contorno | `engine/sprites.ts` |
-| Zombies, armas en primera persona, HUD, iconos, logo, fuente bitmap | pendiente (H4–H5) | — |
-| SFX y música | pendiente (H5/H5b), Web Audio | `audio/` |
+| 32-color palette + fog/shading LUT | fixed table + blend toward fog | `engine/palette.ts` |
+| 64×64 walls: wallpaper, wood, brick, door, locked door | per-pixel functions with deterministic hash | `engine/textures.ts` |
+| 64×64 floors: wood, tile, stone, carpet; ceiling with beams | same | `engine/textures.ts` |
+| 32×32 sprites: key, tonic, bullets, shells, shotgun, lamp, plant, barrel | primitives (rect/disc/line) + outline | `engine/sprites.ts` |
+| Zombies, first-person weapons, HUD, icons, logo, bitmap font | pending (H4–H5) | — |
+| SFX and music | pending (H5/H5b), Web Audio | `audio/` |

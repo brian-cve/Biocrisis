@@ -1,79 +1,79 @@
-# Revisión crítica (H7)
+# Critical review (H7)
 
-Lo que funciona está medido; lo que está flojo, dicho. Ordenado por importancia.
+What works has been measured; what's weak is stated. Ordered by importance.
 
-## 1. Lo que NO está verificado (y debería)
-- **Duración de 5–10 min y "tensión real": sin jugadores humanos no se puede dar por cumplido.** El bot lo recorre en ≈ 2 min;
-  la estimación para una persona es 5–8 min (×2.5–4), pero es una estimación. **Propuesta:** 3–5 partidas con gente que no
-  conozca el mapa, cronometradas, y ajustar `MOVE_SPEED`, nº de zombis o la puerta de salida según el resultado.
-- **Dispositivo móvil real.** Todo el trabajo táctil se probó en Chromium emulado (táctil real vía CDP, multitouch real,
-  CPU ×1–×10). Faltan GPU/térmica/compositor reales, el comportamiento de Safari iOS (silencio, `dvh`, gestos de borde) y
-  la ergonomía real de los pulgares. **Propuesta:** pasada de 30 min en un Android de gama media y un iPhone.
-- **Gamepad físico**: implementado, sin probar.
-- **La música y los SFX no se han escuchado**: se midieron (niveles, picos, pulso, intensidad, silencio) pero que
-  *suenen bien* es un juicio humano. Los parámetros están aislados en `composer.ts`/`synth.ts`/`sfx.ts`.
+## 1. What is NOT verified (and should be)
+- **The 5–10 min duration and "real tension": without human players this can't be considered met.** The bot clears it in ≈ 2 min;
+  the estimate for a person is 5–8 min (×2.5–4), but it is an estimate. **Proposal:** 3–5 timed games with people who
+  don't know the map, then adjust `MOVE_SPEED`, the number of zombies or the exit door accordingly.
+- **A real mobile device.** All the touch work was tested in emulated Chromium (real touch via CDP, real multitouch,
+  CPU ×1–×10). Missing: real GPU/thermals/compositor, Safari iOS behavior (silent switch, `dvh`, edge gestures) and
+  the real ergonomics of thumbs. **Proposal:** a 30-minute pass on a mid-range Android and an iPhone.
+- **Physical gamepad**: implemented, untested.
+- **The music and SFX have not been listened to**: they were measured (levels, peaks, pulse, intensity, silence) but whether they
+  *sound good* is a human judgment. The parameters are isolated in `composer.ts`/`synth.ts`/`sfx.ts`.
 
 ## 2. Balance
-- La curva de habilidad existe (torpe 40 %, hábil ≈ 98 %), pero el bot táctico es sobrehumano; **la dificultad real para
-  una persona está entre ambos y es desconocida**. El balance se afinó contra bots, no contra gente.
-- Una vez que la casa despierta, **los zombis convergen y el jugador ya no tiene muchas opciones**: el diseño premia la
-  preparación (recoger todo antes de la llave) y castiga improvisar. Puede ser frustrante para quien no lo espere.
-  **Propuesta:** una señal más clara antes de coger la llave (la sala de la llave visualmente más inquietante) o una puerta
-  lateral de escape en el dormitorio.
-- **Soft-lock posible, aunque improbable:** si se gasta toda la munición y un rezagado bloquea la única ruta, solo se
-  puede esquivar. Hay bucles en el mapa y los zombis persiguen (desbloquean), pero no está probado exhaustivamente.
-- No hay dificultad ajustable. Son baratas de añadir (multiplicadores de PV/daño/munición).
+- The skill curve exists (clumsy 40 %, skilled ≈ 98 %), but the tactical bot is superhuman; **the real difficulty for
+  a person lies between the two and is unknown**. Balance was tuned against bots, not people.
+- Once the house wakes, **the zombies converge and the player has few options left**: the design rewards
+  preparation (collecting everything before the key) and punishes improvising. It may be frustrating for anyone who doesn't expect it.
+  **Proposal:** a clearer signal before taking the key (make the key room visually more unsettling) or a side
+  escape door in the bedroom.
+- **Possible soft-lock, though unlikely:** if all the ammo is spent and a shambler blocks the only route, the only option is to
+  dodge. The map has loops and zombies chase (which unblocks them), but it hasn't been exhaustively tested.
+- There is no adjustable difficulty. It's cheap to add (HP/damage/ammo multipliers).
 
-## 3. IA de los zombis
-- Funcional pero **simple**: A* recalculado cada 0.5 s, sin coordinación (no flanquean, no se reparten rutas), se apilan
-  en los pasillos de una celda y tras perder al jugador no "buscan" (no inspeccionan habitaciones). Abren puertas pero
-  nunca las cierran. Se rinden a los 12 s.
-- Visión de 360° (sin cono): detectan por detrás con línea de visión. Es más duro que lo clásico, pero previsible.
-- **Propuesta:** cono de visión, búsqueda por estancias tras perder el rastro, y un sonido de gruñido distinto por estado
-  (ya se ve un estado `alert` en el audio, falta darle más personalidad).
+## 3. Zombie AI
+- Functional but **simple**: A* recomputed every 0.5 s, no coordination (they don't flank or split routes), they pile up
+  in one-cell corridors and after losing the player they don't "search" (they don't inspect rooms). They open doors but
+  never close them. They give up after 12 s.
+- 360° vision (no cone): they detect from behind with line of sight. It's harsher than the classics, but predictable.
+- **Proposal:** a vision cone, room-by-room searching after losing the trail, and a different groan per state
+  (an `alert` state already exists in the audio; it needs more personality).
 
-## 4. Rendimiento
-- Cumple con margen en lo medido (≈ 1–3 ms/frame; 60 FPS con CPU ×10 emulado), **pero**:
-  - el requisito de "cero asignaciones en el bucle caliente" se cumple en el *render* y no del todo en el juego completo
-    (queda ≈ 0.55–0.9 MB/s de basura, sobre todo interna de Phaser y un resto de *boxing* en `castHit`);
-  - el JS pesa **1.3 MB (358 KB gzip)**, casi todo Phaser; para móviles lentos sobre 3G puede ser lento. Se usa Phaser
-    solo como cáscara: una versión sin Phaser sería ≈ 40 KB;
-  - el suelo texturizado es *floor casting* por frame; no hay modo "calidad baja" para móviles mucho más lentos que lo
-    emulado (la salvaguarda D-003 sigue pendiente de implementar si hiciera falta).
+## 4. Performance
+- It meets the target with margin in what was measured (≈ 1–3 ms/frame; 60 FPS with emulated CPU ×10), **but**:
+  - the "zero allocations in the hot loop" requirement is met in *rendering* and not entirely in the full game
+    (≈ 0.55–0.9 MB/s of garbage remains, mostly internal to Phaser plus some leftover *boxing* in `castHit`);
+  - the JS weighs **1.3 MB (358 KB gzip)**, mostly Phaser; on slow phones over 3G it may be slow. Phaser is used
+    only as a shell: a Phaser-free version would be ≈ 40 KB;
+  - the textured floor is *floor casting* every frame; there is no "low quality" mode for phones much slower than what was
+    emulated (the D-003 safeguard is still pending implementation if needed).
 
-## 5. UX táctil
-- **El D-pad es impreciso para girar** (se mitiga con sensibilidad y aceleración, no se resuelve). Un stick virtual
-  flotante en la mitad izquierda sería mejor, a costa de perder los botones de dirección discretos en los menús.
-- Los botones **tapan parte de la imagen** (A/B a la derecha, D-pad a la izquierda, L/R y START/SELECT arriba). Se
-  colocaron para no cubrir el HUD, pero en pantallas poco panorámicas se solapan con el juego. Hay que decidir con
-  jugadores si aceptan la opacidad actual.
-- **Solo horizontal**, con aviso en vertical. Un layout vertical alternativo se descartó (D-019) y sigue siendo una
-  carencia si el usuario tiene el móvil bloqueado en vertical.
-- Sin pantalla completa ni PWA; en iOS el Safari normal mantiene su barra y la imagen es más pequeña.
+## 5. Touch UX
+- **The D-pad is imprecise for turning** (mitigated with sensitivity and acceleration, not solved). A floating virtual
+  stick on the left half would be better, at the cost of losing the discrete direction buttons in menus.
+- The buttons **cover part of the image** (A/B on the right, D-pad on the left, L/R and START/SELECT at the top). They were
+  placed to avoid covering the HUD, but on screens that aren't very wide they overlap the game. We need to decide with
+  players whether they accept the current opacity.
+- **Landscape only**, with a warning in portrait. An alternative portrait layout was discarded (D-019) and remains
+  a gap if the user has their phone locked in portrait.
+- No fullscreen or PWA; on iOS regular Safari keeps its bar and the image is smaller.
 
-## 6. Accesibilidad
-- **Relámpagos de la pantalla de título**: destellos fuertes y aleatorios. No hay aviso de fotosensibilidad ni opción de
-  reducirlos. **Propuesta (rápida): opción "reducir destellos" y limitar el contraste del relámpago.**
-- Las pistas de audio (gruñidos espaciales, latido) **no tienen equivalente visual**: no hay indicador direccional de
-  daño ni subtítulos de sonido.
-- Texto monoespaciado de 8–12 px sobre 320×200 (≈ 24 px reales a 960×600): legible en escritorio, justo en móviles
-  pequeños. Colores del HUD (verde/ámbar/rojo) pensados sin depender solo del color (hay texto Bien/Precaución/Peligro).
+## 6. Accessibility
+- **Title screen lightning**: strong, random flashes. There is no photosensitivity warning or option to
+  reduce them. **Proposal (quick): a "reduce flashes" option and limiting the lightning's contrast.**
+- The audio cues (spatial groans, heartbeat) **have no visual equivalent**: there is no directional damage indicator
+  or sound captions.
+- Monospaced text of 8–12 px on 320×200 (≈ 24 px actual at 960×600): readable on desktop, tight on small
+  phones. HUD colors (green/amber/red) were designed to not rely on color alone (there is Fine/Caution/Danger text).
 
-## 7. Arte y audio procedural
-- Los zombis son **billboards de 32×32 con 5 poses**, sin rotación por ángulo: se ven iguales de frente que de espaldas.
-- Las **texturas se repiten mucho** (5 de pared, 4 de suelo): la casa resulta uniforme. El ladrillo sigue algo saturado.
-- La música es sutil por diseño (texturas y silencios); un jugador que espere melodía la encontrará escasa.
-- La fuente es del sistema (monoespaciada); solo el logo tiene tipografía propia.
+## 7. Procedural art and audio
+- Zombies are **32×32 billboards with 5 poses**, with no per-angle rotation: they look the same from the front as from behind.
+- The **textures repeat a lot** (5 wall, 4 floor): the house feels uniform. The brick is still somewhat oversaturated.
+- The music is subtle by design (textures and silences); a player expecting melody will find it sparse.
+- The font is a system font (monospace); only the logo has its own typography.
 
-## 8. Alcance y deuda técnica
-- Un solo nivel y una sola partida; sin guardado (fuera de alcance del proyecto).
-- `tools/` es un conjunto de scripts útiles pero **no son tests automáticos de CI**: dependen del servidor y de Playwright.
-  Convertirlos en una suite E2E con aserciones y `npm run e2e` sería lo siguiente.
-- `GameScene` concentra bastante (render, entrada, fin de partida, ajustes): se podría dividir.
-- El nombre "BioCrisis" comparte el prefijo "Bio-" con franquicias existentes (D-002); si se publica, conviene una
-  búsqueda de marcas.
+## 8. Scope and technical debt
+- A single level and a single run; no saving (outside the project's scope).
+- `tools/` is a set of useful scripts but **they are not automated CI tests**: they depend on the server and Playwright.
+  Turning them into an E2E suite with assertions and `npm run e2e` would be the next step.
+- `GameScene` concentrates a lot (rendering, input, game end, settings): it could be split up.
+- The name "BioCrisis" shares the "Bio-" prefix with existing franchises (D-002); if published, a trademark
+  search is advisable.
 
-## Lo que haría después (por orden)
-1. Playtest humano de duración y dificultad → ajustar `MOVE_SPEED`/zombis. 2. Prueba en dispositivos reales. 3. Opción de
-reducir destellos + indicador visual de daño direccional. 4. IA: cono de visión y búsqueda. 5. E2E automático con aserciones.
-6. Stick virtual flotante opcional y modo de calidad baja.
+## What I would do next (in order)
+1. Human playtest of duration and difficulty → adjust `MOVE_SPEED`/zombies. 2. Testing on real devices. 3. A reduce-flashes
+option + a directional damage indicator. 4. AI: vision cone and searching. 5. Automated E2E with assertions.
+6. Optional floating virtual stick and a low-quality mode.
