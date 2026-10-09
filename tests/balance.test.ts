@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BOX_BULLETS, BOX_SHELLS, SHOTGUN_START_MAG, START_RESERVE, World, ALARM_RADIUS } from '../src/game/world';
+import { BOX_BULLETS, BOX_SHELLS, SHOTGUN_START_MAG } from '../src/game/items';
+import { START_RESERVE, World, ALARM_RADIUS } from '../src/game/world';
 import { ITEM_SPAWNS, ItemKind, ZOMBIE_SPAWNS } from '../src/game/map';
 import { PISTOL, SHOTGUN } from '../src/game/weapons';
 import { RUNNER, WALKER, ZState } from '../src/game/zombie';

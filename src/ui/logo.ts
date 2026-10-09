@@ -19,8 +19,8 @@ function hash(x: number, y: number, seed: number): number {
 }
 
 export const LOGO_KEY = 'logo';
-export const LOGO_W = 9 * 5 * SCALE + 8 * GAP * SCALE;
-export const LOGO_H = 7 * SCALE + 18;
+const LOGO_W = 9 * 5 * SCALE + 8 * GAP * SCALE;
+const LOGO_H = 7 * SCALE + 18;
 
 export function buildLogo(textures: Phaser.Textures.TextureManager): void {
   if (textures.exists(LOGO_KEY)) return;

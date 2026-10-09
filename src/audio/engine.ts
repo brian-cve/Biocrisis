@@ -1,7 +1,7 @@
 
-export type BusName = 'sfx' | 'ambient' | 'music';
+type BusName = 'sfx' | 'ambient' | 'music';
 
-export interface ToneOpts {
+interface ToneOpts {
   type?: OscillatorType;
   f0: number;
   f1?: number;
@@ -15,7 +15,7 @@ export interface ToneOpts {
   vibrato?: { rate: number; depth: number };
 }
 
-export interface NoiseOpts {
+interface NoiseOpts {
   dur: number;
   gain?: number;
   attack?: number;
@@ -29,7 +29,7 @@ export interface LoopHandle {
   stop(): void;
 }
 
-export interface VolumeState {
+interface VolumeState {
   musicVolume: number;
   sfxVolume: number;
   muted: boolean;
@@ -37,7 +37,7 @@ export interface VolumeState {
 
 const MAX_VOICES = 28;
 
-export class AudioEngine {
+class AudioEngine {
   ctx: AudioContext | null = null;
   master!: GainNode;
   buses!: Record<BusName, GainNode>;

@@ -1,6 +1,7 @@
 import { CELL_EXIT, GridMap } from '../engine/raycast';
-import { SpriteBatch, SpriteId } from '../engine/sprites';
+import { SpriteBatch } from '../engine/sprites';
 import { Doors } from './doors';
+import { ITEM_DEFS, Item, PICKUP_RADIUS, WEAPON_ITEM, WEAPON_MISSING } from './items';
 import { INVENTORY_SLOTS, InvItem, Inventory } from './inventory';
 import { BOSS_SPAWN, DECOR_SPAWNS, FINAL_EXIT, ITEM_SPAWNS, ItemKind, START, ZOMBIE_SPAWNS, createHouse } from './map';
 import { Pathfinder } from './pathfinding';
@@ -9,7 +10,6 @@ import { Rng } from '../engine/rng';
 import { AmmoPool, PISTOL, SHOTGUN, SMG, Weapon, WeaponId, falloff, findTarget, spreadAngles } from './weapons';
 import { BOSS, RUNNER, WALKER, ZContext, Zombie } from './zombie';
 
-export const PICKUP_RADIUS = 0.55;
 const MESSAGE_SECONDS = 2.5;
 export const MAX_HP = 100;
 export const TONIC_HEAL = 35;
@@ -18,12 +18,6 @@ export const SWITCH_LOCK = 0.4;
 export const ALARM_RADIUS = 40;
 export const AIM_ASSIST = 0.035;
 export const START_RESERVE = 6;
-export const BOX_BULLETS = 4;
-export const BOX_SHELLS = 3;
-export const SHOTGUN_START_MAG = 2;
-export const SMG_START_MAG = 30;
-export const CRATE_BULLETS = 40;
-export const CRATE_SHELLS = 8;
 const WEAPON_ORDER: readonly WeaponId[] = ['pistol', 'shotgun', 'smg'];
 
 export type WorldEvent =
@@ -48,37 +42,6 @@ export type WorldEvent =
   | 'bossWake'
   | 'bossDead'
   | 'doorOpen';
-
-export interface Item {
-  kind: ItemKind;
-  x: number;
-  y: number;
-  taken: boolean;
-}
-
-const ITEM_SPRITE: Record<ItemKind, SpriteId> = {
-  [ItemKind.Key]: SpriteId.Key,
-  [ItemKind.Tonic]: SpriteId.Tonic,
-  [ItemKind.PistolAmmo]: SpriteId.PistolAmmo,
-  [ItemKind.ShotgunShells]: SpriteId.ShotgunShells,
-  [ItemKind.Shotgun]: SpriteId.Shotgun,
-  [ItemKind.Smg]: SpriteId.Smg,
-  [ItemKind.BulletCrate]: SpriteId.PistolAmmo,
-  [ItemKind.ShellCrate]: SpriteId.ShotgunShells,
-};
-
-const ITEM_SCALE: Partial<Record<ItemKind, number>> = { [ItemKind.BulletCrate]: 0.46, [ItemKind.ShellCrate]: 0.46, [ItemKind.Smg]: 0.4 };
-
-const ITEM_MESSAGE: Record<ItemKind, string> = {
-  [ItemKind.Key]: 'You found the key... something stirs in the house',
-  [ItemKind.Tonic]: 'Tonic picked up',
-  [ItemKind.PistolAmmo]: 'Bullets picked up',
-  [ItemKind.ShotgunShells]: 'Shells picked up',
-  [ItemKind.Shotgun]: 'You found a shotgun',
-  [ItemKind.Smg]: 'Submachine gun. Hold fire for bursts',
-  [ItemKind.BulletCrate]: 'Ammo crate: +40 bullets',
-  [ItemKind.ShellCrate]: 'Shell crate: +8',
-};
 
 export class World {
   readonly map: GridMap = createHouse();
@@ -247,7 +210,7 @@ export class World {
   switchTo(id: WeaponId): boolean {
     if (this.handsBusy() || id === this.equipped) return false;
     if (!this.owns(id)) {
-      this.say(id === 'shotgun' ? 'You do not have the shotgun' : id === 'smg' ? 'You do not have the submachine gun' : 'You do not have that weapon');
+      this.say(WEAPON_MISSING[id]);
       return false;
     }
     this.weapon.cancelReload();
@@ -268,7 +231,7 @@ export class World {
   }
 
   owns(id: WeaponId): boolean {
-    return this.inventory.has(id === 'pistol' ? InvItem.Pistol : id === 'shotgun' ? InvItem.Shotgun : InvItem.Smg);
+    return this.inventory.has(WEAPON_ITEM[id]);
   }
 
   useTonic(instant = false): 'started' | 'healed' | 'full' | 'none' | 'busy' {
@@ -334,21 +297,16 @@ export class World {
       const dx = it.x - p.x;
       const dy = it.y - p.y;
       if (dx * dx + dy * dy > PICKUP_RADIUS * PICKUP_RADIUS) continue;
-      const slot = it.kind === ItemKind.Key ? InvItem.Key : it.kind === ItemKind.Tonic ? InvItem.Tonic : it.kind === ItemKind.Shotgun ? InvItem.Shotgun : it.kind === ItemKind.Smg ? InvItem.Smg : null;
-      if (slot !== null && !this.inventory.add(slot)) {
+      const def = ITEM_DEFS[it.kind];
+      if (def.slot !== undefined && !this.inventory.add(def.slot)) {
         if (this.messageTime <= 0) this.say('Inventory full');
         continue;
       }
       it.taken = true;
-      switch (it.kind) {
-        case ItemKind.PistolAmmo: this.ammo.bullets += BOX_BULLETS; break;
-        case ItemKind.ShotgunShells: this.ammo.shells += BOX_SHELLS; break;
-        case ItemKind.Shotgun: this.weapons.shotgun.mag = SHOTGUN_START_MAG; break;
-        case ItemKind.Smg: this.weapons.smg.mag = SMG_START_MAG; break;
-        case ItemKind.BulletCrate: this.ammo.bullets += CRATE_BULLETS; break;
-        case ItemKind.ShellCrate: this.ammo.shells += CRATE_SHELLS; break;
-      }
-      this.say(ITEM_MESSAGE[it.kind]);
+      this.ammo.bullets += def.bullets ?? 0;
+      this.ammo.shells += def.shells ?? 0;
+      if (def.mag) this.weapons[def.mag.weapon].mag = def.mag.rounds;
+      this.say(def.message);
       this.emit(it.kind === ItemKind.Key ? 'keyPickup' : 'pickup');
       if (it.kind === ItemKind.Key) {
         this.makeNoise(p.x, p.y, ALARM_RADIUS);
@@ -384,8 +342,9 @@ export class World {
     for (const d of DECOR_SPAWNS) batch.add(d.x, d.y, d.tex, d.scale, 0);
     const bob = 0.04 + Math.sin(this.time * 3) * 0.015;
     for (const it of this.items) {
-      if (!it.taken) batch.add(it.x, it.y, ITEM_SPRITE[it.kind], ITEM_SCALE[it.kind] ?? 0.32, bob);
+      if (!it.taken) batch.add(it.x, it.y, ITEM_DEFS[it.kind].sprite, ITEM_DEFS[it.kind].scale, bob);
     }
     for (const z of this.zombies) batch.add(z.x, z.y, z.sprite(), z.def.scale, 0);
   }
 }
+

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { INVENTORY_SLOTS, InvItem, Inventory } from '../src/game/inventory';
 import { AmmoPool, PISTOL, SHOTGUN, Weapon, falloff, findTarget, spreadAngles } from '../src/game/weapons';
-import { MAX_HP, SWITCH_LOCK, TONIC_HEAL, World, HEAL_TIME, SHOTGUN_START_MAG, START_RESERVE } from '../src/game/world';
+import { SHOTGUN_START_MAG } from '../src/game/items';
+import { MAX_HP, SWITCH_LOCK, TONIC_HEAL, World, HEAL_TIME, START_RESERVE } from '../src/game/world';
 import { parseMap, ITEM_SPAWNS, ItemKind } from '../src/game/map';
 import { Rng } from '../src/engine/rng';
 import { WALKER, Zombie } from '../src/game/zombie';

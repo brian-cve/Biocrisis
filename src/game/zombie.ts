@@ -13,7 +13,7 @@ export const enum ZState {
   Dead,
 }
 
-export interface ZombieDef {
+interface ZombieDef {
   name: string;
   hp: number;
   speed: number;
@@ -91,6 +91,12 @@ const REPATH = 0.5;
 const EN_ROUTE_LOST = 0.2;
 const GIVE_UP = 12;
 const SIGHT_CHECK = 0.1;
+const MAX_SIGHT = 20;
+const DIRECT_DIST = 2.5;
+const LOST_AT_TARGET = 4;
+const ENRAGE_HP = 0.5;
+const ENRAGE_SPEED = 1.45;
+const ENRAGE_RECOVER = 0.55;
 const HEAR_STEPS = 5.5;
 const HEAR_IDLE = 4;
 
@@ -124,7 +130,7 @@ export class Zombie {
   }
 
   get enraged(): boolean {
-    return this.def.boss === true && this.hp < this.maxHp * 0.5;
+    return this.def.boss === true && this.hp < this.maxHp * ENRAGE_HP;
   }
 
   get dead(): boolean {
@@ -190,9 +196,9 @@ export class Zombie {
     this.sightT -= dt;
     if (this.sightT <= 0) {
       this.sightT = SIGHT_CHECK;
-      this.canSee = dist <= 20 && hasLineOfSight(ctx.map, this.x, this.y, ctx.px, ctx.py);
+      this.canSee = dist <= MAX_SIGHT && hasLineOfSight(ctx.map, this.x, this.y, ctx.px, ctx.py);
     }
-    const sees = this.canSee && dist <= 20;
+    const sees = this.canSee && dist <= MAX_SIGHT;
 
     switch (this.state) {
       case ZState.Idle:
@@ -232,13 +238,13 @@ export class Zombie {
         this.ty = ctx.py;
       } else this.lost += atTarget ? dt : dt * EN_ROUTE_LOST;
       if (this.def.boss) this.lost = 0;
-      if (this.lost > GIVE_UP || (atTarget && !hears && this.lost > 4)) {
+      if (this.lost > GIVE_UP || (atTarget && !hears && this.lost > LOST_AT_TARGET)) {
         this.lost = 0;
         this.enter(ZState.Idle);
         return;
       }
     }
-    this.advance(ctx, dt, sees && dist < 2.5);
+    this.advance(ctx, dt, sees && dist < DIRECT_DIST);
   }
 
   private attack(ctx: ZContext, dt: number, dist: number): void {
@@ -247,7 +253,7 @@ export class Zombie {
       this.attackHit = true;
       if (dist <= this.def.attackRange + 0.25) ctx.damagePlayer(this.def.damage);
     }
-    if (this.attackT >= this.def.windup + this.def.recover * (this.enraged ? 0.55 : 1)) {
+    if (this.attackT >= this.def.windup + this.def.recover * (this.enraged ? ENRAGE_RECOVER : 1)) {
       if (dist > this.def.attackRange + 0.4) this.enter(ZState.Chase);
       else {
         this.attackT = 0;
@@ -285,7 +291,7 @@ export class Zombie {
     const dy = gy - this.y;
     const d = hyp(dx, dy);
     if (d < 0.05) return;
-    const step = Math.min(d, this.def.speed * (this.enraged ? 1.45 : 1) * dt);
+    const step = Math.min(d, this.def.speed * (this.enraged ? ENRAGE_SPEED : 1) * dt);
     this.slide(ctx, (dx / d) * step, (dy / d) * step);
     this.moving = true;
   }

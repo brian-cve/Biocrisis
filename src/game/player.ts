@@ -2,19 +2,19 @@ import { Camera } from '../engine/raycast';
 import { GridMap } from '../engine/raycast';
 import { circleHitsWall, moveWithCollision } from './collision';
 
-export interface Blocker {
+interface Blocker {
   x: number;
   y: number;
   radius: number;
   dead: boolean;
 }
 
-export const FOV_PLANE = 0.66;
-export const PLAYER_RADIUS = 0.25;
+const FOV_PLANE = 0.66;
+const PLAYER_RADIUS = 0.25;
 export const MOVE_SPEED = 2.1;
-export const BACK_FACTOR = 0.6;
-export const STRAFE_FACTOR = 0.85;
-export const TURN_SPEED = 2.4;
+const BACK_FACTOR = 0.6;
+const STRAFE_FACTOR = 0.85;
+const TURN_SPEED = 2.4;
 
 export interface MoveInput {
   forward: number;

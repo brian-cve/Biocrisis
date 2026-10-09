@@ -2,14 +2,14 @@ import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { PadNav } from './pad';
 
-export interface MenuItem {
+interface MenuItem {
   label: string | (() => string);
   onSelect?: () => void;
   onLeft?: () => void;
   onRight?: () => void;
 }
 
-export interface MenuOpts {
+interface MenuOpts {
   x: number;
   y: number;
   spacing?: number;

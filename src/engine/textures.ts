@@ -2,7 +2,7 @@ import { Rng } from './rng';
 
 export const TEX_SIZE = 64;
 
-export const enum Wall {
+const enum Wall {
   Wallpaper = 1,
   Wood = 2,
   Brick = 3,
@@ -10,7 +10,7 @@ export const enum Wall {
   LockedDoor = 5,
   BossDoor = 6,
 }
-export const WALL_TEXTURE_COUNT = 7;
+const WALL_TEXTURE_COUNT = 7;
 
 export type Texture = Uint8Array;
 

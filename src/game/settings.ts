@@ -1,5 +1,5 @@
 
-export interface Settings {
+interface Settings {
   musicVolume: number;
   sfxVolume: number;
   muted: boolean;
@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
 
 const KEY = 'biocrisis.settings.v1';
 
-export interface StorageLike {
+interface StorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }

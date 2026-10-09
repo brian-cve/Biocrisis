@@ -2,13 +2,13 @@ import { audio } from '../engine';
 import { CHASE_BAR, ChaseComposer, DRONE_PERIOD, ExploreComposer, MENU_BAR, MenuComposer, NoteEvent, gameOverSting, winSting } from './composer';
 import { Sink, makeImpulse, playEvent } from './synth';
 
-export type MusicMode = 'off' | 'menu' | 'explore';
+type MusicMode = 'off' | 'menu' | 'explore';
 type Layer = 'menu' | 'explore' | 'chase' | 'sting';
 
 const LOOKAHEAD = 0.8;
 const MAX_LAG = 0.4;
 
-export class MusicEngine {
+class MusicEngine {
   mode: MusicMode = 'off';
   intensity = 0;
 

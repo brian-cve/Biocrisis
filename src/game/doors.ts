@@ -1,6 +1,6 @@
 import { CELL_BOSS_DOOR, CELL_EXIT, GridMap, cellAt, isDoorCell } from '../engine/raycast';
 
-export const DOOR_SPEED = 1.8;
+const DOOR_SPEED = 1.8;
 export const EXIT_DOOR_SPEED = 0.8;
 
 export interface Door {
@@ -13,7 +13,7 @@ export interface Door {
   target: 0 | 1;
 }
 
-export type DoorUse = 'opened' | 'closed' | 'locked' | 'blocked' | 'none';
+type DoorUse = 'opened' | 'closed' | 'locked' | 'blocked' | 'none';
 
 export class Doors {
   readonly list: Door[] = [];

@@ -83,7 +83,7 @@ export const enum ItemKind {
   ShellCrate = 7,
 }
 
-export interface ItemSpawn {
+interface ItemSpawn {
   kind: ItemKind;
   x: number;
   y: number;
@@ -111,7 +111,7 @@ export const ITEM_SPAWNS: readonly ItemSpawn[] = [
   { kind: ItemKind.Tonic, x: 17.5, y: 25.5 },
 ];
 
-export interface DecorSpawn {
+interface DecorSpawn {
   x: number;
   y: number;
   tex: number;
@@ -133,7 +133,7 @@ export const DECOR_SPAWNS: readonly DecorSpawn[] = [
   { x: 1.5, y: 30.5, tex: 7, scale: 0.55 },
 ];
 
-export interface ZombieSpawn {
+interface ZombieSpawn {
   type: 'walker' | 'runner';
   x: number;
   y: number;

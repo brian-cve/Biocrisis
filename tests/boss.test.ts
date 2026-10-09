@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { InvItem } from '../src/game/inventory';
 import { ITEM_SPAWNS, ItemKind } from '../src/game/map';
 import { SMG } from '../src/game/weapons';
-import { MAX_HP, CRATE_BULLETS, World } from '../src/game/world';
+import { CRATE_BULLETS } from '../src/game/items';
+import { MAX_HP, World } from '../src/game/world';
 import { BOSS, ZState, Zombie } from '../src/game/zombie';
 
 const idle = { forward: 0, strafe: 0, turn: 0 };

@@ -1,4 +1,4 @@
-export const PALETTE_HEX: readonly number[] = [
+const PALETTE_HEX: readonly number[] = [
   0x050706, 0x0d1210, 0x16201c, 0x212f29, 0x2e4038, 0x3f5549, 0x56705f, 0x7a937c,
   0x14100c, 0x241b13, 0x37281b, 0x4d3924, 0x65502f, 0x806b40, 0x9c8858, 0xb8a672,
   0x1a0808, 0x2c0e0e, 0x421414, 0x5c1c1a, 0x7a2824, 0x9a3a30, 0x2a2a2e, 0x44444a,
@@ -7,9 +7,9 @@ export const PALETTE_HEX: readonly number[] = [
 
 export const PALETTE_SIZE = PALETTE_HEX.length;
 export const LIGHT_LEVELS = 16;
-export const FOG_RGB: readonly [number, number, number] = [4, 7, 6];
+const FOG_RGB: readonly [number, number, number] = [4, 7, 6];
 
-export function packRgb(r: number, g: number, b: number): number {
+function packRgb(r: number, g: number, b: number): number {
   return ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0;
 }
 

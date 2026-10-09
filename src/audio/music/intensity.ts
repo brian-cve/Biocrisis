@@ -1,5 +1,5 @@
 
-export interface ThreatInfo {
+interface ThreatInfo {
   state: 'alert' | 'chase' | 'attack';
   dist: number;
 }

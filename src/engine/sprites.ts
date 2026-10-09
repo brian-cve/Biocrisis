@@ -30,7 +30,7 @@ export const enum ZPose {
   Dead = 4,
 }
 
-export interface Sprite {
+interface Sprite {
   x: number;
   y: number;
   tex: number;

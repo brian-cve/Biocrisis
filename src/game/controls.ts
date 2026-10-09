@@ -20,7 +20,7 @@ export type Action =
 export type TouchButton = 'up' | 'down' | 'left' | 'right' | 'A' | 'B' | 'START' | 'SELECT' | 'L' | 'R';
 export const TOUCH_BUTTONS: readonly TouchButton[] = ['up', 'down', 'left', 'right', 'A', 'B', 'START', 'SELECT', 'L', 'R'];
 
-export interface Binding {
+interface Binding {
   action: Action;
   label: string;
   keys: string[];

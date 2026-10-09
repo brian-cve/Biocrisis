@@ -1,4 +1,4 @@
-export interface Listener {
+interface Listener {
   x: number;
   y: number;
   angle: number;

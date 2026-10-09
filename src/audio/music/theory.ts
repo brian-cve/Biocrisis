@@ -4,7 +4,7 @@ export const SCALES = {
   phrygian: [0, 1, 3, 5, 7, 8, 10],
 } as const;
 
-export interface ScaleSpec {
+interface ScaleSpec {
   root: number;
   intervals: readonly number[];
 }

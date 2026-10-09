@@ -134,14 +134,9 @@ export class GameScene extends Phaser.Scene {
     this.gi.update();
     const gi = this.gi;
 
-    if (!this.ending) {
-      if (w.dead && this.endTimer === 0) this.endTimer = 0.0001;
-      if (w.won && this.endTimer === 0) this.endTimer = 0.0001;
-    }
-    if (this.endTimer > 0) {
+    if (!this.ending && (w.dead || w.won)) {
       this.endTimer += dt;
-      const wait = w.dead ? END_DELAY_DEAD : END_DELAY_WON;
-      if (!this.ending && this.endTimer > wait) {
+      if (this.endTimer > (w.dead ? END_DELAY_DEAD : END_DELAY_WON)) {
         this.ending = true;
         fadeTo(this, w.dead ? 'GameOver' : 'Win', this.runStats(), 600);
       }

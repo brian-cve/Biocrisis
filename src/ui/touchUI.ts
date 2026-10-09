@@ -61,7 +61,7 @@ const CSS = `
 @media (max-height: 340px) { :root { --dp: 120px; --ab: 52px; } }
 `;
 
-export class TouchUI {
+class TouchUI {
   private root!: HTMLDivElement;
   private rotate!: HTMLDivElement;
   private game: Phaser.Game | null = null;

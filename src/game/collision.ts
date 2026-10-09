@@ -1,10 +1,10 @@
 import { GridMap, cellAt, isDoorCell } from '../engine/raycast';
 
-export type SolidFn = (map: GridMap, cx: number, cy: number) => boolean;
+type SolidFn = (map: GridMap, cx: number, cy: number) => boolean;
 
 export const DOOR_PASSABLE = 0.8;
 
-export const defaultSolid: SolidFn = (map, cx, cy) => {
+const defaultSolid: SolidFn = (map, cx, cy) => {
   const c = cellAt(map, cx, cy);
   if (c === 0) return false;
   if (map.doorOpen !== undefined && isDoorCell(c)) return map.doorOpen[cy * map.width + cx] < DOOR_PASSABLE;
@@ -29,7 +29,7 @@ export function circleHitsWall(map: GridMap, x: number, y: number, r: number, so
   return false;
 }
 
-export interface Pos {
+interface Pos {
   x: number;
   y: number;
 }

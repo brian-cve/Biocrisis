@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { touchState } from './touchState';
 
-export interface PadEdges {
+interface PadEdges {
   up: boolean;
   down: boolean;
   left: boolean;

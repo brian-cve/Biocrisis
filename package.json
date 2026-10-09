@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "check": "tsc --noEmit && vitest run",
     "sim": "vitest run --config vitest.sim.config.ts"
   },
   "dependencies": {

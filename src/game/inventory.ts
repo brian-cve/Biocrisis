@@ -10,7 +10,7 @@ export const enum InvItem {
 export const INVENTORY_SLOTS = 8;
 export const INVENTORY_COLS = 4;
 
-export interface InvItemInfo {
+interface InvItemInfo {
   name: string;
   action: 'EQUIP' | 'USE' | 'EXAMINE';
   description: string;

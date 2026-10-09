@@ -1,7 +1,7 @@
 import { GridMap } from '../engine/raycast';
 import { hasLineOfSight } from './los';
 
-export type AmmoType = 'bullets' | 'shells';
+type AmmoType = 'bullets' | 'shells';
 
 export interface AmmoPool {
   bullets: number;
@@ -10,7 +10,7 @@ export interface AmmoPool {
 
 export type WeaponId = 'pistol' | 'shotgun' | 'smg';
 
-export interface WeaponDef {
+interface WeaponDef {
   id: WeaponId;
   name: string;
   ammo: AmmoType;
@@ -91,8 +91,6 @@ export const SMG: WeaponDef = {
   auto: true,
 };
 
-export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = { pistol: PISTOL, shotgun: SHOTGUN, smg: SMG };
-
 export function spreadAngles(n: number, spread: number, rand: () => number, out: Float64Array | number[] = []): Float64Array | number[] {
   for (let i = 0; i < n; i++) {
     const base = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
@@ -101,7 +99,7 @@ export function spreadAngles(n: number, spread: number, rand: () => number, out:
   return out;
 }
 
-export type WeaponEvent = 'none' | 'fired' | 'dry' | 'reloadStart' | 'reloaded' | 'shell';
+type WeaponEvent = 'none' | 'fired' | 'dry' | 'reloadStart' | 'reloaded' | 'shell';
 
 export class Weapon {
   mag: number;
@@ -170,14 +168,14 @@ export class Weapon {
   }
 }
 
-export interface Target {
+interface Target {
   x: number;
   y: number;
   radius: number;
   dead: boolean;
 }
 
-export interface ShotHit<T extends Target> {
+interface ShotHit<T extends Target> {
   target: T;
   dist: number;
 }

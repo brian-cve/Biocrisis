@@ -1,7 +1,7 @@
 import { Rng } from '../../engine/rng';
 import { Chord, EXPLORE_KEY, MENU_KEY, MENU_PROGRESSION, chordMidi, scaleNote } from './theory';
 
-export type VoiceKind =
+type VoiceKind =
   | 'pad'
   | 'bell'
   | 'piano'
@@ -26,8 +26,8 @@ export interface NoteEvent {
   pan?: number;
 }
 
-export const MENU_BPM = 54;
-export const MENU_BEAT = 60 / MENU_BPM;
+const MENU_BPM = 54;
+const MENU_BEAT = 60 / MENU_BPM;
 export const MENU_BAR = MENU_BEAT * 4;
 
 export class MenuComposer {
@@ -77,7 +77,7 @@ export class MenuComposer {
 
 export const DRONE_PERIOD = 24;
 
-export interface TimedEvents {
+interface TimedEvents {
   gap: number;
   events: NoteEvent[];
 }
@@ -121,8 +121,8 @@ export class ExploreComposer {
   }
 }
 
-export const CHASE_BPM = 108;
-export const CHASE_BEAT = 60 / CHASE_BPM;
+const CHASE_BPM = 108;
+const CHASE_BEAT = 60 / CHASE_BPM;
 export const CHASE_BAR = CHASE_BEAT * 4;
 const S16 = CHASE_BEAT / 4;
 

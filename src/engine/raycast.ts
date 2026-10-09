@@ -7,7 +7,7 @@ export interface GridMap {
   readonly floors?: Uint8Array;
 }
 
-export const CELL_DOOR = 4;
+const CELL_DOOR = 4;
 export const CELL_EXIT = 5;
 export const CELL_BOSS_DOOR = 6;
 
