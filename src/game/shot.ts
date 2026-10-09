@@ -14,7 +14,7 @@ export interface ShotResult {
   kills: number;
 }
 
-/** Resolves one trigger pull: aim assist, then each pellet against the zombies, applying damage. */
+// Resolves one trigger pull: aim assist, then each pellet against the zombies, applying damage.
 export function resolveShot(map: GridMap, zombies: readonly Zombie[], from: Shooter, def: WeaponDef, aimAssist: number, offsets: ArrayLike<number>): ShotResult {
   let aim = from.angle;
   const assist = aimAssist > 0 ? findTarget(map, zombies, from.x, from.y, from.angle, def.range, aimAssist) : null;

@@ -4,7 +4,7 @@ import { Spatial } from './spatial';
 const zombie = (ids: number[]): string[] => ids.map((i) => `sfx/zombie_${i}.wav`);
 const sample = (names: string[]): string[] => names.map((n) => `sfx/${n}`);
 
-/** Sound banks: a call picks one file at random. Zombie ids are sorted by length (short = hits and bites). */
+// Sound banks: a call picks one file at random. Zombie ids are sorted by length (short = hits and bites).
 const BANK = {
   pistol: ['sfx/pistol.wav'],
   shotgun: ['sfx/shotgun.wav'],
@@ -33,7 +33,7 @@ const FILES = [...new Set([...Object.values(BANK).flat()])];
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const pick = (bank: string[]): string => bank[(Math.random() * bank.length) | 0];
 const play = (bank: string[], o: PlayOpts = {}): void => audio.play(pick(bank), o);
-/** Volume and stereo position of a sound that comes from the world. */
+// Volume and stereo position of a sound that comes from the world.
 const at = (sp: Spatial, floor: number, gain: number, o: PlayOpts = {}): PlayOpts => ({ ...o, pan: sp.pan, gain: gain * Math.max(floor, sp.gain) });
 
 export const sfx = {

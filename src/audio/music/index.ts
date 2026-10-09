@@ -13,7 +13,7 @@ interface Playing {
   gain: GainNode;
 }
 
-/** Streams looped music tracks and crossfades them; the chase track fades in with the tension value. */
+// Streams looped music tracks and crossfades them; the chase track fades in with the tension value.
 class MusicEngine {
   mode: MusicMode = 'off';
   intensity = 0;
