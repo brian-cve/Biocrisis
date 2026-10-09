@@ -1,4 +1,4 @@
-import { SpriteId } from '../engine/sprites';
+import { SpriteId } from '../engine/spriteBase';
 import { InvItem } from './inventory';
 import { ItemKind } from './map';
 import { WeaponId } from './weapons';

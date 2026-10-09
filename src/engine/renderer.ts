@@ -1,6 +1,7 @@
 import { BAYER4, LIGHT_LEVELS, PALETTE_SIZE, SHADE } from './palette';
 import { Camera, GridMap, RayHit, castHit, isDoorCell, makeRayHit } from './raycast';
-import { SPR_SIZE, SpriteBatch, TRANSPARENT } from './sprites';
+import { SpriteBatch } from './sprites';
+import { SPR_SIZE, TRANSPARENT } from './spriteBase';
 import { TEX_SIZE, Texture } from './textures';
 
 export const SCREEN_W = 320;

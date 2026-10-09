@@ -1,5 +1,5 @@
 import { GridMap, cellAt, isDoorCell } from '../engine/raycast';
-import { SpriteId, ZPose } from '../engine/sprites';
+import { SpriteId, ZPose } from '../engine/spriteBase';
 import { Doors } from './doors';
 import { DOOR_PASSABLE, moveWithCollision } from './collision';
 import { hasLineOfSight } from './los';

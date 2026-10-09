@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { PALETTE_U32 } from '../engine/palette';
-import { PISTOL_ICON, SPR_SIZE, SpriteId, TRANSPARENT, buildSpriteTextures } from '../engine/sprites';
+import { buildSpriteTextures } from '../engine/sprites';
+import { PISTOL_ICON, SPR_SIZE, SpriteId, TRANSPARENT } from '../engine/spriteBase';
 import { InvItem } from '../game/inventory';
 
 const ICON_SPRITE: Record<InvItem, number> = {
