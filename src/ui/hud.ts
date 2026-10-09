@@ -4,22 +4,22 @@ import { InvItem } from '../game/inventory';
 import { MAX_HP, World } from '../game/world';
 import { CELL_EXIT, isDoorCell } from '../engine/raycast';
 import { iconKey, registerIcons } from './icons';
-import { Action } from '../game/controls';
-import { WeaponId } from '../game/weapons';
+import { Action, bindingFor } from '../game/controls';
+import { WEAPON_ITEM } from '../game/items';
 
-const HINTS: readonly [Action, string, string][] = [
-  ['fire', 'SPC', 'Fire'],
-  ['interact', 'F', 'Use/Open door'],
-  ['reload', 'R', 'Reload'],
-  ['heal', 'H', 'Heal'],
-  ['inventory', 'I', 'Inventory'],
-  ['pause', 'P', 'Pause'],
+const HINTS: readonly [Action, string][] = [
+  ['fire', 'Fire'],
+  ['interact', 'Use/Open door'],
+  ['reload', 'Reload'],
+  ['heal', 'Heal'],
+  ['inventory', 'Inventory'],
+  ['pause', 'Pause'],
 ];
+const hintKey = (a: Action): string => bindingFor(a).keyLabels[0].replace(/^SPACE.*/, 'SPC');
 
 const FONT = 'monospace';
 const BAR_W = 70;
 const BOSS_BAR_W = 140;
-const WEAPON_ICON: Record<WeaponId, InvItem> = { pistol: InvItem.Pistol, shotgun: InvItem.Shotgun, smg: InvItem.Smg };
 
 export class Hud {
   private hpBar: Phaser.GameObjects.Rectangle;
@@ -39,6 +39,7 @@ export class Hud {
   private bossBar: Phaser.GameObjects.Rectangle;
   private bossName: Phaser.GameObjects.Text;
   private t = 0;
+  private shown = { hp: -1, color: -1, blink: false, tonics: -1, key: false, weapon: '', ammo: '', color2: '', sub: '', boss: '', bossHp: -1, msg: '', vignette: -1 };
   minimap = false;
 
   constructor(scene: Phaser.Scene) {
@@ -74,8 +75,8 @@ export class Hud {
   private buildHints(scene: Phaser.Scene): void {
     scene.add.rectangle(0, 0, SCREEN_W, 11, 0x050706, 0.55).setOrigin(0, 0).setDepth(10);
     const style = { fontFamily: FONT, fontSize: '7px' };
-    const items = HINTS.map(([, k, label]) => ({
-      key: scene.add.text(0, 2, k, { ...style, color: '#c4b040' }).setDepth(11),
+    const items = HINTS.map(([action, label]) => ({
+      key: scene.add.text(0, 2, hintKey(action), { ...style, color: '#c4b040' }).setDepth(11),
       label: scene.add.text(0, 2, label, { ...style, color: '#9ab49c' }).setDepth(11),
     }));
     const gap = 8;
@@ -90,28 +91,56 @@ export class Hud {
 
   update(w: World, dt: number): void {
     this.t += dt;
-    const frac = w.hp / MAX_HP;
+    const sh = this.shown;
     const low = w.hp <= 30 && !w.dead;
-    this.hpBar.width = Math.max(0, Math.min(BAR_W, Math.round(BAR_W * frac)));
     const label = w.healthLabel;
-    const color = label === 'Good' ? 0x56a05f : label === 'Caution' ? 0xc4b040 : 0xb02a24;
-    this.hpBar.setFillStyle(color);
     const blink = low && Math.sin(this.t * 10) < 0;
-    this.hpBar.setAlpha(blink ? 0.25 : 1);
-    this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Good' ? '#7ac080' : label === 'Caution' ? '#c4b040' : '#d05048');
-    this.hpLabel.setAlpha(blink ? 0.3 : 1);
-    this.hpText.setText(String(w.hp));
+    const color = label === 'Good' ? 0x56a05f : label === 'Caution' ? 0xc4b040 : 0xb02a24;
+    if (sh.hp !== w.hp || sh.color !== color) {
+      this.hpBar.width = Math.max(0, Math.min(BAR_W, Math.round((BAR_W * w.hp) / MAX_HP)));
+      this.hpBar.setFillStyle(color);
+      this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Good' ? '#7ac080' : label === 'Caution' ? '#c4b040' : '#d05048');
+      this.hpText.setText(String(w.hp));
+      sh.hp = w.hp;
+      sh.color = color;
+    }
+    if (sh.blink !== blink) {
+      this.hpBar.setAlpha(blink ? 0.25 : 1);
+      this.hpLabel.setAlpha(blink ? 0.3 : 1);
+      sh.blink = blink;
+    }
 
-    this.tonicText.setText(`x${w.tonics}`);
-    this.tonicIcon.setAlpha(w.tonics > 0 ? 1 : 0.3);
-    this.keyIcon.setVisible(w.hasKey);
+    if (sh.tonics !== w.tonics) {
+      this.tonicText.setText(`x${w.tonics}`);
+      this.tonicIcon.setAlpha(w.tonics > 0 ? 1 : 0.3);
+      sh.tonics = w.tonics;
+    }
+    if (sh.key !== w.hasKey) {
+      this.keyIcon.setVisible(w.hasKey);
+      sh.key = w.hasKey;
+    }
 
     const wp = w.weapon;
-    this.weaponIcon.setTexture(iconKey(WEAPON_ICON[w.equipped]));
+    if (sh.weapon !== w.equipped) {
+      this.weaponIcon.setTexture(iconKey(WEAPON_ITEM[w.equipped]));
+      sh.weapon = w.equipped;
+    }
     const reserve = wp.def.ammo === 'bullets' ? w.ammo.bullets : w.ammo.shells;
-    this.ammoText.setText(wp.reloading ? '...' : `${wp.mag}`);
-    this.ammoText.setColor(wp.mag === 0 && !wp.reloading ? '#d05048' : '#c4c4be');
-    this.ammoSub.setText(`${wp.def.name}  /${reserve}`);
+    const ammo = wp.reloading ? '...' : `${wp.mag}`;
+    if (sh.ammo !== ammo) {
+      this.ammoText.setText(ammo);
+      sh.ammo = ammo;
+    }
+    const ammoColor = wp.mag === 0 && !wp.reloading ? '#d05048' : '#c4c4be';
+    if (sh.color2 !== ammoColor) {
+      this.ammoText.setColor(ammoColor);
+      sh.color2 = ammoColor;
+    }
+    const sub = `${wp.def.name}  /${reserve}`;
+    if (sh.sub !== sub) {
+      this.ammoSub.setText(sub);
+      sh.sub = sub;
+    }
 
     const b = w.boss;
     const showBoss = b !== null && !b.dead;
@@ -119,16 +148,30 @@ export class Hud {
     this.bossBar.setVisible(showBoss);
     this.bossName.setVisible(showBoss);
     if (showBoss) {
-      this.bossBar.width = Math.max(1, Math.round(BOSS_BAR_W * (b.hp / b.maxHp)));
-      this.bossBar.setFillStyle(b.enraged ? 0xe04a30 : 0xb02a24);
-      this.bossName.setText(b.enraged ? `${b.def.name.toUpperCase()} - ENRAGED` : b.def.name.toUpperCase());
+      const hp = Math.max(1, Math.round(BOSS_BAR_W * (b.hp / b.maxHp)));
+      const name = b.enraged ? `${b.def.name.toUpperCase()} - ENRAGED` : b.def.name.toUpperCase();
+      if (sh.bossHp !== hp || sh.boss !== name) {
+        this.bossBar.width = hp;
+        this.bossBar.setFillStyle(b.enraged ? 0xe04a30 : 0xb02a24);
+        this.bossName.setText(name);
+        sh.bossHp = hp;
+        sh.boss = name;
+      }
     }
 
-    this.message.setText(w.messageTime > 0 ? w.message : '');
-    this.message.setAlpha(Math.min(1, w.messageTime * 2));
+    const msg = w.messageTime > 0 ? w.message : '';
+    if (sh.msg !== msg) {
+      this.message.setText(msg);
+      sh.msg = msg;
+    }
+    if (msg !== '') this.message.setAlpha(Math.min(1, w.messageTime * 2));
 
     const pulse = low ? 0.12 + 0.1 * Math.sin(this.t * 5) : 0;
-    this.vignette.setFillStyle(0x8a0000, Math.min(0.6, w.hurtFlash * 0.45 + pulse));
+    const vignette = Math.round(Math.min(0.6, w.hurtFlash * 0.45 + pulse) * 100);
+    if (sh.vignette !== vignette) {
+      this.vignette.setFillStyle(0x8a0000, vignette / 100);
+      sh.vignette = vignette;
+    }
 
     this.mini.clear();
     if (this.minimap) this.drawMinimap(w);

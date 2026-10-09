@@ -1,5 +1,4 @@
-import { Camera } from '../engine/raycast';
-import { GridMap } from '../engine/raycast';
+import { Camera, GridMap } from '../engine/raycast';
 import { circleHitsWall, moveWithCollision } from './collision';
 
 interface Blocker {

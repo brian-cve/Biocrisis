@@ -131,7 +131,7 @@ export class GameScene extends Phaser.Scene {
     const dt = delta / 1000;
     const w = this.world;
     this.applySettings();
-    this.gi.update();
+    this.gi.update(dt);
     const gi = this.gi;
 
     if (!this.ending && (w.dead || w.won)) {

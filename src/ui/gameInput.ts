@@ -23,21 +23,21 @@ export class GameInput {
 
   constructor(private readonly scene: Phaser.Scene) {
     this.keys = scene.input.keyboard!.addKeys(allKeyNames().join(',')) as Record<string, Phaser.Input.Keyboard.Key>;
-    const onDown = () => this.queued.add('fire');
     const onWheel = () => this.queued.add('cycleWeapon');
     const onMove = (p: Phaser.Input.Pointer) => {
       if (scene.input.mouse?.locked) this.lookAcc += p.movementX * 0.0035;
     };
-    scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+    const onDown = (p: Phaser.Input.Pointer) => {
       if (this.mouseLook && !scene.input.mouse?.locked) {
         scene.input.mouse?.requestPointerLock();
         return;
       }
-      if (!p.wasTouch || !this.touchActive) onDown();
-    });
+      if (!p.wasTouch || !this.touchActive) this.queued.add('fire');
+    };
+    scene.input.on('pointerdown', onDown);
     scene.input.on('wheel', onWheel);
     scene.input.on('pointermove', onMove);
-    this.offs.push(() => scene.input.off('pointerdown'), () => scene.input.off('wheel', onWheel), () => scene.input.off('pointermove', onMove));
+    this.offs.push(() => scene.input.off('pointerdown', onDown), () => scene.input.off('wheel', onWheel), () => scene.input.off('pointermove', onMove));
   }
 
   touchActive = false;
@@ -50,7 +50,7 @@ export class GameInput {
     return this.pressedSet.has(a);
   }
 
-  update(): void {
+  update(dt: number): void {
     this.heldSet.clear();
     this.pressedSet.clear();
     const JD = Phaser.Input.Keyboard.JustDown;
@@ -110,7 +110,7 @@ export class GameInput {
       if (Math.abs(rx) > DEADZONE) m.turn = rx;
     }
     const touchTurning = touchState.held.left !== touchState.held.right;
-    this.touchTurnT = touchTurning ? this.touchTurnT + 1 / 60 : 0;
+    this.touchTurnT = touchTurning ? this.touchTurnT + dt : 0;
     if (touchTurning && Math.abs(m.turn) === 1) m.turn *= Math.min(1, 0.5 + (this.touchTurnT / 0.35) * 0.5);
     m.turn *= this.sensitivity;
     m.look = this.lookAcc * this.sensitivity;
@@ -120,6 +120,5 @@ export class GameInput {
   dispose(): void {
     for (const off of this.offs) off();
     this.offs.length = 0;
-    this.scene.input.off('pointerdown');
   }
 }
