@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>BioCrisis</title>
     <style>
-      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; touch-action: none; }
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; touch-action: none;
+        -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%; }
       /* El escenario respeta las zonas seguras (muescas, esquinas redondeadas) y la altura dinámica del navegador móvil. */
       #stage { position: fixed; top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px);
         bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); }
@@ -15,6 +16,23 @@
   </head>
   <body>
     <div id="stage"><div id="game"></div></div>
+    <script>
+      // iOS Safari ignora user-scalable=no: se bloquean a mano el zoom por pellizco y el de doble toque.
+      (function () {
+        var opts = { passive: false };
+        var stop = function (e) { e.preventDefault(); };
+        ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) { document.addEventListener(n, stop, opts); });
+        document.addEventListener('touchstart', function (e) { if (e.touches.length > 1) e.preventDefault(); }, opts);
+        document.addEventListener('touchmove', function (e) { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, opts);
+        var last = 0;
+        document.addEventListener('touchend', function (e) {
+          var now = Date.now();
+          if (now - last < 350) e.preventDefault(); // dos toques seguidos (p. ej. disparar rápido) = zoom
+          last = now;
+        }, opts);
+        document.addEventListener('dblclick', stop, opts);
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -38,7 +38,6 @@ export class TitleScene extends Phaser.Scene {
       ],
       { x: 40, y: 118, spacing: 15, fontSize: 10, colors: ['#d8d4c4', '#6f8a78'] },
     );
-    this.add.text(6, SCREEN_H - 10, 'Arte y audio 100 % procedurales', { fontFamily: 'monospace', fontSize: '8px', color: '#3f5549' });
 
     const bg = this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x050706, 0.92).setOrigin(0, 0);
     const lines = this.add.text(SCREEN_W / 2, 50, 'BIOCRISIS\n\nDiseño, código, arte y sonido\ngenerados proceduralmente.\n\nHomenaje original al survival-horror\nclásico en primera persona.\nNo contiene material de terceros.\n\n[ Esc / clic para volver ]', {

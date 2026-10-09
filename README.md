@@ -1,14 +1,45 @@
+<div align="center">
+
 # BioCrisis
 
-Homenaje original a los survival-horror en primera persona de la era PS1: una casa pequeña de noche, munición escasa,
-zombis lentos y amenazantes, una llave que encontrar y una puerta de salida. Seudo-3D con *raycasting*, jugable en
-escritorio y en móvil (horizontal).
+**Survival-horror en primera persona, directo en el navegador.**
+Una casa de noche, munición escasa, zombis que te oyen... y algo enorme detrás de la última puerta.
 
-- **Todo el arte y el audio son procedurales**: texturas, sprites, HUD, logo, SFX y música se generan por código
-  (Canvas 2D / `ImageData` / Web Audio). No hay ni un archivo de imagen o sonido: `dist/` contiene solo un HTML y un JS.
-- **Contenido 100 % original.** Nombre, personajes, casa, logo y tipografía son propios.
-- Stack: Phaser 3.90.0 + Vite + TypeScript. El motor (`src/engine/`) y la lógica (`src/game/`) son TypeScript puro, sin
-  Phaser ni DOM, y están cubiertos por tests (Vitest).
+[**▶ Jugar online**](https://brian-cve.github.io/Biocrisis/) · [Controles](#controles-escritorio) · [Ejecutar en local](#ejecutar)
+
+![Pantalla de título de BioCrisis](docs/media/titulo.gif)
+
+</div>
+
+## De qué va
+
+Despiertas en el recibidor de una casa abandonada. Los zombis duermen, pero no por mucho: cada disparo se oye por toda la
+planta. Encuentra la **llave** en el dormitorio, vuelve al recibidor y abre la puerta que lleva a la **arena del jefe**. Al otro
+lado te esperan una metralleta, cajas de munición... y la **Abominación**. Derrótala para abrir la salida real.
+
+| | |
+|---|---|
+| ![Recorriendo la casa hacia la llave](docs/media/llave.gif) | ![Disparando a un corredor con la pistola](docs/media/zombi.gif) |
+| **Explora** una casa de 20×20 con puertas, pasillos para huir y objetos que recoger. | **Elige tus peleas.** Rezagados lentos y resistentes, corredores rápidos y frágiles; la munición no alcanza para todos. |
+| ![Abriendo la puerta de la arena](docs/media/arena.gif) | ![Pelea contra el jefe con la metralleta](docs/media/jefe.gif) |
+| **La puerta** del recibidor pide la llave. Al abrirla, el jefe despierta. | **La pelea final**: metralleta en ráfaga, cobertura entre columnas y un jefe que se enfurece por debajo del 50 % de vida. |
+
+## Características
+
+- **Raycasting clásico** (estilo Wolfenstein 3D / Doom) con puertas animadas, sprites con z-buffer, niebla y sombreado dithering.
+- **Zombis con IA**: oyen los disparos, siguen tu rastro con A*, abren puertas y se rinden si los pierdes de vista. Dos tipos
+  (rezagado y corredor) más un **jefe** con barra de vida, fase de furia y poca reacción al aturdimiento.
+- **Tres armas**: pistola, escopeta (abanico de perdigones con caída de daño) y metralleta de fuego automático.
+- **Inventario de 8 ranuras** estilo survival-horror, tónicos de curación y munición limitada.
+- **La llave despierta la casa**: el clímax del nivel; la salida es lenta y el final, tenso.
+- **Todo procedural**: texturas, sprites, HUD, logo, efectos de sonido y música generativa se crean por código
+  (Canvas 2D y Web Audio). No hay un solo archivo de imagen o sonido en el juego.
+- **Audio espacial**: gemidos, pasos y puertas con paneo y atenuación según la posición; música que sube de intensidad con el peligro.
+- **Escritorio y móvil** (en horizontal, con mando táctil estilo Game Boy) y soporte para gamepad.
+- **Contenido 100 % original**: nombre, personajes, casa, logo y tipografía son propios.
+
+**Stack:** Phaser 3.90 + Vite + TypeScript. El motor (`src/engine/`) y la lógica (`src/game/`) son TypeScript puro, sin Phaser
+ni DOM, y están cubiertos por tests (Vitest).
 
 ## Ejecutar
 
@@ -17,7 +48,7 @@ Requisitos: Node 20+ (probado con Node 26).
 ```bash
 npm install
 npm run dev          # servidor de desarrollo en http://localhost:5173 (también accesible por red local)
-npm test             # tests unitarios (Vitest, 128 tests)
+npm test             # tests unitarios (Vitest, 137 tests)
 npm run build        # comprueba tipos (tsc) y genera dist/
 npm run preview      # sirve dist/ en http://localhost:4173
 npm run sim          # simulación de balance con un jugador automático (ver docs/BALANCE.md)
@@ -102,6 +133,7 @@ Usan Playwright (dependencia de desarrollo). La primera vez: `npx playwright ins
 | `node tools/mobile.mjs <dir>` | móvil emulado: táctil real, multitouch, vertical, tamaños, CPU ×1/×4/×6/×10 |
 | `node tools/alloc.mjs`, `tools/heapprof.mjs` | tasa de asignaciones y perfil del heap |
 | `node tools/prodcheck.mjs` | build de producción (con `npm run preview`): flujo, sin dominios externos ni ganchos dev |
+| `node tools/capture-gifs.mjs <dir>` + `python3 tools/make_gifs.py <dir> docs/media` | regenera los GIF de este README |
 | `node tools/combat.mjs`, `arsenal.mjs`, `playthrough.mjs`, `tour.mjs`, `shot.mjs` | combate, armas/inventario, partida sin enemigos, recorrido y capturas |
 
 En desarrollo, `?scene=Game` (o cualquier escena) salta directamente a esa escena.
