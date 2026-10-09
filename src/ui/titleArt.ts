@@ -19,7 +19,6 @@ function canvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContex
   return [c, c.getContext('2d')!];
 }
 
-/** Niebla: ruido de valor suavizado, repetible en horizontal. */
 function fogTile(seed: number): HTMLCanvasElement {
   const [c, ctx] = canvas(W * 2, 80);
   const img = ctx.createImageData(W * 2, 80);
@@ -44,10 +43,8 @@ function fogTile(seed: number): HTMLCanvasElement {
   return c;
 }
 
-/** Dibuja la silueta de la casa, el árbol muerto y la valla sobre un contexto ya con el cielo. */
 function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
   ctx.fillStyle = '#030504';
-  // colina
   ctx.beginPath();
   ctx.moveTo(0, 170);
   ctx.quadraticCurveTo(100, 150, 200, 160);
@@ -55,10 +52,8 @@ function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
   ctx.lineTo(W, H);
   ctx.lineTo(0, H);
   ctx.fill();
-  // cuerpo de la casa
   ctx.fillRect(120, 98, 100, 62);
-  ctx.fillRect(100, 118, 30, 42); // ala
-  // tejado a dos aguas
+  ctx.fillRect(100, 118, 30, 42);
   ctx.beginPath();
   ctx.moveTo(112, 98);
   ctx.lineTo(170, 62);
@@ -69,13 +64,11 @@ function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
   ctx.lineTo(115, 100);
   ctx.lineTo(136, 118);
   ctx.fill();
-  ctx.fillRect(196, 66, 8, 22); // chimenea
+  ctx.fillRect(196, 66, 8, 22);
   ctx.fillRect(194, 63, 12, 4);
-  // porche
   ctx.fillRect(150, 138, 40, 3);
   ctx.fillRect(152, 138, 2, 22);
   ctx.fillRect(186, 138, 2, 22);
-  // árbol muerto
   ctx.strokeStyle = '#030504';
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -89,7 +82,6 @@ function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
     ctx.lineTo(x2, y2);
     ctx.stroke();
   }
-  // valla rota
   ctx.fillStyle = '#030504';
   for (let x = 6; x < W; x += 9) {
     if (hash(x, 1, 5) > 0.82) continue;
@@ -97,7 +89,6 @@ function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
     ctx.fillRect(x, 168 - h + (x > 100 && x < 230 ? 4 : 0), 3, h + 6);
   }
   ctx.fillRect(0, 160, W, 2);
-  // ventanas (iluminadas o apagadas) y puerta entreabierta
   const win = (x: number, y: number, w: number, h: number, lit: boolean) => {
     ctx.fillStyle = lit && windowsLit ? '#806b40' : '#0a0f0c';
     ctx.fillRect(x, y, w, h);
@@ -107,10 +98,9 @@ function drawHouse(ctx: CanvasRenderingContext2D, windowsLit: boolean): void {
   win(130, 130, 12, 14, false);
   win(106, 128, 10, 12, false);
   ctx.fillStyle = '#0a0f0c';
-  ctx.fillRect(163, 118, 14, 42); // puerta
+  ctx.fillRect(163, 118, 14, 42);
 }
 
-/** Fondo del título: composición dramática dibujada por código y animada (niebla, lluvia, relámpagos, luz que parpadea). */
 export class TitleArt {
   private tex: Phaser.Textures.CanvasTexture;
   private ctx: CanvasRenderingContext2D;
@@ -139,12 +129,10 @@ export class TitleArt {
       g.addColorStop(1, `rgb(${lerp(22, 130)},${lerp(34, 150)},${lerp(30, 140)})`);
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
-      // luna velada
       ctx.fillStyle = `rgba(150,170,155,${0.25 + 0.4 * bright})`;
       ctx.beginPath();
       ctx.arc(262, 38, 13, 0, Math.PI * 2);
       ctx.fill();
-      // nubes
       for (let i = 0; i < 26; i++) {
         const cx = (i * 37) % W;
         const cy = 14 + Math.floor(hash(i, 3, 8) * 70);
@@ -178,12 +166,10 @@ export class TitleArt {
     ctx.globalAlpha = 1;
     ctx.drawImage(this.base, 0, 0);
 
-    // relámpagos
     this.nextFlash -= dt;
     if (this.nextFlash <= 0) {
       this.flash = 1;
       this.nextFlash = 6 + Math.random() * 7;
-      // el trueno llega después (temporizador de la escena: se limpia solo al salir)
       this.scene.time.delayedCall(700 + Math.random() * 1200, () => sfx.thunder());
     }
     if (this.flash > 0) {
@@ -194,7 +180,6 @@ export class TitleArt {
       this.flash = Math.max(0, this.flash - dt * 1.6);
     }
 
-    // niebla en dos capas a distinta velocidad
     ctx.globalAlpha = 0.9;
     ctx.drawImage(this.fogA, -((this.t * 6) % W), 96);
     ctx.drawImage(this.fogA, W - ((this.t * 6) % W), 96);
@@ -203,17 +188,14 @@ export class TitleArt {
     ctx.drawImage(this.fogB, W - ((this.t * 11) % W), 128);
     ctx.globalAlpha = 1;
 
-    // luz de una ventana que falla
     this.lightA = Math.random() < 0.04 ? 0.15 + Math.random() * 0.4 : Math.min(1, this.lightA + dt * 3);
     ctx.fillStyle = `rgba(150,120,60,${0.8 * this.lightA})`;
     ctx.fillRect(130, 130, 12, 14);
     ctx.fillStyle = `rgba(150,120,60,${0.05 * this.lightA})`;
     ctx.fillRect(124, 124, 24, 26);
-    // rendija de luz en la puerta entreabierta
     ctx.fillStyle = `rgba(128,107,64,${0.55 * this.lightA})`;
     ctx.fillRect(170, 120, 2, 40);
 
-    // lluvia
     ctx.fillStyle = 'rgba(122,147,124,0.45)';
     for (const d of this.drops) {
       d.y += d.v * dt;

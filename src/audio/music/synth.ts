@@ -2,17 +2,13 @@ import { audio } from '../engine';
 import { NoteEvent } from './composer';
 import { midiToHz } from './theory';
 
-/** Tope de nodos fuente de música vivos a la vez (CPU móvil). Los stings lo ignoran. */
 const MAX_MUSIC_SOURCES = 44;
 
 export interface Sink {
-  /** Entrada seca de la capa. */
   dry: AudioNode;
-  /** Entrada de la reverb compartida. */
   send: AudioNode;
 }
 
-/** Respuesta al impulso sintética: ruido estéreo con caída exponencial y suavizado (cola oscura). */
 export function makeImpulse(ctx: BaseAudioContext, seconds = 3.4, decay = 2.6): AudioBuffer {
   const len = Math.floor(ctx.sampleRate * seconds);
   const buf = ctx.createBuffer(2, len, ctx.sampleRate);
@@ -22,7 +18,7 @@ export function makeImpulse(ctx: BaseAudioContext, seconds = 3.4, decay = 2.6): 
     for (let i = 0; i < len; i++) {
       const t = i / len;
       const env = Math.pow(1 - t, decay);
-      lp += (Math.random() * 2 - 1 - lp) * (0.35 - 0.25 * t); // la cola pierde agudos
+      lp += (Math.random() * 2 - 1 - lp) * (0.35 - 0.25 * t);
       d[i] = lp * env;
     }
   }
@@ -35,7 +31,6 @@ interface Built {
   end: number;
 }
 
-/** Cuenta, arranca y programa la limpieza de todos los nodos de una voz (se desconectan al terminar la primera fuente). */
 function run(b: Built, start: number): void {
   audio.musicNodes += b.sources.length;
   let remaining = b.sources.length;
@@ -50,7 +45,6 @@ function run(b: Built, start: number): void {
   }
 }
 
-/** Envolvente ADSR simplificada: ataque lineal, sostenido y relajación exponencial. */
 function env(g: GainNode, t0: number, attack: number, hold: number, release: number, peak: number): number {
   g.gain.setValueAtTime(0.0001, t0);
   g.gain.linearRampToValueAtTime(peak, t0 + attack);
@@ -87,7 +81,6 @@ function osc(ctx: AudioContext, type: OscillatorType, hz: number, detuneCents = 
   return o;
 }
 
-/** Reproduce un evento en el instante absoluto `t0` (reloj de AudioContext). Devuelve false si se omitió por el tope de voces. */
 export function playEvent(ctx: AudioContext, ev: NoteEvent, t0: number, sink: Sink, force = false): boolean {
   if (!force && audio.musicNodes >= MAX_MUSIC_SOURCES) return false;
   const hz = midiToHz(ev.midi);
@@ -100,7 +93,6 @@ export function playEvent(ctx: AudioContext, ev: NoteEvent, t0: number, sink: Si
   switch (ev.voice) {
     case 'pad':
     case 'warmPad': {
-      // dos sierras desafinadas + triángulo filtradas: cuerpo sin aspereza; ataque largo
       const lp = ctx.createBiquadFilter();
       lp.type = 'lowpass';
       lp.frequency.value = ev.voice === 'warmPad' ? 1400 : 650 + ev.vel * 500;
@@ -118,7 +110,6 @@ export function playEvent(ctx: AudioContext, ev: NoteEvent, t0: number, sink: Si
       break;
     }
     case 'drone': {
-      // dos senos a ~0.4 Hz de batido + una sierra muy filtrada que respira
       const o1 = osc(ctx, 'sine', hz);
       const o2 = osc(ctx, 'sine', hz + 0.4);
       const o3 = osc(ctx, 'sawtooth', hz);
@@ -145,7 +136,6 @@ export function playEvent(ctx: AudioContext, ev: NoteEvent, t0: number, sink: Si
       break;
     }
     case 'bell': {
-      // parciales inarmónicos con caída rápida: timbre de campana/celesta
       for (const [mul, amp] of [[1, 1], [2.76, 0.32], [5.4, 0.1]] as [number, number][]) {
         const o = osc(ctx, 'sine', hz * mul);
         const pg = ctx.createGain();
@@ -262,7 +252,6 @@ export function playEvent(ctx: AudioContext, ev: NoteEvent, t0: number, sink: Si
       break;
     }
     case 'strings': {
-      // dos sierras desafinadas con vibrato y trémolo, filtradas: cuerda aguda tensa
       const o1 = osc(ctx, 'sawtooth', hz, -9);
       const o2 = osc(ctx, 'sawtooth', hz, 9);
       const vib = osc(ctx, 'sine', 5.5);

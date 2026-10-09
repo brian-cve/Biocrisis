@@ -10,9 +10,9 @@ describe('teoría', () => {
   });
   it('scaleNote recorre la escala y cruza octavas (también hacia abajo)', () => {
     expect(scaleNote(MENU_KEY, 0)).toBe(48);
-    expect(scaleNote(MENU_KEY, 2)).toBe(51); // 3ª menor
+    expect(scaleNote(MENU_KEY, 2)).toBe(51);
     expect(scaleNote(MENU_KEY, 7)).toBe(60);
-    expect(scaleNote(MENU_KEY, -1)).toBe(46); // 7ª menor una octava abajo
+    expect(scaleNote(MENU_KEY, -1)).toBe(46);
   });
   it('el frigio tiene la segunda menor y el menor natural no', () => {
     expect(SCALES.phrygian[1]).toBe(1);
@@ -100,8 +100,8 @@ describe('exploración', () => {
       t += n.gap;
       if (n.events.length === 0) silent++;
     }
-    expect(silent / N).toBeGreaterThan(0.3); // más de un tercio de los pasos no suena nada
-    expect(N / t).toBeLessThan(0.15); // < 0.15 eventos por segundo
+    expect(silent / N).toBeGreaterThan(0.3);
+    expect(N / t).toBeLessThan(0.15);
   });
   it('las disonancias son 2ª menores o tritonos y nunca seguidas (≥ 12 s entre racimos)', () => {
     const c = new ExploreComposer(4);
@@ -175,14 +175,14 @@ describe('stings', () => {
     const s = gameOverSting();
     const cl = s.filter((e) => e.voice === 'cluster').map((e) => e.midi % 12);
     expect(cl).toContain(0);
-    expect(cl).toContain(1); // 2ª menor
-    expect(cl).toContain(6); // tritono
+    expect(cl).toContain(1);
+    expect(cl).toContain(6);
     expect(Math.max(...s.map((e) => e.t + e.dur))).toBeLessThan(7);
   });
   it('Victoria: acorde de Do mayor (resolución), campanas ascendentes y breve', () => {
     const s = winSting();
     const pad = s.filter((e) => e.voice === 'warmPad').map((e) => e.midi % 12);
-    expect(new Set(pad)).toEqual(new Set([0, 7, 4])); // Do, Sol, Mi
+    expect(new Set(pad)).toEqual(new Set([0, 7, 4]));
     const bells = s.filter((e) => e.voice === 'bell').map((e) => e.midi);
     expect([...bells].sort((a, b) => a - b)).toEqual(bells);
     expect(Math.max(...s.map((e) => e.t + e.dur))).toBeLessThan(9);
@@ -205,11 +205,11 @@ describe('intensidad adaptativa', () => {
   });
   it('sube rápido y baja despacio al calmarse', () => {
     const t = new IntensityTracker(1.6, 8);
-    for (let i = 0; i < 120; i++) t.update(0.9, 1 / 60); // 2 s de persecución
+    for (let i = 0; i < 120; i++) t.update(0.9, 1 / 60);
     expect(t.value).toBeCloseTo(0.9, 1);
-    for (let i = 0; i < 60 * 3; i++) t.update(0, 1 / 60); // 3 s de calma
-    expect(t.value).toBeGreaterThan(0.4); // aún no se ha calmado
-    for (let i = 0; i < 60 * 6; i++) t.update(0, 1 / 60); // 6 s más
+    for (let i = 0; i < 60 * 3; i++) t.update(0, 1 / 60);
+    expect(t.value).toBeGreaterThan(0.4);
+    for (let i = 0; i < 60 * 6; i++) t.update(0, 1 / 60);
     expect(t.value).toBe(0);
   });
 });

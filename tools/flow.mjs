@@ -1,4 +1,3 @@
-// Recorre el flujo de menús con teclado real y captura cada pantalla. Uso: node tools/flow.mjs <dir>
 import { chromium } from 'playwright';
 const dir = process.argv[2] ?? '.';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });

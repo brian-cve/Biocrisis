@@ -7,7 +7,6 @@ import { buildLogo } from '../ui/logo';
 import { touchUI } from '../ui/touchUI';
 import { fadeTo } from '../ui/transition';
 
-/** Arranque: genera los recursos procedurales y espera un gesto (desbloquea el audio por la política de autoplay). */
 export class BootScene extends Phaser.Scene {
   private done = false;
 
@@ -17,7 +16,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     this.done = false;
-    touchUI.setSuspended(true); // los toques deben llegar al lienzo
+    touchUI.setSuspended(true);
     registerIcons(this.textures);
     buildLogo(this.textures);
     this.add.rectangle(0, 0, SCREEN_W, SCREEN_H, 0x000000).setOrigin(0, 0);
@@ -31,7 +30,7 @@ export class BootScene extends Phaser.Scene {
     const go = () => {
       if (this.done) return;
       this.done = true;
-      audio.unlock(); // dentro del gesto del usuario
+      audio.unlock();
       touchUI.setSuspended(false);
       sfx.menuAccept();
       fadeTo(this, 'Title', undefined, 450);

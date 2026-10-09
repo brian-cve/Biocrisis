@@ -22,10 +22,6 @@ const FB = 'fb';
 const END_DELAY_DEAD = 1.8;
 const END_DELAY_WON = 0.7;
 
-/**
- * Partida. Todo el estado vive en `create()` y se libera en SHUTDOWN, de modo que se puede abandonar y empezar otra
- * sin recargar la página (sin listeners, audio ni texturas colgando).
- */
 export class GameScene extends Phaser.Scene {
   world!: World;
   private cam: Camera = { x: 0, y: 0, dirX: 1, dirY: 0, planeX: 0, planeY: 0.66 };
@@ -76,7 +72,6 @@ export class GameScene extends Phaser.Scene {
       const p = this.world.player;
       return this.world.doors.ahead(p.x, p.y, Math.cos(p.angle), Math.sin(p.angle)) !== undefined;
     };
-    // vibración del dispositivo ante disparos y daño (se encadena al audio)
     const prev = this.world.onEvent;
     this.world.onEvent = (e, x, y) => {
       prev?.(e, x, y);
@@ -91,7 +86,6 @@ export class GameScene extends Phaser.Scene {
     music.play('explore');
 
     this.events.on('resume', this.onResume, this);
-    // con el ratón capturado, el navegador gasta el primer Esc en soltarlo y no entrega la tecla: se trata como pausa
     const onLockChange = () => {
       if (!document.pointerLockElement && this.scene.isActive() && !this.world.dead && !this.world.won && !this.ending && this.time.now >= this.lockUntil) this.openPause();
     };
@@ -105,7 +99,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onResume(): void {
-    this.lockUntil = this.time.now + 250; // el teclado encola eventos en pausa: evita reabrir con la misma pulsación
+    this.lockUntil = this.time.now + 250;
     this.input.keyboard?.resetKeys();
     audio.setDucked(false);
   }
@@ -119,7 +113,6 @@ export class GameScene extends Phaser.Scene {
     this.hud.minimap = s.minimap;
   }
 
-  /** Libera todo lo que la partida creó fuera del ciclo de vida de Phaser. */
   private dispose(): void {
     this.events.off('resume', this.onResume, this);
     this.gi?.dispose();
@@ -173,7 +166,7 @@ export class GameScene extends Phaser.Scene {
     let look = gi.move.look ?? 0;
     this.fixed.advance(dt, (step) => {
       gi.move.look = look;
-      look = 0; // el giro del ratón se aplica una sola vez por frame
+      look = 0;
       w.update(gi.move, step);
     });
     this.gameAudio.update(dt);
@@ -213,7 +206,6 @@ export class GameScene extends Phaser.Scene {
     this.scene.pause();
   }
 
-  /** Estadísticas de depuración (solo desarrollo): para comprobar que no hay fugas entre partidas. */
   debugStats(): Record<string, number | string> {
     const kb = this.input.keyboard as unknown as { keys?: unknown[] } | null;
     return {
@@ -226,7 +218,6 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /** Arma en primera persona: balanceo al andar, retroceso, bombeo, bajada al recargar/cambiar/curarse. */
   private drawWeapon(): void {
     const w = this.world;
     const wp = w.weapon;

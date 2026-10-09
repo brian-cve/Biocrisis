@@ -2,7 +2,6 @@ import { GridMap, castRay, makeRayHit } from '../engine/raycast';
 
 const hit = makeRayHit();
 
-/** ¿Hay línea de visión libre entre dos puntos? Las puertas cerradas bloquean; las abiertas no. Sin asignaciones. */
 export function hasLineOfSight(map: GridMap, x0: number, y0: number, x1: number, y1: number): boolean {
   const dx = x1 - x0;
   const dy = y1 - y0;

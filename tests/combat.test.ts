@@ -174,7 +174,7 @@ describe('zombis', () => {
 describe('World: combate', () => {
   it('disparar gasta bala, cuenta estadística y mata a un corredor en 4 impactos', () => {
     const w = new World();
-    const z = w.zombies[1]; // corredor de la cocina
+    const z = w.zombies[1];
     w.player.x = z.x - 3;
     w.player.y = z.y;
     w.player.angle = 0;
@@ -183,7 +183,7 @@ describe('World: combate', () => {
     for (let i = 0; i < 4; i++) {
       w.fire();
       for (let t = 0; t < 30; t++) w.update(idle, 1 / 60);
-      z.x = w.player.x + 3; // evita que se acerque durante la prueba
+      z.x = w.player.x + 3;
       z.y = w.player.y;
     }
     expect(killed).toBe(1);
@@ -196,7 +196,7 @@ describe('World: combate', () => {
     w.player.x = 6.5;
     w.player.y = 9.5;
     w.fire();
-    expect(w.zombies[0].state).not.toBe(ZState.Idle); // el de la sala (a ~1.4 celdas)
+    expect(w.zombies[0].state).not.toBe(ZState.Idle);
   });
   it('el daño al jugador lo mata y detiene el mundo', () => {
     const w = new World();
@@ -227,7 +227,7 @@ describe('los zombis son sólidos para el jugador', () => {
     w.player.x = 9.5; w.player.y = 5.0; w.player.angle = Math.PI / 2;
     for (let i = 0; i < 60 * 4; i++) { z.x = 9.5; z.y = 8.0; w.update(fwd, 1 / 60); }
     expect(w.player.y).toBeLessThan(8.0 - 0.5);
-    z.hurt(1e12, 0, 1, 0); // muerto: ya no estorba
+    z.hurt(1e12, 0, 1, 0);
     w.player.y = 5.0;
     for (let i = 0; i < 60 * 4; i++) w.update(fwd, 1 / 60);
     expect(w.player.y).toBeGreaterThan(9);

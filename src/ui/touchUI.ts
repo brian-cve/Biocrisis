@@ -12,7 +12,6 @@ const CSS = `
 .tc-root * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: none; }
 .tc-hit { position: absolute; pointer-events: auto; }
 
-/* D-pad: un solo elemento táctil (se desliza el dedo entre direcciones, también en diagonal) */
 .tc-dpad { left: calc(env(safe-area-inset-left, 0px) + 3vmin); bottom: calc(env(safe-area-inset-bottom, 0px) + 5vmin);
   width: var(--dp); height: var(--dp); }
 .tc-dpad .arm { position: absolute; background: rgba(5,7,6,.55); border: 2px solid #3f5549; color: #7a937c;
@@ -30,7 +29,6 @@ const CSS = `
 .tc-btn small { position: absolute; font-weight: normal; font-size: max(9px, 2.4vmin); color: #9ab49c; white-space: nowrap; }
 
 .tc-round { width: var(--ab); height: var(--ab); border-radius: 50%; font-size: calc(var(--ab) / 2.4); }
-/* A y B quedan por encima de la barra de estado del HUD (munición/vida) para no taparla */
 .tc-a { right: calc(env(safe-area-inset-right, 0px) + 3vmin); bottom: calc(env(safe-area-inset-bottom, 0px) + 33vmin); }
 .tc-b { right: calc(env(safe-area-inset-right, 0px) + 3vmin + var(--ab) + 2vmin); bottom: calc(env(safe-area-inset-bottom, 0px) + 19vmin); }
 .tc-a small { top: calc(-1 * max(11px, 3vmin)); }
@@ -41,7 +39,6 @@ const CSS = `
 .tc-pill i { display: block; width: 100%; height: 16px; border-radius: 8px; background: rgba(5,7,6,.6); border: 2px solid #3f5549; }
 .tc-pill.on i { background: rgba(154,180,156,.6); border-color: #c4c4be; }
 .tc-pill small { top: 22px; left: 50%; transform: translateX(-50%); }
-/* START/SELECT arriba al centro (sobre el techo): abajo taparían el arma y el HUD */
 .tc-select { left: calc(50% - var(--pill-w) - 1.5vmin); top: calc(env(safe-area-inset-top, 0px) + 1vmin); }
 .tc-start { left: calc(50% + 1.5vmin); top: calc(env(safe-area-inset-top, 0px) + 1vmin); }
 .tc-pill { flex-direction: column; justify-content: flex-start; }
@@ -52,7 +49,6 @@ const CSS = `
 .tc-shoulder small { top: 50%; transform: translateY(-50%); }
 .tc-l small { left: calc(100% + 6px); } .tc-r small { right: calc(100% + 6px); }
 
-/* aviso en vertical */
 .tc-rotate { position: fixed; inset: 0; z-index: 20; background: #050706; color: #9ab49c; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 18px; text-align: center; font-family: monospace; padding: 24px;
   user-select: none; touch-action: none; }
@@ -61,12 +57,10 @@ const CSS = `
 .tc-rotate h1 { margin: 0; font-size: 20px; letter-spacing: 2px; color: #d8d4c4; }
 .tc-rotate p { margin: 0; font-size: 14px; color: #56705f; max-width: 26ch; }
 @keyframes tc-turn { 0%, 15% { transform: rotate(0deg); } 55%, 100% { transform: rotate(-90deg); } }
-/* pantallas poco panorámicas (tabletas 4:3): los rótulos no caben entre botones, se ocultan (siguen en la pantalla de Controles) */
 @media (max-aspect-ratio: 18/10) { .tc-btn small { display: none; } }
 @media (max-height: 340px) { :root { --dp: 120px; --ab: 52px; } }
 `;
 
-/** Mando táctil estilo Game Boy/GBA (DOM + Pointer Events con seguimiento por pointerId) y aviso de orientación. */
 export class TouchUI {
   private root!: HTMLDivElement;
   private rotate!: HTMLDivElement;
@@ -112,12 +106,10 @@ export class TouchUI {
     this.portrait.addEventListener?.('change', refresh);
     addEventListener('resize', refresh);
     settings.onChange(refresh);
-    // si la pestaña pierde el foco con un dedo apoyado, no dejar botones "pegados"
     addEventListener('blur', () => touchState.releaseAll());
     this.refresh();
   }
 
-  /** El arranque (pantalla "pulsa para empezar") no muestra el mando: los toques deben llegar al lienzo. */
   setSuspended(s: boolean): void {
     this.suspended = s;
     this.refresh();
@@ -135,7 +127,6 @@ export class TouchUI {
     this.visible = en && !this.suspended;
     this.root.hidden = !this.visible;
     if (!this.visible) touchState.releaseAll();
-    // en vertical: aviso y juego congelado (decisión de diseño: ver DECISIONS D-019)
     const portraitNow = en && this.portrait?.matches === true && innerHeight > innerWidth;
     this.rotate.hidden = !portraitNow;
     if (portraitNow !== this.asleep) {
@@ -150,7 +141,6 @@ export class TouchUI {
     }
   }
 
-  /** Vibración corta si el dispositivo la soporta. */
   haptic(pattern: number | number[]): void {
     if (this.visible && typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
   }
@@ -175,7 +165,6 @@ export class TouchUI {
       try {
         el.setPointerCapture(e.pointerId);
       } catch {
-        /* el puntero ya no existe */
       }
       ids.add(e.pointerId);
       if (ids.size === 1) {
@@ -189,7 +178,6 @@ export class TouchUI {
     el.addEventListener('lostpointercapture', up);
   }
 
-  /** D-pad: un único dedo (por pointerId) fija las direcciones activas según su posición; admite diagonales. */
   private buildDpad(): void {
     const el = document.createElement('div');
     el.className = 'tc-hit tc-dpad';
@@ -231,12 +219,11 @@ export class TouchUI {
     };
     el.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      if (active !== null) return; // un solo dedo en el D-pad
+      if (active !== null) return;
       active = e.pointerId;
       try {
         el.setPointerCapture(e.pointerId);
       } catch {
-        /* sin captura */
       }
       update(e);
     });

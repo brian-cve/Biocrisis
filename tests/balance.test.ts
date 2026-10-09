@@ -25,25 +25,24 @@ describe('invariantes de balance (docs/BALANCE.md)', () => {
     expect(pistolSupply).toBeLessThan(needed);
   });
   it('pero NO es imposible: pistola + escopeta bastan con margen para fallar algún tiro', () => {
-    // un cartucho de escopeta a bocajarro mata a un corredor; los rezagados van a pistola
     const runners = defs.filter((d) => d === RUNNER).length;
     const walkerBullets = defs.filter((d) => d === WALKER).reduce((s, d) => s + bulletsNeeded(d), 0);
     expect(shellSupply).toBeGreaterThanOrEqual(runners);
     expect(pistolSupply).toBeGreaterThan(walkerBullets);
-    expect(pistolSupply - walkerBullets).toBeLessThan(0.5 * walkerBullets); // margen real, pero no holgado
+    expect(pistolSupply - walkerBullets).toBeLessThan(0.5 * walkerBullets);
   });
   it('la escopeta tiene munición muy escasa', () => {
     expect(shellSupply).toBeLessThanOrEqual(5);
     expect(SHOTGUN.magSize).toBeLessThanOrEqual(6);
   });
   it('hay vida extra para sobrevivir a un par de errores pero no a muchos: 2 tónicos', () => {
-    expect(ITEM_SPAWNS.filter((i) => i.kind === ItemKind.Tonic && i.y < 20).length).toBe(2); // en la casa; la arena del jefe añade otros 2
+    expect(ITEM_SPAWNS.filter((i) => i.kind === ItemKind.Tonic && i.y < 20).length).toBe(2);
   });
   it('los zombis son más lentos que el jugador (se puede huir de ellos andando de frente)', async () => {
     const { MOVE_SPEED } = await import('../src/game/player');
     expect(WALKER.speed).toBeLessThan(MOVE_SPEED * 0.6);
     expect(RUNNER.speed).toBeLessThan(MOVE_SPEED);
-    expect(RUNNER.speed).toBeGreaterThan(MOVE_SPEED * 0.7); // pero ir marcha atrás o parar sí te alcanza
+    expect(RUNNER.speed).toBeGreaterThan(MOVE_SPEED * 0.7);
   });
 });
 
@@ -82,6 +81,6 @@ describe('clímax: la casa despierta', () => {
     expect(t).toBeGreaterThan(0.8);
     expect(t).toBeLessThan(1.4);
     for (let i = 0; i < 60 * 0.5; i++) w.update({ forward: 1, strafe: 0, turn: 0 }, 1 / 60);
-    expect(w.won).toBe(false); // a medio segundo todavía no se puede pasar
+    expect(w.won).toBe(false);
   });
 });

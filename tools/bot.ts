@@ -6,18 +6,11 @@ import { World } from '../src/game/world';
 import { InvItem } from '../src/game/inventory';
 import { RUNNER, WALKER, ZState } from '../src/game/zombie';
 
-// barridos de balance por variables de entorno (solo en simulación)
 if (process.env.WHP) WALKER.hp = Number(process.env.WHP);
 if (process.env.WDMG) WALKER.damage = Number(process.env.WDMG);
 if (process.env.RHP) RUNNER.hp = Number(process.env.RHP);
 if (process.env.RDMG) RUNNER.damage = Number(process.env.RDMG);
 
-/**
- * Jugador automático para medir el balance sin jugadores humanos (cota optimista: ruta perfecta, sin dudas).
- *  - huida:    ruta directa llave→salida, no dispara nunca (solo se cura).
- *  - sigilo:   ruta directa; dispara solo a quien le persigue de cerca.
- *  - agresivo: lo recoge todo y mata a todo lo que ve (kiting con retroceso), usa la escopeta de cerca.
- */
 export type Policy = 'huida' | 'sigilo' | 'agresivo' | 'tactico';
 
 export interface BotResult {
@@ -36,9 +29,7 @@ export interface BotResult {
 
 export const ENGAGE: Record<Policy, number> = { huida: 0, sigilo: 5, agresivo: Number(process.env.ENGAGE ?? 9), tactico: 8 };
 const MAX_SECONDS = 900;
-/** Dispersión de la puntería del bot (rad): ajustada para un acierto parecido al de una persona (~60–75 %). */
 export const AIM_NOISE = Number(process.env.AIM_NOISE ?? 0.2);
-/** Segundos que tarda en reaccionar a un enemigo nuevo antes de empezar a apuntar. */
 const REACTION = 0.35;
 
 const norm = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -52,7 +43,6 @@ export function playBot(seed: number, policy: Policy): BotResult {
   const path = new Int16Array(400);
   const dt = 1 / 60;
 
-  // plan de objetivos: huida/sigilo van a la llave; agresivo recoge todo (vecino más cercano) y la llave
   const plan: { x: number; y: number; kind: number }[] = [];
   const key = w.items.find((i) => i.kind === 0)!;
   if (policy === 'agresivo' || policy === 'tactico') {
@@ -65,7 +55,6 @@ export function playBot(seed: number, policy: Policy): BotResult {
       plan.push({ x: n.x, y: n.y, kind: n.kind });
       cx = n.x; cy = n.y;
     }
-    // la llave se recoge cuando toque por cercanía; el resto del plan no es obligatorio si no se puede llegar
   } else plan.push({ x: key.x, y: key.y, kind: 0 });
 
   let repath = 0;
@@ -82,8 +71,7 @@ export function playBot(seed: number, policy: Policy): BotResult {
     if (w.dead || w.won) break;
     const p = w.player;
 
-    // --- objetivo actual
-    let gx = 1.5, gy = 15.5; // delante de la puerta de salida
+    let gx = 1.5, gy = 15.5;
     let goingExit = true;
     for (const g of plan) {
       const it = w.items.find((i) => Math.hypot(i.x - g.x, i.y - g.y) < 0.01);
@@ -91,9 +79,7 @@ export function playBot(seed: number, policy: Policy): BotResult {
     }
     if (goingExit && !w.hasKey) { gx = key.x; gy = key.y; goingExit = false; }
 
-    // --- combate
     const alive = w.zombies.filter((z) => !z.dead);
-    // cuántos zombis rodean al jugador a menos de 2 celdas (para decidir si ya no hay margen de esquivar)
     const nearBlockers = alive.filter((z) => Math.hypot(z.x - p.x, z.y - p.y) < 2).length;
     let target = null as (typeof alive)[number] | null;
     let best = ENGAGE[policy];
@@ -101,16 +87,12 @@ export function playBot(seed: number, policy: Policy): BotResult {
       for (const z of alive) {
         const d = Math.hypot(z.x - p.x, z.y - p.y);
         const threat = policy === 'agresivo' || z.state === ZState.Chase || z.state === ZState.Attack;
-        // táctico: gasta munición en corredores (rápidos); a los rezagados (lentos) solo si ya están encima y hay escopeta o
-        // si se acabó el espacio para esquivarlos; si no, los esquiva
         const walker = z.def.name === 'Rezagado';
         const worth = policy !== 'tactico' || !walker || (d < 3 && w.weapons.shotgun.mag > 0 && w.owns('shotgun')) || (d < 1.6 && nearBlockers > 0);
         if (d < best && threat && worth && hasLineOfSight(w.map, p.x, p.y, z.x, z.y)) { best = d; target = z; }
       }
     }
-    // curarse cuando toca (en plena huida también)
     if (w.hp < 45 && w.tonics > 0 && w.healTimer <= 0) { w.useTonic(); healed++; }
-    // recarga oportunista
     const wp = w.weapon;
     const nearest = alive.reduce((m, z) => Math.min(m, Math.hypot(z.x - p.x, z.y - p.y)), 99);
     if (!wp.reloading && (wp.mag === 0 || (wp.mag < wp.def.magSize / 2 && nearest > 6))) w.reload();
@@ -121,20 +103,17 @@ export function playBot(seed: number, policy: Policy): BotResult {
     input.forward = 0; input.turn = 0; input.strafe = 0;
     seenT = target ? seenT + dt : 0;
     if (target && seenT < REACTION) {
-      input.forward = 0; // se queda un instante paralizado al ver al enemigo
+      input.forward = 0;
     } else if (target) {
       const d = Math.hypot(target.x - p.x, target.y - p.y);
-      // arma según distancia
       if (w.owns('shotgun') && w.weapons.shotgun.mag > 0 && d < 3.2) w.switchTo('shotgun');
       else if (w.equipped === 'shotgun' && (d > 4.5 || w.weapons.shotgun.mag === 0)) w.switchTo('pistol');
       const aim = Math.atan2(target.y - p.y, target.x - p.x) + aimNoise;
       const err = norm(aim - p.angle);
       input.turn = Math.max(-1, Math.min(1, err * 4));
       if (Math.abs(err) < 0.06) w.fire();
-      // retroceder si se acerca (kiting); si no, mantener posición
       if (d < 2.2) input.forward = -1;
     } else {
-      // --- navegación
       repath -= dt;
       const cx = Math.floor(p.x), cy = Math.floor(p.y);
       if (repath <= 0) {
@@ -145,9 +124,8 @@ export function playBot(seed: number, policy: Policy): BotResult {
       }
       const atGoalCell = Math.floor(p.x) === Math.floor(gx) && Math.floor(p.y) === Math.floor(gy);
       let tx = atGoalCell ? gx : wpX, ty = atGoalCell ? gy : wpY;
-      if (goingExit && atGoalCell) { tx = 0.5; ty = 15.5; } // cruzar la puerta de salida
+      if (goingExit && atGoalCell) { tx = 0.5; ty = 15.5; }
 
-      // puerta cerrada en el siguiente paso: abrirla mirándola
       const door = w.doors.at(Math.floor(tx), Math.floor(ty));
       const needDoor = door && (door.open < 0.8) && Math.hypot(tx - p.x, ty - p.y) < 1.4;
       let dirX = tx - p.x, dirY = ty - p.y;
@@ -167,7 +145,6 @@ export function playBot(seed: number, policy: Policy): BotResult {
         input.forward = 0;
       } else input.forward = Math.abs(err) < 0.7 ? 1 : 0.15;
       if (goingExit && atGoalCell && !door?.open) {
-        // frente a la puerta de salida: abrir con la llave
         const e2 = norm(Math.PI - p.angle);
         input.turn = Math.max(-1, Math.min(1, e2 * 4));
         if (Math.abs(e2) < 0.1) { doorCooldown -= dt; if (doorCooldown <= 0) { w.interact(); doorCooldown = 0.8; } }
@@ -175,7 +152,6 @@ export function playBot(seed: number, policy: Policy): BotResult {
       }
     }
 
-    // anti-atasco
     stuckT += dt;
     if (stuckT > 2.5) {
       if (Math.hypot(p.x - lastX, p.y - lastY) < 0.25 && !target && w.healTimer <= 0) unstick = 0.6;

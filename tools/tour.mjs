@@ -1,4 +1,3 @@
-// Recorre puntos de la casa vía window.__bc (solo en dev) y guarda capturas. Uso: node tools/tour.mjs <dir>
 import { chromium } from 'playwright';
 const dir = process.argv[2] ?? '.';
 const spots = JSON.parse(process.argv[3] ?? '[]');

@@ -5,7 +5,6 @@ import { RunStats, formatTime, rank } from '../game/rank';
 import { MenuList } from '../ui/menu';
 import { fadeIn, fadeTo } from '../ui/transition';
 
-/** Pantalla final con estadísticas. Base de Game Over y Victoria. */
 abstract class EndScene extends Phaser.Scene {
   protected stats!: RunStats;
   private menu!: MenuList;
@@ -20,7 +19,6 @@ abstract class EndScene extends Phaser.Scene {
   create(): void {
     const win = this.victory;
     this.cameras.main.setBackgroundColor(win ? 0x0a110e : 0x0c0404);
-    // gradiente de fondo: aurora fría al escapar, sangre seca al morir
     const g = this.add.graphics();
     for (let y = 0; y < SCREEN_H; y += 4) {
       const t = y / SCREEN_H;

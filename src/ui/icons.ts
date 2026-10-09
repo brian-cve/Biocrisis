@@ -15,7 +15,6 @@ export function iconKey(item: InvItem): string {
   return `icon_${item}`;
 }
 
-/** Convierte los sprites procedurales a texturas de Phaser para los menús (idempotente). */
 export function registerIcons(textures: Phaser.Textures.TextureManager): void {
   const sprites = buildSpriteTextures();
   for (const item of [InvItem.Pistol, InvItem.Shotgun, InvItem.Smg, InvItem.Tonic, InvItem.Key]) {

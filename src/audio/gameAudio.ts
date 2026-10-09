@@ -4,10 +4,9 @@ import { Spatial, spatialParams } from './spatial';
 import { World, WorldEvent } from '../game/world';
 import { ZState } from '../game/zombie';
 
-const STRIDE = 1.15; // celdas entre pasos
+const STRIDE = 1.15;
 const NEAR: Spatial = { pan: 0, gain: 1 };
 
-/** Conecta un World con el audio: eventos, pasos, gruñidos espaciales, latido y ambiente. Se libera con dispose(). */
 export class GameAudio {
   private wind: LoopHandle | null = null;
   private stepDist = 0;
@@ -47,7 +46,7 @@ export class GameAudio {
       case 'switch': sfx.switchWeapon(); break;
       case 'zombieHit': {
         const now = performance.now();
-        if (now - this.lastHit > 110) sfx.zombieHit(this.sp(x, y)); // las ráfagas no saturan las voces
+        if (now - this.lastHit > 110) sfx.zombieHit(this.sp(x, y));
         this.lastHit = now;
         break;
       }
@@ -70,7 +69,6 @@ export class GameAudio {
     const p = w.player;
     if (w.dead || w.won) return;
 
-    // pasos
     this.stepDist += Math.hypot(p.x - this.lastX, p.y - this.lastY);
     this.lastX = p.x;
     this.lastY = p.y;
@@ -79,12 +77,10 @@ export class GameAudio {
       sfx.step();
     }
 
-    // zombis: gruñido al alertarse, al atacar y de vez en cuando mientras acechan
     w.zombies.forEach((z, i) => {
       const sp = this.sp(z.x, z.y);
       const runner = z.def.name === 'Corredor';
       const boss = z.def.boss === true;
-      // el jefe aparece a mitad de partida: sus temporizadores se crean al verlo por primera vez
       if (this.groan[i] === undefined) {
         this.groan[i] = 2 + Math.random() * 2;
         this.prev[i] = z.state;
@@ -103,7 +99,6 @@ export class GameAudio {
       }
     });
 
-    // latido con vida baja: más rápido cuanto menos vida
     if (w.hp <= 30) {
       this.heart -= dt;
       if (this.heart <= 0) {
@@ -112,7 +107,6 @@ export class GameAudio {
       }
     } else this.heart = 0;
 
-    // goteo lejano para el ambiente
     this.drip -= dt;
     if (this.drip <= 0) {
       const a = Math.random() * Math.PI * 2;

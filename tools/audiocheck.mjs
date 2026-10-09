@@ -1,4 +1,3 @@
-// Comprueba el motor de audio en un navegador real: voces, limpieza y ducking. Uso: node tools/audiocheck.mjs
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 const page = await browser.newPage();
@@ -18,7 +17,7 @@ const r = await page.evaluate(async () => {
   sfx.pistol(); sfx.shotgun(); sfx.pump(0.3); sfx.reload(); sfx.groan(sp, false); sfx.groan(sp, true); sfx.door(sp, true);
   sfx.heal(); sfx.heartbeat(); sfx.step(); sfx.zombieDie(sp); sfx.thunder(); sfx.keyPickup();
   out.voicesPeak = a.voices;
-  for (let i = 0; i < 80; i++) sfx.pistol(); // saturar: el límite de voces debe frenar
+  for (let i = 0; i < 80; i++) sfx.pistol();
   out.voicesAfterSpam = a.voices;
   out.limitOk = a.voices <= 28;
   const g = (n) => +a.buses[n].gain.value.toFixed(3);
@@ -31,7 +30,7 @@ const r = await page.evaluate(async () => {
   await new Promise((r) => setTimeout(r, 300));
   out.masterMuted = +a.master.gain.value.toFixed(3);
   a.setVolumes({ musicVolume: 0.7, sfxVolume: 0.9, muted: false });
-  await new Promise((r) => setTimeout(r, 6000)); // las voces más largas (trueno 3.2 s) terminan
+  await new Promise((r) => setTimeout(r, 6000));
   out.voicesAfterWait = a.voices;
   return out;
 });

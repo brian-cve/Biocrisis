@@ -1,11 +1,10 @@
 import { CELL_EXIT, GridMap, cellAt } from '../engine/raycast';
 
-/** A* en grilla de 4 vecinos con buffers reutilizables (sin asignaciones por búsqueda). */
 export class Pathfinder {
   private readonly g: Float32Array;
   private readonly f: Float32Array;
   private readonly parent: Int16Array;
-  private readonly state: Uint8Array; // 0 libre, 1 abierto, 2 cerrado
+  private readonly state: Uint8Array;
   private readonly open: Int16Array;
 
   constructor(readonly width: number, readonly height: number) {
@@ -17,16 +16,11 @@ export class Pathfinder {
     this.open = new Int16Array(n);
   }
 
-  /** Las puertas (salvo la de salida) son transitables: los zombis las abren. */
   passable(map: GridMap, x: number, y: number): boolean {
     const c = cellAt(map, x, y);
     return c === 0 || (c !== CELL_EXIT && c >= 4);
   }
 
-  /**
-   * Busca un camino de la celda (sx,sy) a (gx,gy). Escribe los índices de celda (y*width+x) en `out`
-   * desde el primer paso hasta el destino (inclusive) y devuelve su longitud, o -1 si no hay camino.
-   */
   find(map: GridMap, sx: number, sy: number, gx: number, gy: number, out: Int16Array): number {
     const w = this.width;
     if (!this.passable(map, gx, gy) || !this.passable(map, sx, sy)) return -1;

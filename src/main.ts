@@ -20,7 +20,6 @@ settings.onChange(syncAudio);
 
 const scenes = [BootScene, TitleScene, ControlsScene, OptionsScene, IntroScene, GameScene, PauseScene, InventoryScene, GameOverScene, WinScene];
 
-// Solo en desarrollo: ?scene=Game salta directamente a una escena (para pruebas automáticas).
 if (import.meta.env.DEV) {
   const want = new URLSearchParams(location.search).get('scene');
   const i = scenes.findIndex((s) => s.name.replace('Scene', '') === want);
@@ -41,7 +40,6 @@ const game = new Phaser.Game({
 
 touchUI.init(game);
 
-// El secuenciador de música se alimenta del bucle de Phaser pero programa con el reloj de AudioContext.
 game.events.on(Phaser.Core.Events.STEP, () => music.tick());
 
 if (import.meta.env.DEV) {

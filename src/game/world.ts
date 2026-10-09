@@ -12,32 +12,20 @@ import { BOSS, RUNNER, WALKER, ZContext, Zombie } from './zombie';
 export const PICKUP_RADIUS = 0.55;
 const MESSAGE_SECONDS = 2.5;
 export const MAX_HP = 100;
-/** Vida que cura un tónico (fija, no el 100 %). */
 export const TONIC_HEAL = 35;
-/** Duración de la animación de curarse en juego; el jugador sigue vulnerable y puede moverse. */
 export const HEAL_TIME = 0.8;
-/** Tiempo tras cambiar de arma en el que no se puede disparar (evita el cambio-spam como truco). */
 export const SWITCH_LOCK = 0.4;
-/** Al coger la llave la casa despierta: el ruido llega a todos los zombis (radio en celdas). */
 export const ALARM_RADIUS = 40;
-/** Tolerancia angular de la ayuda de puntería activada (rad). */
 export const AIM_ASSIST = 0.035;
-/** Balas de reserva al empezar (además del cargador de 12). */
 export const START_RESERVE = 6;
-/** Balas por caja de pistola y cartuchos por caja de escopeta. */
 export const BOX_BULLETS = 4;
 export const BOX_SHELLS = 3;
-/** Cartuchos cargados al recoger la escopeta. */
 export const SHOTGUN_START_MAG = 2;
-/** Balas cargadas al recoger la metralleta. */
 export const SMG_START_MAG = 30;
-/** Contenido de las cajas grandes de la arena del jefe. */
 export const CRATE_BULLETS = 40;
 export const CRATE_SHELLS = 8;
-/** Orden de las armas al ciclar. */
 const WEAPON_ORDER: readonly WeaponId[] = ['pistol', 'shotgun', 'smg'];
 
-/** Eventos del mundo para audio/efectos (H5). */
 export type WorldEvent =
   | 'shot'
   | 'alarm'
@@ -79,7 +67,6 @@ const ITEM_SPRITE: Record<ItemKind, SpriteId> = {
   [ItemKind.ShellCrate]: SpriteId.ShotgunShells,
 };
 
-/** Escala del objeto en el mundo (las cajas grandes se ven más grandes). */
 const ITEM_SCALE: Partial<Record<ItemKind, number>> = { [ItemKind.BulletCrate]: 0.46, [ItemKind.ShellCrate]: 0.46, [ItemKind.Smg]: 0.4 };
 
 const ITEM_MESSAGE: Record<ItemKind, string> = {
@@ -93,7 +80,6 @@ const ITEM_MESSAGE: Record<ItemKind, string> = {
   [ItemKind.ShellCrate]: 'Caja de cartuchos: +8',
 };
 
-/** Estado de una partida en TS puro: mapa, puertas, jugador, objetos y objetivo. */
 export class World {
   readonly map: GridMap = createHouse();
   readonly doors = new Doors(this.map);
@@ -106,12 +92,9 @@ export class World {
   readonly weapons: Record<WeaponId, Weapon> = { pistol: new Weapon(PISTOL), shotgun: new Weapon(SHOTGUN, 0), smg: new Weapon(SMG, 0) };
   readonly ammo: AmmoPool = { bullets: START_RESERVE, shells: 0 };
   readonly stats = { shots: 0, hits: 0, kills: 0, tonicsUsed: 0 };
-  /** Jefe de la arena: aparece al abrir la puerta de la arena. */
   boss: Zombie | null = null;
   bossDefeated = false;
-  /** Tolerancia angular de la ayuda de puntería (rad); 0 = desactivada. */
   aimAssist = AIM_ASSIST;
-  /** Notifica eventos (con posición opcional en el mundo) a audio y efectos. */
   onEvent: ((e: WorldEvent, x?: number, y?: number) => void) | null = null;
 
   private emit(e: WorldEvent, x?: number, y?: number): void {
@@ -119,17 +102,13 @@ export class World {
   }
 
   equipped: WeaponId = 'pistol';
-  /** Segundos restantes de bloqueo tras cambiar de arma. */
   switchLock = 0;
-  /** Segundos restantes de la animación de curarse (>0 = ocupado). */
   healTimer = 0;
   hp = MAX_HP;
   dead = false;
-  /** 1 al recibir daño y decae: viñeta roja. */
   hurtFlash = 0;
   private readonly rng: Rng;
 
-  /** `seed` fija la dispersión de los perdigones (reproducibilidad en simulaciones y pruebas). */
   constructor(seed = 20240601) {
     this.rng = new Rng(seed);
     this.inventory.add(InvItem.Pistol);
@@ -163,7 +142,6 @@ export class World {
     damagePlayer: (n) => this.hurtPlayer(n),
   };
 
-  /** Se activó la alarma (llave recogida). */
   alarm = false;
   won = false;
   time = 0;
@@ -178,7 +156,6 @@ export class World {
     this.player.update(this.map, input, dt, this.zombies);
     this.doors.update(dt);
     if (this.switchLock > 0) this.switchLock = Math.max(0, this.switchLock - dt);
-    // solo el arma equipada recarga/enfría; la otra queda congelada (cambiar interrumpe la recarga)
     const wev = this.weapon.update(dt, this.ammo);
     if (wev === 'reloaded' || wev === 'shell') this.emit(wev);
     if (this.healTimer > 0) {
@@ -193,11 +170,9 @@ export class World {
     for (const z of this.zombies) z.update(this.zctx, dt);
     if (this.boss?.dead && !this.bossDefeated) this.defeatBoss();
     this.pickUp();
-    // victoria: solo se puede estar dentro de la celda de salida si su puerta está abierta
     if (this.map.cells[Math.floor(this.player.y) * this.map.width + Math.floor(this.player.x)] === CELL_EXIT) this.won = true;
   }
 
-  /** Se abre la puerta de la arena: el jefe despierta y viene a por el jugador. */
   private startBossFight(): void {
     if (this.boss) return;
     const b = new Zombie(BOSS, BOSS_SPAWN.x, BOSS_SPAWN.y);
@@ -208,7 +183,6 @@ export class World {
     this.emit('bossWake', b.x, b.y);
   }
 
-  /** El jefe cae: se desbloquea la salida real de la casa. */
   private defeatBoss(): void {
     this.bossDefeated = true;
     this.doors.unlock(FINAL_EXIT.x, FINAL_EXIT.y);
@@ -216,12 +190,10 @@ export class World {
     this.emit('bossDead', this.boss!.x, this.boss!.y);
   }
 
-  /** ¿Puede el jugador manejar armas ahora? (no mientras se cura ni justo tras cambiar). */
   private handsBusy(): boolean {
     return this.won || this.dead || this.healTimer > 0;
   }
 
-  /** Dispara el arma equipada. La escopeta lanza un abanico de perdigones con daño decreciente. */
   fire(): void {
     if (this.handsBusy() || this.switchLock > 0) return;
     const w = this.weapon;
@@ -238,7 +210,6 @@ export class World {
     const p = this.player;
     this.makeNoise(p.x, p.y, def.noise);
 
-    // ayuda de puntería: el abanico/bala se centra en el objetivo más cercano dentro de la tolerancia
     let aim = p.angle;
     const assist = this.aimAssist > 0 ? findTarget(this.map, this.zombies, p.x, p.y, p.angle, def.range, this.aimAssist) : null;
     if (assist) aim = Math.atan2(assist.target.y - p.y, assist.target.x - p.x);
@@ -270,7 +241,6 @@ export class World {
     if (this.weapon.startReload(this.ammo) === 'reloadStart') this.emit('reloadStart');
   }
 
-  /** Equipa un arma que se tenga. Interrumpe la recarga del arma anterior y bloquea el disparo un instante. */
   switchTo(id: WeaponId): boolean {
     if (this.handsBusy() || id === this.equipped) return false;
     if (!this.owns(id)) {
@@ -284,7 +254,6 @@ export class World {
     return true;
   }
 
-  /** Cicla entre las armas que se poseen (rueda del ratón / botón L). */
   cycleWeapon(): boolean {
     const n = WEAPON_ORDER.length;
     const from = WEAPON_ORDER.indexOf(this.equipped);
@@ -299,11 +268,6 @@ export class World {
     return this.inventory.has(id === 'pistol' ? InvItem.Pistol : id === 'shotgun' ? InvItem.Shotgun : InvItem.Smg);
   }
 
-  /**
-   * Usar un tónico. En juego (`instant = false`) inicia una animación de HEAL_TIME en la que el jugador
-   * puede moverse pero no usar armas, y sigue siendo vulnerable. Desde el inventario (`instant`, mundo pausado)
-   * es inmediato. No se consume con la vida llena.
-   */
   useTonic(instant = false): 'started' | 'healed' | 'full' | 'none' | 'busy' {
     if (this.dead || this.won) return 'busy';
     if (this.healTimer > 0) return 'busy';
@@ -333,12 +297,10 @@ export class World {
     this.emit('heal');
   }
 
-  /** Estado de salud para el menú. */
   get healthLabel(): 'Bien' | 'Precaución' | 'Peligro' {
     return this.hp > 60 ? 'Bien' : this.hp > 30 ? 'Precaución' : 'Peligro';
   }
 
-  /** Un ruido en (x,y) alerta a los zombis dentro de `radius` celdas. */
   makeNoise(x: number, y: number, radius: number): void {
     for (const z of this.zombies) {
       if (z.dead) continue;
@@ -386,7 +348,6 @@ export class World {
       this.say(ITEM_MESSAGE[it.kind]);
       this.emit(it.kind === ItemKind.Key ? 'keyPickup' : 'pickup');
       if (it.kind === ItemKind.Key) {
-        // clímax del nivel: la casa entera se pone en marcha hacia donde estás
         this.makeNoise(p.x, p.y, ALARM_RADIUS);
         this.alarm = true;
         this.emit('alarm');
@@ -394,7 +355,6 @@ export class World {
     }
   }
 
-  /** Usar/interactuar: abre/cierra la puerta que tiene delante (la de salida pide la llave). */
   interact(): void {
     const p = this.player;
     const d = this.doors.ahead(p.x, p.y, Math.cos(p.angle), Math.sin(p.angle));
@@ -416,7 +376,6 @@ export class World {
     this.doors.use(d.x, d.y, (x, y) => x === cx && y === cy);
   }
 
-  /** Rellena el batch con objetos no recogidos y decoración. Los objetos flotan suavemente. */
   fillSprites(batch: SpriteBatch): void {
     batch.clear();
     for (const d of DECOR_SPAWNS) batch.add(d.x, d.y, d.tex, d.scale, 0);

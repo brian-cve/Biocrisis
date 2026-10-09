@@ -8,7 +8,6 @@ import { LOGO_KEY, buildLogo } from '../ui/logo';
 import { TitleArt } from '../ui/titleArt';
 import { fadeIn, fadeTo } from '../ui/transition';
 
-/** Menú de título: casa en la tormenta dibujada por código, logo desgastado, lista vertical de opciones. */
 export class TitleScene extends Phaser.Scene {
   private art!: TitleArt;
   private menu!: MenuList;

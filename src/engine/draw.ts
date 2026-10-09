@@ -1,4 +1,3 @@
-/** Lienzo de índices de paleta (255 = transparente), almacenado por columnas: idx = x * h + y. */
 export const CLEAR = 255;
 
 export class Bmp {
@@ -19,7 +18,6 @@ export class Bmp {
     const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
     for (let i = 0; i <= n; i++) this.px(Math.round(x0 + ((x1 - x0) * i) / n), Math.round(y0 + ((y1 - y0) * i) / n), c);
   }
-  /** Contorno de un color alrededor de lo opaco. */
   outline(c: number): this {
     const src = this.d.slice();
     for (let x = 0; x < this.w; x++) {

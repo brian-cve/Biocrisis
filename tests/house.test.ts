@@ -37,7 +37,7 @@ describe('la casa', () => {
         const c = map.cells[ny * 20 + nx];
         if ((c !== 0 && !isDoorCell(c)) || seen.has(ny * 20 + nx)) continue;
         seen.add(ny * 20 + nx);
-        if (c !== CELL_EXIT) q.push([nx, ny]); // la salida real es un callejón sin salida
+        if (c !== CELL_EXIT) q.push([nx, ny]);
       }
     }
     for (let y = 1; y < H - 1; y++) {

@@ -5,16 +5,9 @@ import { Sink, makeImpulse, playEvent } from './synth';
 export type MusicMode = 'off' | 'menu' | 'explore';
 type Layer = 'menu' | 'explore' | 'chase' | 'sting';
 
-/** Cuánto por delante del reloj de audio se programan las notas (s). Más margen = más robusto ante tirones. */
 const LOOKAHEAD = 0.8;
-/** Si el programador se retrasa más que esto (pestaña oculta, tirón largo), se resincroniza en vez de ráfaga. */
 const MAX_LAG = 0.4;
 
-/**
- * Motor de música generativa. El tiempo es el del `AudioContext` (no timers): `tick()` —llamado en cada frame— programa
- * las notas de los próximos 0.8 s con `ctx.currentTime` como referencia, así que el ritmo no depende de los framerates.
- * Capas (menú / exploración / persecución / stings) con ganancias propias para el crossfade adaptativo.
- */
 export class MusicEngine {
   mode: MusicMode = 'off';
   intensity = 0;
@@ -23,7 +16,6 @@ export class MusicEngine {
   private lastFade: Partial<Record<Layer, number>> = {};
   private seed = (Date.now() & 0xffff) + 1;
 
-  // programadores
   private menuComposer!: MenuComposer;
   private menuT = 0;
   private menuBar = 0;
@@ -37,7 +29,6 @@ export class MusicEngine {
   private chaseActive = false;
   private scheduled = 0;
 
-  /** Semilla fija para pruebas reproducibles. */
   setSeed(seed: number): void {
     this.seed = seed;
   }
@@ -59,7 +50,6 @@ export class MusicEngine {
     const sends = {} as Record<Layer, GainNode>;
     const sinks = {} as Record<Layer, Sink>;
     for (const l of ['menu', 'explore', 'chase', 'sting'] as Layer[]) {
-      // cada capa tiene su ganancia seca y su propio envío a la reverb compartida: el crossfade apaga ambos
       const g = ctx.createGain();
       g.gain.value = 0;
       g.connect(audio.buses.music);
@@ -77,7 +67,6 @@ export class MusicEngine {
   private fade(layer: Layer, to: number, seconds: number, force = false): void {
     const gr = this.graph;
     if (!gr || !audio.ctx) return;
-    // en el bucle de frames solo se reprograma si el objetivo cambió de forma apreciable
     const last = this.lastFade[layer];
     if (!force && last !== undefined && Math.abs(last - to) < 0.03) return;
     this.lastFade[layer] = to;
@@ -89,14 +78,13 @@ export class MusicEngine {
     }
   }
 
-  /** Cambia de tema con crossfade. Repetir el mismo modo no reinicia nada. */
   play(mode: Exclude<MusicMode, 'off'>, fadeSeconds = 2): void {
     if (this.mode === mode) return;
     const g = this.build();
     this.mode = mode;
     this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
     this.fade('sting', 0, 0.5, true);
-    if (!g || !audio.ctx) return; // sin audio todavía: el modo queda anotado y arrancará en el primer tick con audio
+    if (!g || !audio.ctx) return;
     this.startMode(mode, fadeSeconds);
   }
 
@@ -125,7 +113,6 @@ export class MusicEngine {
   }
   private started: MusicMode = 'off';
 
-  /** Apaga la música con un fundido (las colas de reverb y notas largas se desvanecen solas). */
   stop(fadeSeconds = 1.5): void {
     if (this.mode === 'off') return;
     this.mode = 'off';
@@ -133,12 +120,10 @@ export class MusicEngine {
     for (const l of ['menu', 'explore', 'chase'] as Layer[]) this.fade(l, 0, fadeSeconds, true);
   }
 
-  /** Intensidad de la persecución (0..1) ya suavizada por quien llama. Sube la capa de persecución y baja un poco la exploración. */
   setIntensity(v: number): void {
     this.intensity = Math.max(0, Math.min(1, v));
   }
 
-  /** Sting corto de fin de partida; calla el resto de capas. */
   sting(kind: 'gameover' | 'win'): void {
     const g = this.build();
     if (!g || !audio.ctx) return;
@@ -154,7 +139,6 @@ export class MusicEngine {
     for (const ev of kind === 'gameover' ? gameOverSting() : winSting()) playEvent(audio.ctx, ev, t0 + ev.t, g.sinks.sting, true);
   }
 
-  /** Llamar en cada frame del juego. */
   tick(): void {
     const ctx = audio.ctx;
     if (!ctx || ctx.state !== 'running' || this.mode === 'off') return;
@@ -173,7 +157,6 @@ export class MusicEngine {
       }
     } else {
       const i = this.intensity;
-      // crossfade adaptativo: la persecución entra con la intensidad y la exploración se repliega
       this.fade('chase', Math.min(1, i * 1.25), 0.9);
       this.fade('explore', 1 - 0.7 * i, 0.9);
 
@@ -190,7 +173,6 @@ export class MusicEngine {
         this.exploreT += n.gap;
       }
 
-      // pulso y percusión: solo se programa mientras la capa es audible; al volver entra alineado a un compás nuevo
       if (i > 0.08) {
         if (!this.chaseActive) {
           this.chaseActive = true;

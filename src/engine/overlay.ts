@@ -1,14 +1,11 @@
 import { Bmp, CLEAR } from './draw';
 import { BAYER4, LIGHT_LEVELS, PALETTE_SIZE, SHADE } from './palette';
 
-/** Arma en primera persona (pistola): reposo, retroceso y destello. Se dibuja ×2 sobre el framebuffer. */
 export interface WeaponArt {
   idle: Bmp;
   recoil: Bmp;
   flash: Bmp;
-  /** Solo escopeta: fase de bombeo tras el disparo. */
   pump?: Bmp;
-  /** Desplazamiento del destello respecto a la esquina superior del arma (px del bitmap). */
   flashDx: number;
   flashDy: number;
 }
@@ -16,25 +13,22 @@ export interface WeaponArt {
 function pistolBody(slideBack: number): Bmp {
   const b = new Bmp(36, 40);
   const cx = 18;
-  // manga y mano
   b.rect(cx - 9, 31, 18, 9, 3);
   b.rect(cx - 9, 31, 18, 1, 5);
   b.rect(cx - 7, 24 + slideBack, 14, 9, 13);
   b.rect(cx - 7, 24 + slideBack, 14, 1, 14);
   b.rect(cx + 3, 25 + slideBack, 3, 7, 12);
-  // empuñadura
   b.rect(cx - 4, 20 + slideBack, 8, 6, 22);
-  // corredera: se estrecha hacia arriba (perspectiva)
   for (let y = 4; y < 22; y++) {
     const half = 4 + Math.floor((y - 4) / 9);
     b.rect(cx - half, y + slideBack, half * 2 + 1, 1, y < 6 ? 27 : 24);
     b.px(cx - half, y + slideBack, 25);
     b.px(cx + half, y + slideBack, 23);
   }
-  b.rect(cx - 2, 2 + slideBack, 5, 3, 23); // boca del cañón
-  b.rect(cx, 0 + slideBack, 1, 3, 27); // punto de mira
-  b.rect(cx - 1, 8 + slideBack, 3, 12, 22); // ranura central de la corredera
-  b.rect(cx - 6, 19 + slideBack, 2, 3, 27); // alza
+  b.rect(cx - 2, 2 + slideBack, 5, 3, 23);
+  b.rect(cx, 0 + slideBack, 1, 3, 27);
+  b.rect(cx - 1, 8 + slideBack, 3, 12, 22);
+  b.rect(cx - 6, 19 + slideBack, 2, 3, 27);
   b.rect(cx + 5, 19 + slideBack, 2, 3, 27);
   return b.outline(0);
 }
@@ -59,30 +53,26 @@ export function buildPistolArt(): WeaponArt {
 function shotgunBody(slideBack: number, pump: number): Bmp {
   const b = new Bmp(40, 44);
   const cx = 20;
-  // manga y manos
   b.rect(cx - 11, 35 + slideBack, 22, 9, 3);
   b.rect(cx - 11, 35 + slideBack, 22, 1, 5);
-  b.rect(cx - 9, 28 + slideBack, 18, 8, 13); // mano trasera
+  b.rect(cx - 9, 28 + slideBack, 18, 8, 13);
   b.rect(cx - 9, 28 + slideBack, 18, 1, 14);
-  // receptor
   b.rect(cx - 6, 22 + slideBack, 12, 8, 22);
   b.rect(cx - 6, 22 + slideBack, 12, 1, 25);
-  // cañón y tubo del cargador: se estrechan hacia el frente
   for (let y = 2; y < 23; y++) {
     const half = 3 + Math.floor((y - 2) / 10);
     b.rect(cx - half, y + slideBack, half * 2 + 1, 1, 24);
     b.px(cx - half, y + slideBack, 25);
     b.px(cx + half, y + slideBack, 23);
   }
-  b.rect(cx - 1, 2 + slideBack, 3, 20, 23); // cinta de mira
-  b.rect(cx - 1, 0 + slideBack, 3, 3, 27); // punto de mira
-  // guardamano (corredera): se desplaza al bombear
+  b.rect(cx - 1, 2 + slideBack, 3, 20, 23);
+  b.rect(cx - 1, 0 + slideBack, 3, 3, 27);
   const py = 9 + pump;
   b.rect(cx - 7, py, 14, 7, 12);
   b.rect(cx - 7, py, 14, 1, 13);
   b.rect(cx - 7, py + 6, 14, 1, 9);
   for (let x = cx - 6; x < cx + 6; x += 2) b.px(x, py + 3, 10);
-  b.rect(cx - 9, py + 1, 3, 5, 14); // mano delantera
+  b.rect(cx - 9, py + 1, 3, 5, 14);
   b.rect(cx + 6, py + 1, 3, 5, 14);
   return b.outline(0);
 }
@@ -104,30 +94,27 @@ export function buildShotgunArt(): WeaponArt {
 function smgBody(back: number): Bmp {
   const b = new Bmp(40, 46);
   const cx = 20;
-  // manga y mano trasera
   b.rect(cx - 11, 37 + back, 22, 9, 3);
   b.rect(cx - 11, 37 + back, 22, 1, 5);
   b.rect(cx - 8, 30 + back, 16, 8, 13);
   b.rect(cx - 8, 30 + back, 16, 1, 14);
-  // cargador largo bajo el cuerpo
   b.rect(cx - 2, 28 + back, 5, 10, 23);
   b.rect(cx - 2, 28 + back, 5, 1, 25);
-  // cuerpo: se estrecha hacia el frente
   for (let y = 6; y < 30; y++) {
     const half = 4 + Math.floor((y - 6) / 12);
     b.rect(cx - half, y + back, half * 2 + 1, 1, y < 9 ? 27 : 22);
     b.px(cx - half, y + back, 25);
     b.px(cx + half, y + back, 23);
   }
-  b.rect(cx - 1, 6 + back, 3, 23, 23); // riel superior
-  b.rect(cx - 3, 3 + back, 7, 4, 24); // cubrellamas
+  b.rect(cx - 1, 6 + back, 3, 23, 23);
+  b.rect(cx - 3, 3 + back, 7, 4, 24);
   b.rect(cx - 3, 3 + back, 7, 1, 27);
   b.px(cx - 1, 4 + back, 0);
   b.px(cx + 1, 4 + back, 0);
-  b.rect(cx, 0 + back, 1, 4, 27); // punto de mira
-  b.rect(cx - 5, 18 + back, 2, 4, 27); // alza
+  b.rect(cx, 0 + back, 1, 4, 27);
+  b.rect(cx - 5, 18 + back, 2, 4, 27);
   b.rect(cx + 4, 18 + back, 2, 4, 27);
-  b.rect(cx - 8, 14 + back, 3, 6, 14); // mano delantera
+  b.rect(cx - 8, 14 + back, 3, 6, 14);
   return b.outline(0);
 }
 
@@ -146,14 +133,12 @@ export function buildSmgArt(): WeaponArt {
   return { idle: smgBody(0), recoil: smgBody(2), flash: smgFlash(), flashDx: 10, flashDy: -14 };
 }
 
-/** Copia un índice de textura de sprite (32×32, por columnas) a un Bmp para dibujarlo como overlay. */
 export function bmpFromTexture(tex: Uint8Array, size = 32): Bmp {
   const b = new Bmp(size, size);
   b.d.set(tex);
   return b;
 }
 
-/** Copia un bitmap (índices de paleta) al buffer con escala entera. `level` = nivel de luz (0 brillante). */
 export function blit(pixels: Uint32Array, sw: number, sh: number, bmp: Bmp, x: number, y: number, scale: number, level: number): void {
   x = Math.round(x);
   y = Math.round(y);

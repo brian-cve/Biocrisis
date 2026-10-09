@@ -1,4 +1,3 @@
-// Perfil de asignaciones (muestreo del heap) durante la partida. Uso: node tools/heapprof.mjs
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 const ctx = await browser.newContext({ viewport: { width: 960, height: 600 } });

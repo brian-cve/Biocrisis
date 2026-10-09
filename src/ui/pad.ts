@@ -14,14 +14,12 @@ export interface PadEdges {
   rb: boolean;
 }
 
-/** Detecta flancos (pulsaciones nuevas) del primer gamepad, para navegar menús. */
 export class PadNav {
   private prev: Record<string, boolean> = {};
   private seen = touchState.snapshot();
 
   constructor(private readonly scene: Phaser.Scene) {}
 
-  /** Flancos del primer gamepad y del mando táctil Game Boy (mismos botones en los menús del móvil). */
   poll(): PadEdges {
     const t = touchState.presses;
     const tEdge = (b: keyof typeof t) => {

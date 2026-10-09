@@ -1,7 +1,3 @@
-/**
- * Fuente única de verdad de los controles. La usan el input del juego, el overlay táctil y la pantalla de
- * Controles (que dibuja sus diagramas a partir de esta tabla), así nunca quedan desactualizados.
- */
 
 export type Action =
   | 'forward'
@@ -21,25 +17,17 @@ export type Action =
   | 'inventory'
   | 'pause';
 
-/** Botones del mando táctil estilo Game Boy/GBA. */
 export type TouchButton = 'up' | 'down' | 'left' | 'right' | 'A' | 'B' | 'START' | 'SELECT' | 'L' | 'R';
 export const TOUCH_BUTTONS: readonly TouchButton[] = ['up', 'down', 'left', 'right', 'A', 'B', 'START', 'SELECT', 'L', 'R'];
 
 export interface Binding {
   action: Action;
-  /** Texto para la tabla de acciones. */
   label: string;
-  /** Nombres de tecla de Phaser (KeyCodes), p. ej. 'W', 'UP', 'ONE', 'ESC'. */
   keys: string[];
-  /** Cómo se muestra cada tecla en pantalla (misma longitud que `keys`). */
   keyLabels: string[];
-  /** Botón del mando (nombre estándar mostrado al usuario) o null. */
   pad: string | null;
-  /** Índice estándar de gamepad (W3C) o null. */
   padButton: number | null;
-  /** Botón táctil que la dispara, o null. */
   touch: TouchButton | null;
-  /** Otra acción que comparte el botón táctil (B = usar / recargar). */
   touchShared?: boolean;
 }
 
@@ -68,26 +56,22 @@ export function bindingFor(action: Action): Binding {
   return b;
 }
 
-/** Todas las teclas de Phaser usadas por el juego (para crearlas de una vez). */
 export function allKeyNames(): string[] {
   const set = new Set<string>();
   for (const b of CONTROLS) for (const k of b.keys) set.add(k);
   return [...set];
 }
 
-/** Acciones asociadas a un botón táctil (para rotularlo en el diagrama). */
 export function actionsForTouch(button: TouchButton): Binding[] {
   return CONTROLS.filter((c) => c.touch === button);
 }
 
-/** Rótulo de un botón táctil, derivado de la tabla: "Disparar", "Cambiar arma", "Recargar / Usar"… */
 export function touchLabel(button: TouchButton): string {
   const acts = actionsForTouch(button);
   if (acts.length === 1) return acts[0].label;
   return acts.map((b) => b.label.split(' ')[0]).join(' / ');
 }
 
-/** Acciones que usa una tecla (para resaltar el teclado). */
 export function actionsForKey(key: string): Binding[] {
   return CONTROLS.filter((c) => c.keys.includes(key));
 }

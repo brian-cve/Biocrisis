@@ -7,7 +7,6 @@ import { iconKey, registerIcons } from './icons';
 import { Action } from '../game/controls';
 import { WeaponId } from '../game/weapons';
 
-/** Acciones principales de la barra superior (sin movimiento), con etiqueta corta. */
 const HINTS: readonly [Action, string, string][] = [
   ['fire', 'ESP', 'Disparar'],
   ['interact', 'F', 'Usar/Abrir puerta'],
@@ -22,7 +21,6 @@ const BAR_W = 70;
 const BOSS_BAR_W = 140;
 const WEAPON_ICON: Record<WeaponId, InvItem> = { pistol: InvItem.Pistol, shotgun: InvItem.Shotgun, smg: InvItem.Smg };
 
-/** HUD del juego: vida, arma y munición, tónicos, llave, mensajes, mira y minimapa opcional. */
 export class Hud {
   private hpBar: Phaser.GameObjects.Rectangle;
   private hpText: Phaser.GameObjects.Text;
@@ -68,13 +66,11 @@ export class Hud {
     this.cross.lineBetween(SCREEN_W / 2, SCREEN_H / 2 - 4, SCREEN_W / 2, SCREEN_H / 2 - 1);
     this.cross.lineBetween(SCREEN_W / 2, SCREEN_H / 2 + 2, SCREEN_W / 2, SCREEN_H / 2 + 5);
     this.mini = scene.add.graphics().setDepth(11);
-    // barra de vida del jefe (solo durante el combate)
     this.bossBack = scene.add.rectangle(SCREEN_W / 2, 24, BOSS_BAR_W + 2, 7, 0x16201c).setStrokeStyle(1, 0x7a2824).setDepth(11).setVisible(false);
     this.bossBar = scene.add.rectangle(SCREEN_W / 2 - BOSS_BAR_W / 2, 24, BOSS_BAR_W, 5, 0xb02a24).setOrigin(0, 0.5).setDepth(12).setVisible(false);
     this.bossName = scene.add.text(SCREEN_W / 2, 14, '', { fontFamily: FONT, fontSize: '7px', color: '#d05048', stroke: '#050706', strokeThickness: 2 }).setOrigin(0.5, 0).setDepth(12).setVisible(false);
   }
 
-  /** Barra superior con los botones de acción principales (tecla resaltada + nombre). */
   private buildHints(scene: Phaser.Scene): void {
     scene.add.rectangle(0, 0, SCREEN_W, 11, 0x050706, 0.55).setOrigin(0, 0).setDepth(10);
     const style = { fontFamily: FONT, fontSize: '7px' };
@@ -100,7 +96,6 @@ export class Hud {
     const label = w.healthLabel;
     const color = label === 'Bien' ? 0x56a05f : label === 'Precaución' ? 0xc4b040 : 0xb02a24;
     this.hpBar.setFillStyle(color);
-    // la barra y el texto parpadean con vida baja
     const blink = low && Math.sin(this.t * 10) < 0;
     this.hpBar.setAlpha(blink ? 0.25 : 1);
     this.hpLabel.setText(label.toUpperCase()).setColor(label === 'Bien' ? '#7ac080' : label === 'Precaución' ? '#c4b040' : '#d05048');
@@ -132,7 +127,6 @@ export class Hud {
     this.message.setText(w.messageTime > 0 ? w.message : '');
     this.message.setAlpha(Math.min(1, w.messageTime * 2));
 
-    // viñeta roja: golpe reciente + pulso con vida baja
     const pulse = low ? 0.12 + 0.1 * Math.sin(this.t * 5) : 0;
     this.vignette.setFillStyle(0x8a0000, Math.min(0.6, w.hurtFlash * 0.45 + pulse));
 
@@ -163,7 +157,6 @@ export class Hud {
   }
 
   destroy(): void {
-    // los objetos pertenecen a la escena y se destruyen con ella
     this.mini.clear();
   }
 }

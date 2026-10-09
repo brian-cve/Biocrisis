@@ -1,18 +1,14 @@
 export interface Listener {
   x: number;
   y: number;
-  /** Ángulo de la mirada (rad); positivo = hacia la derecha (misma convención que Player). */
   angle: number;
 }
 
 export interface Spatial {
-  /** -1 (izquierda) a 1 (derecha). */
   pan: number;
-  /** 0..1 */
   gain: number;
 }
 
-/** Paneo por dirección y atenuación por distancia de una fuente respecto al jugador. Función pura. */
 export function spatialParams(l: Listener, sx: number, sy: number, maxDist = 14): Spatial {
   const dx = sx - l.x;
   const dy = sy - l.y;

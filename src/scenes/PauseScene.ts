@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { SCREEN_H, SCREEN_W } from '../engine/renderer';
 import { MenuList } from '../ui/menu';
 
-/** Pausa (Esc / START). Congela la partida (la escena Game está pausada) y atenúa el audio. */
 export class PauseScene extends Phaser.Scene {
   private menu!: MenuList;
   private title!: Phaser.GameObjects.Text;
@@ -57,7 +56,6 @@ export class PauseScene extends Phaser.Scene {
   }
 
   update(_t: number, delta: number): void {
-    // P también reanuda (misma tecla que abre la pausa)
     if (this.menu.enabled && !this.confirming && Phaser.Input.Keyboard.JustDown(this.pKey)) return this.resume();
     this.menu.update(delta / 1000);
   }

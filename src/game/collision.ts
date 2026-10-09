@@ -2,7 +2,6 @@ import { GridMap, cellAt, isDoorCell } from '../engine/raycast';
 
 export type SolidFn = (map: GridMap, cx: number, cy: number) => boolean;
 
-/** Las puertas dejan de ser sólidas cuando están casi abiertas. */
 export const DOOR_PASSABLE = 0.8;
 
 export const defaultSolid: SolidFn = (map, cx, cy) => {
@@ -12,7 +11,6 @@ export const defaultSolid: SolidFn = (map, cx, cy) => {
   return true;
 };
 
-/** ¿Un círculo (x,y,r) toca alguna celda sólida? Distancia al punto más cercano de cada celda. */
 export function circleHitsWall(map: GridMap, x: number, y: number, r: number, solid: SolidFn = defaultSolid): boolean {
   const x0 = Math.floor(x - r);
   const x1 = Math.floor(x + r);
@@ -36,7 +34,6 @@ export interface Pos {
   y: number;
 }
 
-/** Mueve `pos` por (dx,dy) deslizando por paredes (ejes separados). Muta `pos`. */
 export function moveWithCollision(map: GridMap, pos: Pos, dx: number, dy: number, r: number, solid: SolidFn = defaultSolid): void {
   if (!circleHitsWall(map, pos.x + dx, pos.y, r, solid)) pos.x += dx;
   if (!circleHitsWall(map, pos.x, pos.y + dy, r, solid)) pos.y += dy;

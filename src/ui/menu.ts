@@ -16,11 +16,9 @@ export interface MenuOpts {
   fontSize?: number;
   align?: 'left' | 'center';
   onBack?: () => void;
-  /** Colores: [seleccionado, normal]. */
   colors?: [string, string];
 }
 
-/** Lista vertical con cursor, navegable con teclado, gamepad y táctil/ratón. Llamar a update() cada frame. */
 export class MenuList {
   index = 0;
   private texts: Phaser.GameObjects.Text[] = [];
@@ -114,7 +112,6 @@ export class MenuList {
       }
     }
     if (JD(k.ENTER) || JD(k.SPACE) || p.a) {
-      // los ajustes con izquierda/derecha también alternan con aceptar
       if (it.onSelect) this.accept();
       else if (it.onRight) {
         it.onRight();
@@ -123,7 +120,6 @@ export class MenuList {
       }
     }
     if (JD(k.ESC) || JD(k.BACKSPACE) || p.b) this.back();
-    // parpadeo del cursor como una luz que falla
     this.cursor.setAlpha(Math.sin(this.t * 9) > -0.7 ? 1 : 0.25);
   }
 

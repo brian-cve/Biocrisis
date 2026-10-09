@@ -1,4 +1,3 @@
-// Uso: node tools/shot.mjs <salida.png> [teclas-a-mantener-ms ...]  — abre el juego, captura y vuelca errores de consola.
 import { chromium } from 'playwright';
 const out = process.argv[2] ?? 'shot.png';
 const browser = await chromium.launch();

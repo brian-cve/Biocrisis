@@ -1,4 +1,3 @@
-// Tasa de asignación de memoria JS durante la partida (sin forzar GC). Uso: node tools/alloc.mjs
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ args: ['--enable-precise-memory-info', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
 const page = await browser.newPage({ viewport: { width: 960, height: 600 } });

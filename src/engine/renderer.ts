@@ -6,10 +6,9 @@ import { TEX_SIZE, Texture } from './textures';
 export const SCREEN_W = 320;
 export const SCREEN_H = 200;
 
-const FOG_DIST = 14; // distancia a la que la luz llega al nivel máximo de niebla
-const SIDE_BIAS = 2.2; // las caras E/O quedan más oscuras que las N/S
+const FOG_DIST = 14;
+const SIDE_BIAS = 2.2;
 
-/** Renderizador de paredes sobre un buffer Uint32 (sin Phaser). */
 export class Renderer {
   readonly w: number;
   readonly h: number;
@@ -36,7 +35,6 @@ export class Renderer {
     if (sprites !== undefined) this.drawSprites(cam, sprites);
   }
 
-  /** Billboards: transformación a espacio de cámara, orden lejano→cercano y recorte por z-buffer de columna. */
   private drawSprites(cam: Camera, batch: SpriteBatch): void {
     const { w, h, pixels, zbuf, spriteTex } = this;
     batch.sort(cam.x, cam.y);
@@ -75,10 +73,6 @@ export class Renderer {
     }
   }
 
-  /**
-   * Floor casting por filas: cada fila de pantalla está a distancia constante, así que solo se
-   * interpola la posición de mundo entre el borde izquierdo y el derecho. Suelo y techo en una pasada.
-   */
   private drawFlats(cam: Camera, map: GridMap): void {
     const { w, h, pixels, floorTex, ceilTex } = this;
     const half = h >> 1;
@@ -116,7 +110,6 @@ export class Renderer {
         fy += stepY;
       }
     }
-    // fila del horizonte: niebla pura
     const fog = SHADE[(LIGHT_LEVELS - 1) * PALETTE_SIZE];
     pixels.fill(fog, half * w, half * w + w);
   }
@@ -153,7 +146,6 @@ export class Renderer {
       if ((hit.side === 0 && rdx > 0) || (hit.side === 1 && rdy < 0)) texX = TEX_SIZE - 1 - texX;
       const outside = hit.mapX < 0 || hit.mapY < 0 || hit.mapX >= map.width || hit.mapY >= map.height;
       if (outside) {
-        // más allá del borde del mapa (tras la puerta de salida): la noche exterior
         const night = SHADE[(LIGHT_LEVELS - 1) * PALETTE_SIZE + 1];
         for (let y = y0; y < y1; y++) pixels[y * w + x] = night;
         continue;

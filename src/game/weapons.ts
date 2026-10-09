@@ -16,29 +16,19 @@ export interface WeaponDef {
   ammo: AmmoType;
   magSize: number;
   damage: number;
-  /** Segundos entre disparos. */
   cooldown: number;
   reloadTime: number;
   range: number;
-  /** Segundos de aturdimiento que provoca el impacto. */
   stagger: number;
-  /** Radio (celdas) en el que el disparo alerta a los zombis. */
   noise: number;
-  /** Perdigones por disparo (1 = bala única). */
   pellets: number;
-  /** Semiángulo del abanico de perdigones (rad). */
   spread: number;
-  /** Fuerza del empuje al impactar. */
   knock: number;
-  /** Recarga cartucho a cartucho (escopeta) en vez de todo el cargador de golpe. */
   perShell: boolean;
-  /** Disparar interrumpe la recarga (si queda algo cargado). */
   interruptReload: boolean;
-  /** Fuego automático: dispara mientras se mantiene el botón. */
   auto: boolean;
 }
 
-/** Factor de daño por distancia: pleno de cerca, decreciente hasta un mínimo (solo escopeta lo usa de verdad). */
 export function falloff(def: WeaponDef, dist: number): number {
   if (def.pellets === 1) return 1;
   return Math.min(1, Math.max(0.12, 1.4 - dist * 0.18));
@@ -63,7 +53,6 @@ export const PISTOL: WeaponDef = {
   auto: false,
 };
 
-/** Escopeta: 7 perdigones de 7 en abanico; letal de cerca, casi inútil a más de ~6 celdas. */
 export const SHOTGUN: WeaponDef = {
   id: 'shotgun',
   name: 'Escopeta',
@@ -83,7 +72,6 @@ export const SHOTGUN: WeaponDef = {
   auto: false,
 };
 
-/** Metralleta: ráfaga continua de balas ligeras (comparte munición con la pistola); poco empuje, mucho ruido. */
 export const SMG: WeaponDef = {
   id: 'smg',
   name: 'Metralleta',
@@ -105,7 +93,6 @@ export const SMG: WeaponDef = {
 
 export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = { pistol: PISTOL, shotgun: SHOTGUN, smg: SMG };
 
-/** Ángulos (relativos al centro) de un abanico de `n` perdigones, repartidos con algo de azar. */
 export function spreadAngles(n: number, spread: number, rand: () => number, out: Float64Array | number[] = []): Float64Array | number[] {
   for (let i = 0; i < n; i++) {
     const base = n === 1 ? 0 : (i / (n - 1)) * 2 - 1;
@@ -116,13 +103,10 @@ export function spreadAngles(n: number, spread: number, rand: () => number, out:
 
 export type WeaponEvent = 'none' | 'fired' | 'dry' | 'reloadStart' | 'reloaded' | 'shell';
 
-/** Estado de un arma: cargador, enfriamiento y recarga (TS puro). */
 export class Weapon {
   mag: number;
   cooldown = 0;
-  /** Segundos que quedan de recarga (>0 = recargando). */
   reload = 0;
-  /** 1 justo tras disparar, decae a 0 (retroceso/destello visual). */
   kick = 0;
 
   constructor(readonly def: WeaponDef, mag = def.magSize) {
@@ -137,7 +121,6 @@ export class Weapon {
     return this.cooldown <= 0 && this.reload <= 0 && this.mag > 0;
   }
 
-  /** Dispara si puede (descuenta un cartucho). */
   fire(): WeaponEvent {
     if (this.reload > 0 && this.def.interruptReload && this.mag > 0) this.reload = 0;
     if (this.reload > 0 || this.cooldown > 0) return 'none';
@@ -148,14 +131,12 @@ export class Weapon {
     return 'fired';
   }
 
-  /** Inicia la recarga si hay hueco y reserva. */
   startReload(pool: AmmoPool): WeaponEvent {
     if (this.reload > 0 || this.mag >= this.def.magSize || pool[this.def.ammo] <= 0) return 'none';
     this.reload = this.def.reloadTime;
     return 'reloadStart';
   }
 
-  /** Cambiar de arma interrumpe la recarga (no se consume reserva). */
   cancelReload(): void {
     this.reload = 0;
   }
@@ -168,7 +149,6 @@ export class Weapon {
       if (this.reload <= 0) {
         this.reload = 0;
         if (this.def.perShell) {
-          // un cartucho por paso; sigue mientras haya hueco y reserva
           if (pool[this.def.ammo] > 0 && this.mag < this.def.magSize) {
             this.mag++;
             pool[this.def.ammo]--;
@@ -199,14 +179,9 @@ export interface Target {
 
 export interface ShotHit<T extends Target> {
   target: T;
-  /** Distancia a lo largo del rayo. */
   dist: number;
 }
 
-/**
- * Hitscan: devuelve el objetivo vivo más cercano que cruza el rayo (ox,oy)+t·(cos,sin)(angle), con una
- * tolerancia angular `tol` (ayuda de puntería) y sin pared de por medio.
- */
 export function findTarget<T extends Target>(
   map: GridMap,
   targets: readonly T[],

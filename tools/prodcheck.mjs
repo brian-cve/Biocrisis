@@ -1,4 +1,3 @@
-// Prueba del build de producción (npm run build && npm run preview): flujo completo con teclado, sin ganchos de desarrollo.
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 const page = await browser.newPage({ viewport: { width: 960, height: 600 } });

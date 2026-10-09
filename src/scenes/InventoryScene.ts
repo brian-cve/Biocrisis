@@ -22,10 +22,6 @@ interface InvData {
   world: World;
 }
 
-/**
- * Menú de inventario clásico. El mundo queda en pausa mientras está abierto (la escena Game se pausa y
- * se reanuda al cerrar, sin perder estado). Teclado, gamepad y táctil.
- */
 export class InventoryScene extends Phaser.Scene {
   private world!: World;
   private cursor = 0;
@@ -76,14 +72,12 @@ export class InventoryScene extends Phaser.Scene {
     }
     this.cursorBox = this.add.rectangle(0, 0, SLOT + 4, SLOT + 4).setOrigin(0, 0).setStrokeStyle(2, COL_SEL);
 
-    // panel derecho: descripción del objeto seleccionado
     const rx = 182;
     this.nameText = this.add.text(rx, 34, '', { fontFamily: FONT, fontSize: '10px', color: '#c4c4be' });
     this.actionText = this.add.text(rx, 48, '', { fontFamily: FONT, fontSize: '8px', color: '#c4b040' });
     this.descText = this.add.text(rx, 62, '', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT, wordWrap: { width: SCREEN_W - rx - 10 }, lineSpacing: 2 });
     this.ammoText = this.add.text(rx, 132, '', { fontFamily: FONT, fontSize: '8px', color: COL_TEXT });
 
-    // salud
     this.add.text(GX, 124, 'SALUD', { fontFamily: FONT, fontSize: '8px', color: COL_DIM });
     this.add.rectangle(GX, 135, 156, 8, COL_SLOT).setOrigin(0, 0).setStrokeStyle(1, COL_EDGE);
     this.hpBar = this.add.rectangle(GX + 1, 136, 154, 6, 0x3f5549).setOrigin(0, 0);
@@ -109,7 +103,6 @@ export class InventoryScene extends Phaser.Scene {
     if (JD(k.ENTER) || JD(k.SPACE) || JD(k.F)) this.activate();
     if (JD(k.ESC) || JD(k.I) || JD(k.TAB) || JD(k.BACKSPACE)) this.close();
     this.pollGamepad();
-    // parpadeo del cursor
     this.cursorBox.setAlpha(0.65 + 0.35 * Math.sin(this.time.now / 140));
   }
 
@@ -144,7 +137,6 @@ export class InventoryScene extends Phaser.Scene {
     }
   }
 
-  /** Acción principal sobre la ranura seleccionada: equipar, usar o examinar. */
   private activate(): void {
     const item = this.world.inventory.slots[this.cursor];
     if (item === null) return;
@@ -212,7 +204,6 @@ export class InventoryScene extends Phaser.Scene {
       else this.ammoText.setText('Objeto clave');
     }
 
-    // salud
     const frac = w.hp / MAX_HP;
     this.hpBar.width = Math.max(0, Math.round(154 * frac));
     const label = w.healthLabel;

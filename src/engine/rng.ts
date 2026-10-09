@@ -1,4 +1,3 @@
-/** RNG determinista con semilla (mulberry32). */
 export class Rng {
   private s: number;
   constructor(seed: number) {

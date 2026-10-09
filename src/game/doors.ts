@@ -1,16 +1,13 @@
 import { CELL_BOSS_DOOR, CELL_EXIT, GridMap, cellAt, isDoorCell } from '../engine/raycast';
 
-export const DOOR_SPEED = 1.8; // aperturas completas por segundo
-/** La puerta de salida es pesada: tarda ~1 s en ser transitable, el tiempo justo para que se acerque un zombi. */
+export const DOOR_SPEED = 1.8;
 export const EXIT_DOOR_SPEED = 0.8;
 
 export interface Door {
   x: number;
   y: number;
   locked: boolean;
-  /** Puerta de salida (más lenta). */
   exit: boolean;
-  /** Puerta de la arena del jefe (cerrada con llave, también lenta). */
   boss: boolean;
   open: number;
   target: 0 | 1;
@@ -18,10 +15,8 @@ export interface Door {
 
 export type DoorUse = 'opened' | 'closed' | 'locked' | 'blocked' | 'none';
 
-/** Puertas de una partida: animación deslizante y estado compartido con el mapa (`doorOpen`). */
 export class Doors {
   readonly list: Door[] = [];
-  /** Se llama en cada uso (también de zombis): para sonido y efectos. */
   onUse: ((d: Door, r: DoorUse) => void) | null = null;
   private readonly byCell: Map<number, Door> = new Map();
 
@@ -46,7 +41,6 @@ export class Doors {
     if (d) d.locked = false;
   }
 
-  /** Abre/cierra la puerta. No cierra si algo ocupa la celda (`occupied`). */
   use(cx: number, cy: number, occupied?: (cx: number, cy: number) => boolean): DoorUse {
     const d = this.at(cx, cy);
     if (!d) return 'none';
@@ -76,7 +70,6 @@ export class Doors {
     }
   }
 
-  /** Busca una puerta frente a (x,y) en la dirección (dx,dy) hasta `reach` celdas. */
   ahead(x: number, y: number, dx: number, dy: number, reach = 1.4): Door | undefined {
     for (let t = 0.3; t <= reach; t += 0.1) {
       const d = this.at(Math.floor(x + dx * t), Math.floor(y + dy * t));

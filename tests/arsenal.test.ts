@@ -10,7 +10,6 @@ const idle = { forward: 0, strafe: 0, turn: 0 };
 function step(w: World, seconds: number): void {
   for (let i = 0; i < Math.round(seconds * 60); i++) w.update(idle, 1 / 60);
 }
-/** Mundo con zombis apartados (sin interferencias) y la escopeta en la mano. */
 function armed(): World {
   const w = new World();
   for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; z.hp = 1e9; }
@@ -91,7 +90,7 @@ describe('escopeta', () => {
       w.weapons.shotgun.mag = 4;
       w.equipped = 'shotgun';
       const z = w.zombies[0];
-      w.player.x = 9.5; w.player.y = 2.5; w.player.angle = Math.PI / 2; // pasillo central, hacia el sur
+      w.player.x = 9.5; w.player.y = 2.5; w.player.angle = Math.PI / 2;
       z.x = 9.5; z.y = 2.5 + d; z.hp = 1e6; z.state = 0;
       w.fire();
       return 1e6 - z.hp;
@@ -169,7 +168,7 @@ describe('cambio de arma', () => {
     step(w, 0.1);
     expect(w.hasShotgun).toBe(true);
     expect(w.weapons.shotgun.mag).toBe(SHOTGUN_START_MAG);
-    expect(w.equipped).toBe('pistol'); // no se equipa sola
+    expect(w.equipped).toBe('pistol');
   });
   it('cambiar durante la recarga la interrumpe y no gasta reserva', () => {
     const w = armed();
@@ -182,7 +181,7 @@ describe('cambio de arma', () => {
     expect(w.weapons.pistol.mag).toBe(2);
     expect(w.ammo.bullets).toBe(START_RESERVE);
     step(w, 3);
-    expect(w.weapons.pistol.mag).toBe(2); // el arma guardada no sigue recargando
+    expect(w.weapons.pistol.mag).toBe(2);
   });
   it('tras cambiar hay un bloqueo breve antes de disparar', () => {
     const w = armed();
@@ -220,7 +219,7 @@ describe('medicina', () => {
   });
   it('nunca supera la vida máxima', () => {
     const w = hurt();
-    w.hurtPlayer(-0); // sin cambios
+    w.hurtPlayer(-0);
     w.hp = MAX_HP - 10;
     w.useTonic(true);
     expect(w.hp).toBe(MAX_HP);
@@ -245,12 +244,12 @@ describe('medicina', () => {
     expect(w.useTonic()).toBe('busy');
     const x0 = w.player.x;
     w.update({ forward: 1, strafe: 0, turn: 0 }, 0.1);
-    expect(w.player.x).not.toBe(x0); // movimiento libre (decisión de diseño)
+    expect(w.player.x).not.toBe(x0);
     w.fire();
-    expect(w.stats.shots).toBe(0); // manos ocupadas
-    w.hurtPlayer(10); // vulnerable durante la animación
+    expect(w.stats.shots).toBe(0);
+    w.hurtPlayer(10);
     expect(w.hp).toBe(40);
-    expect(w.tonics).toBe(2); // aún no se ha gastado
+    expect(w.tonics).toBe(2);
     step(w, HEAL_TIME);
     expect(w.tonics).toBe(1);
     expect(w.hp).toBe(40 + TONIC_HEAL);

@@ -7,7 +7,6 @@ import { MenuList } from '../ui/menu';
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const yn = (v: boolean) => (v ? 'SÍ' : 'NO');
 
-/** Opciones (volumen, sensibilidad, ayudas). Reutilizable desde el título y la pausa. */
 export class OptionsScene extends Phaser.Scene {
   private from = 'Title';
   private menu!: MenuList;

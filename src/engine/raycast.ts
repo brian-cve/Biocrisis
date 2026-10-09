@@ -1,19 +1,14 @@
-/** Raycasting DDA puro (sin Phaser ni DOM). */
 
 export interface GridMap {
   readonly width: number;
   readonly height: number;
-  /** 0 = vacío; >0 = tipo de pared/puerta. Fila-mayor: y * width + x. */
   readonly cells: Uint8Array;
-  /** Apertura de cada puerta, 0 (cerrada) a 1 (abierta). Misma indexación que `cells`. */
   readonly doorOpen?: Float32Array;
-  /** Tipo de suelo por celda (índice en las texturas de suelo). */
   readonly floors?: Uint8Array;
 }
 
 export const CELL_DOOR = 4;
 export const CELL_EXIT = 5;
-/** Puerta de la arena del jefe: pide la llave y, al abrirse, despierta al jefe. */
 export const CELL_BOSS_DOOR = 6;
 
 export function isDoorCell(cell: number): boolean {
@@ -30,7 +25,6 @@ export interface Camera {
 }
 
 export interface RayHit {
-  /** Entrada del rayo (origen y dirección). Se pasan por campos y no como argumentos para no "encajar" doubles en el heap. */
   ox: number;
   oy: number;
   rdx: number;
@@ -38,11 +32,8 @@ export interface RayHit {
   cell: number;
   mapX: number;
   mapY: number;
-  /** 0 = cara vertical (E/O), 1 = cara horizontal (N/S). */
   side: 0 | 1;
-  /** Distancia perpendicular al plano de cámara (sin ojo de pez). */
   dist: number;
-  /** Posición a lo largo de la pared, 0..1. */
   wallX: number;
 }
 
@@ -57,7 +48,6 @@ export function cellAt(map: GridMap, x: number, y: number): number {
 
 const MAX_DIST = 64;
 
-/** Lanza un rayo DDA desde (ox,oy) con dirección (rdx,rdy). Escribe en `out` (sin asignaciones). */
 export function castRay(map: GridMap, ox: number, oy: number, rdx: number, rdy: number, out: RayHit): RayHit {
   out.ox = ox;
   out.oy = oy;
@@ -66,10 +56,6 @@ export function castRay(map: GridMap, ox: number, oy: number, rdx: number, rdy: 
   return castHit(map, out);
 }
 
-/**
- * Igual que `castRay` pero leyendo el rayo de `out.ox/oy/rdx/rdy`. El renderizador lo usa 320 veces por frame: así no
- * se asignan números en el heap al pasar argumentos decimales (medido: ~1 MB/s de basura menos).
- */
 export function castHit(map: GridMap, out: RayHit): RayHit {
   const ox = out.ox;
   const oy = out.oy;
@@ -111,7 +97,6 @@ export function castHit(map: GridMap, out: RayHit): RayHit {
     if (map.doorOpen !== undefined && isDoorCell(cell)) {
       const o = map.doorOpen[mapY * map.width + mapX];
       if (o > 0) {
-        // la puerta desliza hacia +wallX: si el rayo cruza por el hueco, sigue de largo
         const d = side === 0 ? sideX - dDistX : sideY - dDistY;
         let wx = side === 0 ? oy + d * rdy : ox + d * rdx;
         wx -= Math.floor(wx);

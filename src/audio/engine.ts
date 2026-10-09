@@ -1,11 +1,9 @@
-/** Motor de audio procedural (Web Audio): buses, voces con limpieza garantizada, bucles ambientales. */
 
 export type BusName = 'sfx' | 'ambient' | 'music';
 
 export interface ToneOpts {
   type?: OscillatorType;
   f0: number;
-  /** Frecuencia final (rampa exponencial). */
   f1?: number;
   dur: number;
   gain?: number;
@@ -13,9 +11,7 @@ export interface ToneOpts {
   delay?: number;
   bus?: BusName;
   pan?: number;
-  /** Filtro opcional tras el oscilador. */
   filter?: { type: BiquadFilterType; freq: number; q?: number };
-  /** Vibrato (Hz, profundidad en Hz). */
   vibrato?: { rate: number; depth: number };
 }
 
@@ -48,11 +44,8 @@ export class AudioEngine {
   private noiseBuf: AudioBuffer | null = null;
   private vol: VolumeState = { musicVolume: 0.7, sfxVolume: 0.9, muted: false };
   private ducked = false;
-  /** Voces cortas vivas (para pruebas de fugas y límite de CPU). */
   voices = 0;
-  /** Bucles ambientales vivos. */
   loops = 0;
-  /** Nodos de música vivos (los incrementa el motor de música). */
   musicNodes = 0;
 
   get noiseBuffer(): AudioBuffer | null {
@@ -63,7 +56,6 @@ export class AudioEngine {
     return this.ctx !== null && this.ctx.state === 'running';
   }
 
-  /** Crea/reanuda el contexto. Debe llamarse desde un gesto del usuario (política de autoplay). */
   unlock(): void {
     if (!this.ctx) {
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -92,7 +84,6 @@ export class AudioEngine {
     this.applyGains(false);
   }
 
-  /** Pausa del juego: atenúa efectos y ambiente y baja la música. */
   setDucked(on: boolean): void {
     this.ducked = on;
     this.applyGains(false);
@@ -127,7 +118,6 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   }
 
-  /** Oscilador con envolvente; se desconecta solo al terminar. */
   tone(o: ToneOpts): void {
     const c = this.ctx;
     if (!c || this.voices >= MAX_VOICES) return;
@@ -174,7 +164,6 @@ export class AudioEngine {
     osc.stop(t + o.dur + 0.05);
   }
 
-  /** Ráfaga de ruido filtrado con envolvente. */
   noise(o: NoiseOpts): void {
     const c = this.ctx;
     if (!c || !this.noiseBuf || this.voices >= MAX_VOICES) return;
@@ -205,7 +194,6 @@ export class AudioEngine {
     src.stop(t + o.dur + 0.05);
   }
 
-  /** Bucle continuo de ruido filtrado con modulación lenta (viento, lluvia). `stop()` lo libera. */
   loopNoise(o: { filter: { type: BiquadFilterType; freq: number; q?: number }; gain: number; lfoRate?: number; lfoDepth?: number; bus?: BusName }): LoopHandle {
     const c = this.ctx;
     if (!c || !this.noiseBuf) return { stop() {} };
@@ -262,5 +250,4 @@ export class AudioEngine {
   }
 }
 
-/** Instancia única compartida por todas las escenas. */
 export const audio = new AudioEngine();

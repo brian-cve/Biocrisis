@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 
-/** Fuente de bloques propia (5×7). '1' = hueso, '2' = sangre (la ranura de la O). Solo las letras del logo. */
 const GLYPHS: Record<string, string[]> = {
   B: ['11110', '10001', '10001', '11110', '10001', '10001', '11110'],
   I: ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
@@ -23,10 +22,6 @@ export const LOGO_KEY = 'logo';
 export const LOGO_W = 9 * 5 * SCALE + 8 * GAP * SCALE;
 export const LOGO_H = 7 * SCALE + 18;
 
-/**
- * Dibuja el logo BioCrisis por código: bloques gastados, una grieta, la "O" con una ranura vertical roja
- * (identidad propia: sin hexágonos, paraguas ni rojo/blanco corporativos) y goteos de sangre oscura.
- */
 export function buildLogo(textures: Phaser.Textures.TextureManager): void {
   if (textures.exists(LOGO_KEY)) return;
   const tex = textures.createCanvas(LOGO_KEY, LOGO_W + 4, LOGO_H + 4)!;
@@ -48,12 +43,10 @@ export function buildLogo(textures: Phaser.Textures.TextureManager): void {
             ctx.fillRect(ox + px, oy + py, SCALE, SCALE);
             continue;
           }
-          // desgaste: huecos en los bordes y celdas descoloridas
           const h = hash(li * 5 + c, r, 7);
           if (h > 0.93) continue;
           ctx.fillStyle = v === '2' ? '#7a2824' : bone[Math.floor(h * 4) % bone.length];
           ctx.fillRect(ox + px, oy + py, SCALE, SCALE);
-          // pixeles sueltos dentro del bloque para dar textura
           ctx.fillStyle = 'rgba(5,7,6,0.35)';
           if (hash(px, py, 3) > 0.55) ctx.fillRect(ox + px + 1, oy + py + 2, 1, 1);
           if (hash(px, py, 4) > 0.7) ctx.fillRect(ox + px + 3, oy + py, 1, 2);
@@ -64,7 +57,6 @@ export function buildLogo(textures: Phaser.Textures.TextureManager): void {
   };
   draw(3, 3, true);
   draw(0, 0, false);
-  // grieta diagonal que atraviesa todo el logo
   ctx.strokeStyle = '#050706';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -73,7 +65,6 @@ export function buildLogo(textures: Phaser.Textures.TextureManager): void {
   ctx.lineTo(LOGO_W * 0.43, 15);
   ctx.lineTo(LOGO_W * 0.5, 28);
   ctx.stroke();
-  // goteos de sangre desde el borde inferior de las letras
   const cols = [14, 38, 63, 91, 118, 140, 166, 190, 206];
   cols.forEach((cx, i) => {
     const len = 4 + Math.floor(hash(i, 1, 9) * 13);

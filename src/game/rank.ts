@@ -7,7 +7,6 @@ export interface RunStats {
   zombies: number;
 }
 
-/** Rango A/B/C por rapidez, economía de munición y de tónicos. */
 export function rank(s: RunStats): 'A' | 'B' | 'C' {
   const time = s.seconds <= 240 ? 3 : s.seconds <= 420 ? 2 : s.seconds <= 600 ? 1 : 0;
   const ammo = s.shots <= 30 ? 3 : s.shots <= 45 ? 2 : s.shots <= 60 ? 1 : 0;

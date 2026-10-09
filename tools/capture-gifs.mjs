@@ -1,5 +1,3 @@
-// Captura fotogramas de partidas guiadas para los GIF del README (requiere `npm run dev` y `window.__bc`, solo desarrollo).
-// Uso: node tools/capture-gifs.mjs <directorio-de-fotogramas>   ->   luego: python3 tools/make_gifs.py <dir> docs/media
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
@@ -27,11 +25,9 @@ const fresh = async (scene = 'Game') => {
 const put = (x, y, a) => world(([x, y, a]) => { const p = window.__bc.world.player; p.x = x; p.y = y; p.angle = a; }, [x, y, a]);
 const key = async (k, ms = 120) => { await page.keyboard.down(k); await sleep(ms); await page.keyboard.up(k); };
 
-// 1) título
 await fresh('Title');
 await record('titulo', 24);
 
-// 2) casa: recorrido hasta la llave
 await fresh();
 await world(() => { for (const z of window.__bc.world.zombies) { z.x = 1.5; z.y = 1.5; } });
 await put(11.6, 1.5, 0);
@@ -41,7 +37,6 @@ await record('llave', 30, async () => {
 });
 await page.keyboard.up('w');
 
-// 3) pelea con un zombi en la sala (pistola)
 await fresh();
 await world(() => { const w = window.__bc.world; w.hp = 1e6; for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; } const z = w.zombies[1]; z.x = 7.5; z.y = 7.5; z.hear(2.5, 7.5); });
 await put(2.5, 7.5, 0);
@@ -50,7 +45,6 @@ await record('zombi', 50, async (i) => {
   else await sleep(30);
 });
 
-// 4) la arena: abrir la puerta, rugido del jefe, metralleta
 await fresh();
 await world(() => {
   const w = window.__bc.world; w.hp = 1e6;
@@ -66,7 +60,6 @@ await record('arena', 36, async (i) => {
 });
 await page.keyboard.up('w');
 
-// 5) la pelea contra el jefe con la metralleta (el jugador apunta siempre al jefe y es inmortal solo para la grabación)
 await fresh();
 await world(() => {
   const w = window.__bc.world; w.hp = 1e6;
@@ -84,7 +77,7 @@ await record('jefe', 48, async (i) => {
   await world((i) => {
     const w = window.__bc.world; const b = w.boss; const p = w.player;
     if (b && !b.dead) p.angle = Math.atan2(b.y - p.y, b.x - p.x);
-    if (i === 20) b.hp = Math.min(b.hp, b.maxHp * 0.45); // se enfurece a mitad del clip
+    if (i === 20) b.hp = Math.min(b.hp, b.maxHp * 0.45);
   }, i);
   await sleep(20);
 });

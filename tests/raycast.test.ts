@@ -19,7 +19,6 @@ describe('castRay (DDA)', () => {
   });
 
   it('usa distancia perpendicular: sin ojo de pez en rayos oblicuos', () => {
-    // cámara mirando a +x con plano en y; rayo lateral choca más lejos en euclídea pero igual en perpendicular
     const a = castRay(room, 1.5, 2.5, 1, 0, makeRayHit()).dist;
     const b = castRay(room, 1.5, 2.5, 1, 0.5, makeRayHit()).dist;
     expect(b).toBeCloseTo(a, 5);

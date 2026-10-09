@@ -138,7 +138,7 @@ describe('z-buffer de columna', () => {
     r.render(cam, map, b0);
     base.set(px);
     const b = new SpriteBatch();
-    b.add(3.5, 15.5, 7, 0.8); // barril entre la cámara y la puerta de salida
+    b.add(3.5, 15.5, 7, 0.8);
     r.render(cam, map, b);
     expect(px.some((v, i) => v !== base[i])).toBe(true);
   });
@@ -149,7 +149,7 @@ describe('z-buffer de columna', () => {
     r.render(cam, map, new SpriteBatch());
     base.set(px);
     const b = new SpriteBatch();
-    cam.dirX = 1; // mirando al este: la puerta (8,15) cerrada tapa lo de detrás
+    cam.dirX = 1;
     cam.planeY = 0.66;
     r.render(cam, map, new SpriteBatch());
     base.set(px);

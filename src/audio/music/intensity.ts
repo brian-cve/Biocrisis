@@ -1,12 +1,9 @@
-/** Intensidad musical adaptativa (0..1) a partir de los zombis: sube rápido al ser perseguido y baja despacio. */
 
 export interface ThreatInfo {
-  /** 'alert' | 'chase' | 'attack' */
   state: 'alert' | 'chase' | 'attack';
   dist: number;
 }
 
-/** Amenaza instantánea (sin suavizar). Función pura. */
 export function rawIntensity(threats: readonly ThreatInfo[], hp: number, maxHp = 100): number {
   let v = 0;
   for (const t of threats) {
@@ -21,7 +18,6 @@ export function rawIntensity(threats: readonly ThreatInfo[], hp: number, maxHp =
 
 export class IntensityTracker {
   value = 0;
-  /** Segundos que tarda en subir de 0 a 1 / en bajar de 1 a 0. */
   constructor(private readonly riseSeconds = 1.6, private readonly fallSeconds = 8) {}
 
   update(raw: number, dt: number): number {
@@ -31,13 +27,11 @@ export class IntensityTracker {
   }
 }
 
-/** Intensidad instantánea de un mundo: reutiliza `rawIntensity` sin construir listas intermedias por frame. */
 export function worldIntensity(w: {
   hp: number;
   player: { x: number; y: number };
   zombies: readonly { x: number; y: number; state: number }[];
 }): number {
-  // ZState: Idle 0, Alert 1, Chase 2, Attack 3, Dead 4
   let v = 0;
   let any = false;
   for (const z of w.zombies) {

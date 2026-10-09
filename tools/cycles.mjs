@@ -1,4 +1,3 @@
-// Prueba de fugas: 10 ciclos de iniciar → jugar → abandonar → volver al menú, más Game Over y Victoria. Uso: node tools/cycles.mjs
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--js-flags=--expose-gc'] });
 const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
@@ -35,27 +34,24 @@ for (let i = 1; i <= 10; i++) {
   await tap('Space');
   if ((await page.evaluate(() => !JSON.parse(localStorage.getItem('biocrisis.settings.v1') || '{}').controlsSeen))) { await waitFor('Controls'); await page.waitForTimeout(300); await tap('Enter'); }
   await waitFor('Game'); await page.waitForTimeout(900);
-  // jugar un poco: disparar, moverse, abrir inventario y cerrar
   await tap('Space'); await page.waitForTimeout(400);
   await page.keyboard.down('w'); await page.waitForTimeout(500); await page.keyboard.up('w');
   await tap('Tab'); await waitFor('Inventory'); await page.waitForTimeout(200); await tap('Escape'); await page.waitForTimeout(500);
   await tap('Escape'); await waitFor('Pause'); await page.waitForTimeout(200);
   for (let k = 0; k < 4; k++) await tap('ArrowDown');
   await tap('Enter'); await page.waitForTimeout(250);
-  await tap('ArrowDown'); await tap('Enter'); // SÍ, volver al menú
+  await tap('ArrowDown'); await tap('Enter');
   await waitFor('Title'); await page.waitForTimeout(700);
   const m = await metrics();
   rows.push(m);
   console.log(`ciclo ${i}`, JSON.stringify(m));
 }
-// Game Over → reintentar → abandonar
 await tap('Enter'); await waitFor('Intro'); await tap('Space'); await waitFor('Game'); await page.waitForTimeout(600);
 await page.evaluate(() => window.__bc.world.hurtPlayer(999));
 await waitFor('GameOver', 6000); await page.waitForTimeout(800);
 console.log('gameover', await active());
 await page.screenshot({ path: process.argv[2] ? `${process.argv[2]}/g1_gameover.png` : 'g1.png' });
 await tap('Enter'); await waitFor('Game'); await page.waitForTimeout(600);
-// Victoria
 await page.evaluate(() => { const w = window.__bc.world; w.inventory.add(3); const p = w.player; p.x = 1.6; p.y = 15.5; p.angle = Math.PI; w.interact(); });
 await page.waitForTimeout(1500);
 await page.keyboard.down('w'); await page.waitForTimeout(1600); await page.keyboard.up('w');

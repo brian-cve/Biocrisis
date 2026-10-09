@@ -1,4 +1,3 @@
-// Prueba en móvil emulado (táctil real vía CDP): menús con el mando, multitouch, vertical, tamaños y CPU ×4. Uso: node tools/mobile.mjs <dir>
 import { chromium, devices } from 'playwright';
 const dir = process.argv[2] ?? '.';
 const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
@@ -17,7 +16,6 @@ const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchP
 const tapSel = async (sel, ms = 90) => { const c = await center(sel); await touch('touchStart', [{ x: c.x, y: c.y, id: 1 }]); await page.waitForTimeout(ms); await touch('touchEnd', []); };
 const held = () => page.evaluate(() => JSON.stringify(Object.entries(window.__touch.held).filter(([, v]) => v).map(([k]) => k)));
 
-// exponer el estado táctil para inspección (el módulo es el mismo que usa la app)
 await page.evaluate(async () => { window.__touch = (await import('/src/ui/touchState.ts')).touchState; });
 await page.waitForTimeout(600);
 console.log('Boot: mando visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '(debe ser false)');
@@ -26,25 +24,22 @@ await page.touchscreen.tap(400, 200); await waitFor('Title'); await page.waitFor
 console.log('Título: mando visible =', await page.evaluate(() => !document.querySelector('.tc-root').hidden), '| pointer coarse =', await page.evaluate(() => matchMedia('(pointer: coarse)').matches));
 await shot('t2_title');
 
-// tamaño de las zonas táctiles (≥ 48 px CSS)
 const hits = await page.evaluate(() => [...document.querySelectorAll('.tc-hit, .tc-dpad .arm')].map((e) => { const r = e.getBoundingClientRect(); return { cls: e.className.replace('tc-hit ', '').slice(0, 24), w: Math.round(r.width), h: Math.round(r.height) }; }));
 const small = hits.filter((h) => h.w < 48 || h.h < 48);
 console.log('Zonas táctiles:', hits.length, '| menores de 48 px:', small.length ? JSON.stringify(small) : 'ninguna', '| mín', Math.min(...hits.map((h) => Math.min(h.w, h.h))), 'px');
 
-// Menús con el mando: D-pad abajo/arriba, A acepta
 await tapSel('.tc-dpad .down'); await page.waitForTimeout(150); await tapSel('.tc-dpad .up'); await page.waitForTimeout(150);
 await tapSel('.tc-a'); await waitFor('Intro'); console.log('A en NUEVA PARTIDA → Intro');
-await tapSel('.tc-b'); // cualquier botón salta la intro
+await tapSel('.tc-b');
 await waitFor('Controls', 6000); await page.waitForTimeout(500); await shot('t3_controls_mobile');
 console.log('Controles: página móvil primero =', await page.evaluate(() => window.__game.scene.getScene('Controls').tab === 1));
 await tapSel('.tc-a'); await waitFor('Game'); await page.waitForTimeout(1500); await shot('t4_game_landscape');
 
-// Multitouch real: dedo 1 mantiene "avanzar + girar izquierda", dedo 2 toca A varias veces
 const state = () => page.evaluate(() => { const w = window.__bc.world; return { x: +w.player.x.toFixed(2), y: +w.player.y.toFixed(2), a: +w.player.angle.toFixed(2), shots: w.stats.shots }; });
 await page.evaluate(() => { const w = window.__bc.world; w.hp = 1e6; for (const z of w.zombies) { z.x = 1.5; z.y = 1.5; } });
 const s0 = await state();
 const dp = await page.evaluate(() => { const r = document.querySelector('.tc-dpad').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
-const f1 = { x: dp.x + dp.w * 0.28, y: dp.y + dp.h * 0.12, id: 1 }; // esquina arriba-izquierda del D-pad = avanzar + girar
+const f1 = { x: dp.x + dp.w * 0.28, y: dp.y + dp.h * 0.12, id: 1 };
 await touch('touchStart', [f1]); await page.waitForTimeout(300);
 console.log('dedo 1 en D-pad (diagonal):', await held());
 const A = await center('.tc-a');
@@ -52,7 +47,7 @@ const f2 = { x: A.x, y: A.y, id: 2 };
 for (let i = 0; i < 3; i++) {
   await touch('touchStart', [f1, f2]); await page.waitForTimeout(120);
   if (i === 0) console.log('dos dedos a la vez:', await held());
-  await touch('touchEnd', [f1]); await page.waitForTimeout(450); // suelta solo el dedo 2
+  await touch('touchEnd', [f1]); await page.waitForTimeout(450);
 }
 await page.waitForTimeout(400);
 await touch('touchEnd', []); await page.waitForTimeout(250);
@@ -60,7 +55,6 @@ const s1 = await state();
 console.log('multitouch → movió', Math.hypot(s1.x - s0.x, s1.y - s0.y).toFixed(2), 'celdas, giró', (s1.a - s0.a).toFixed(2), 'rad, disparos', s1.shots - s0.shots, '| botones atascados tras soltar:', await held());
 await shot('t5_multitouch');
 
-// Multitouch determinista con Pointer Events sintéticos de distinto pointerId (dedo 21 en el D-pad, dedo 22 tocando A ×3)
 const syn = await page.evaluate(async () => {
   const q = (s) => document.querySelector(s); const T = window.__touch; const w = window.__bc.world;
   const ev = (el, type, id, x, y) => el.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', isPrimary: id === 21, clientX: x, clientY: y, bubbles: true, cancelable: true }));
@@ -76,7 +70,6 @@ const syn = await page.evaluate(async () => {
 });
 console.log('Pointer Events con 2 pointerId:', JSON.stringify(syn));
 
-// B contextual (recargar si no hay puerta delante) y L/R
 await page.evaluate(() => { window.__bc.world.weapon.mag = 5; });
 await tapSel('.tc-b'); await page.waitForTimeout(200);
 console.log('B contextual sin puerta → recarga:', await page.evaluate(() => window.__bc.world.weapon.reloading));
@@ -84,7 +77,6 @@ await tapSel('.tc-r'); console.log('R curarse con vida llena → mensaje:', awai
 await tapSel('.tc-select'); await waitFor('Inventory'); await page.waitForTimeout(300); await shot('t6_inventory'); await tapSel('.tc-b'); await waitFor('Game'); console.log('SELECT abre inventario y B lo cierra');
 await tapSel('.tc-start'); await waitFor('Pause'); await shot('t7_pause'); await tapSel('.tc-b'); await waitFor('Game'); console.log('START pausa y B reanuda');
 
-// Vertical: aviso y juego congelado
 const t0 = await page.evaluate(() => window.__bc.world.time);
 await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(700);
 console.log('Vertical: aviso visible =', await page.evaluate(() => !document.querySelector('.tc-rotate').hidden));
@@ -95,7 +87,6 @@ await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeo
 const t3 = await page.evaluate(() => window.__bc.world.time); await page.waitForTimeout(600);
 console.log('Vuelta a horizontal: mundo avanza =', (await page.evaluate(() => window.__bc.world.time)) > t3, '| audio:', await page.evaluate(() => window.__audio.ctx.state));
 
-// Tamaños de pantalla
 for (const [w, h, n] of [[667, 375, 'se'], [932, 430, 'max'], [740, 360, 'small'], [1024, 768, 'tablet']]) {
   await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(600); await shot(`t9_${n}_${w}x${h}`);
   const ov = await page.evaluate(() => { const rs = [...document.querySelectorAll('.tc-hit')].map((e) => e.getBoundingClientRect()); let o = 0; for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) { const a = rs[i], b = rs[j]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) o++; } const out = rs.filter((r) => r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight).length; return { superpuestas: o, fuera: out, scrollW: document.documentElement.scrollWidth <= innerWidth, scrollH: document.documentElement.scrollHeight <= innerHeight }; });
@@ -103,7 +94,6 @@ for (const [w, h, n] of [[667, 375, 'se'], [932, 430, 'max'], [740, 360, 'small'
 }
 await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(600);
 
-// Rendimiento con CPU ×1/×4/×6 en plena persecución: coste real de cada frame (update + render) y FPS
 await page.evaluate(() => { const g = window.__game; window.__cost = { t: 0, n: 0, max: 0, on: false }; let t0 = 0; g.events.on('step', () => { t0 = performance.now(); }); g.events.on('postrender', () => { if (!window.__cost.on) return; const e = performance.now() - t0; const c = window.__cost; c.t += e; c.n++; c.max = Math.max(c.max, e); }); });
 const perf = async (rate, label) => {
   await cdp.send('Emulation.setCPUThrottlingRate', { rate });

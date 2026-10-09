@@ -12,7 +12,6 @@ const LINES = [
 ];
 const LINE_MS = 1900;
 
-/** Introducción breve (≈8 s) sobre negro. Saltable con cualquier tecla, clic o botón. */
 export class IntroScene extends Phaser.Scene {
   private text!: Phaser.GameObjects.Text;
   private skipped = false;
@@ -45,10 +44,9 @@ export class IntroScene extends Phaser.Scene {
   }
 
   update(): void {
-    if (touchState.total !== this.touchBase) this.next(); // cualquier botón del mando táctil
+    if (touchState.total !== this.touchBase) this.next();
   }
 
-  /** Tras la intro: Controles la primera vez (después, solo a demanda) y luego la partida. */
   private next(): void {
     if (this.skipped) return;
     this.skipped = true;

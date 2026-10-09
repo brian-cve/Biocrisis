@@ -20,16 +20,12 @@ export interface ZombieDef {
   radius: number;
   damage: number;
   attackRange: number;
-  /** Tiempo entre iniciar el ataque y que conecte. */
   windup: number;
-  /** Tiempo de recuperación tras el golpe. */
   recover: number;
   sight: number;
   spriteBase: SpriteId;
   scale: number;
-  /** Multiplicador (0..1) del aturdimiento y el empuje que recibe; los jefes casi no se inmutan. */
   poise?: number;
-  /** Jefe: barra de vida, no se rinde y se enfurece con poca vida. */
   boss?: boolean;
 }
 
@@ -61,7 +57,6 @@ export const RUNNER: ZombieDef = {
   scale: 0.8,
 };
 
-/** Jefe de la arena: lento pero devastador, resistente a aturdimientos; se enfurece por debajo del 50 % de vida. */
 export const BOSS: ZombieDef = {
   name: 'Abominación',
   hp: 650,
@@ -78,7 +73,6 @@ export const BOSS: ZombieDef = {
   boss: true,
 };
 
-/** Lo que un zombi necesita saber del mundo (lo implementa World; así se prueba aislado). */
 export interface ZContext {
   map: GridMap;
   doors: Doors;
@@ -89,19 +83,14 @@ export interface ZContext {
   damagePlayer(amount: number): void;
 }
 
-/** hypot sin la sobrecarga/boxing de Math.hypot (se llama por zombi y por frame). */
 const hyp = (x: number, y: number): number => Math.sqrt(x * x + y * y);
 
 const ALERT_TIME = 0.6;
-/** Pausa de un zombi ante una puerta cerrada antes de abrirla. */
 const DOOR_PAUSE = 0.15;
 const REPATH = 0.5;
-/** Fracción del tiempo "perdido" que cuenta mientras aún camina hacia donde oyó/vio al jugador. */
 const EN_ROUTE_LOST = 0.2;
-const GIVE_UP = 12; // s sin ver ni oír al jugador antes de rendirse
-/** Los pasos se oyen de cerca: a esta distancia siguen al jugador aunque lo hayan perdido de vista. */
+const GIVE_UP = 12;
 const HEAR_STEPS = 5.5;
-/** Un zombi dormido oye al jugador a esta distancia aunque no lo vea. */
 const HEAR_IDLE = 4;
 
 export class Zombie {
@@ -131,7 +120,6 @@ export class Zombie {
     this.maxHp = def.hp;
   }
 
-  /** Jefe con menos de la mitad de vida: más rápido y más agresivo. */
   get enraged(): boolean {
     return this.def.boss === true && this.hp < this.maxHp * 0.5;
   }
@@ -153,7 +141,6 @@ export class Zombie {
     if (s === ZState.Chase) this.repath = 0;
   }
 
-  /** Oye un ruido en (x,y): los zombis dormidos se alertan y van hacia allí. */
   hear(x: number, y: number): void {
     if (this.state === ZState.Dead) return;
     if (this.state === ZState.Idle) {
@@ -166,7 +153,6 @@ export class Zombie {
     }
   }
 
-  /** Recibe daño. Devuelve true si muere. Empuja un poco en la dirección (dx,dy) del disparo. */
   hurt(amount: number, stagger: number, dx: number, dy: number, knock = 1.2): boolean {
     if (this.state === ZState.Dead) return false;
     this.hp -= amount;
@@ -180,7 +166,7 @@ export class Zombie {
     this.kbx = dx * knock * poise;
     this.kby = dy * knock * poise;
     if (this.state === ZState.Idle || this.state === ZState.Alert) this.enter(ZState.Chase);
-    if (this.state === ZState.Attack && poise >= 0.5) this.enter(ZState.Chase); // el impacto interrumpe el ataque (no al jefe)
+    if (this.state === ZState.Attack && poise >= 0.5) this.enter(ZState.Chase);
     return false;
   }
 
@@ -202,7 +188,6 @@ export class Zombie {
 
     switch (this.state) {
       case ZState.Idle:
-        // despiertan al ver al jugador o al oír sus pasos cerca (aunque haya una puerta de por medio)
         if ((sees && dist <= this.def.sight) || dist <= HEAR_IDLE) {
           this.tx = ctx.px;
           this.ty = ctx.py;
@@ -237,8 +222,8 @@ export class Zombie {
       if (hears) {
         this.tx = ctx.px;
         this.ty = ctx.py;
-      } else this.lost += atTarget ? dt : dt * EN_ROUTE_LOST; // de camino hacia el último sitio conocido casi no se desanima
-      if (this.def.boss) this.lost = 0; // el jefe nunca pierde el rastro
+      } else this.lost += atTarget ? dt : dt * EN_ROUTE_LOST;
+      if (this.def.boss) this.lost = 0;
       if (this.lost > GIVE_UP || (atTarget && !hears && this.lost > 4)) {
         this.lost = 0;
         this.enter(ZState.Idle);
@@ -263,7 +248,6 @@ export class Zombie {
     }
   }
 
-  /** Mueve hacia el objetivo: recto si está cerca y a la vista; si no, siguiendo el camino A*. */
   private advance(ctx: ZContext, dt: number, direct: boolean): void {
     let gx = this.tx;
     let gy = this.ty;
@@ -298,13 +282,12 @@ export class Zombie {
     this.moving = true;
   }
 
-  /** Si el siguiente paso es una puerta cerrada, se detiene un momento y la abre. */
   private waitForDoor(ctx: ZContext, cx: number, cy: number, dt: number): boolean {
     const cell = cellAt(ctx.map, cx, cy);
     if (!isDoorCell(cell) || ctx.map.doorOpen === undefined) return false;
     if (ctx.map.doorOpen[cy * ctx.map.width + cx] >= DOOR_PASSABLE) return false;
     if (hyp(cx + 0.5 - this.x, cy + 0.5 - this.y) > 1.5) return false;
-    if (ctx.doors.at(cx, cy)?.target === 1) return true; // ya se está abriendo: esperar (usarla de nuevo la cerraría)
+    if (ctx.doors.at(cx, cy)?.target === 1) return true;
     this.doorTimer += dt;
     if (this.doorTimer >= DOOR_PAUSE) {
       this.doorTimer = 0;
@@ -313,7 +296,6 @@ export class Zombie {
     return true;
   }
 
-  /** Mueve con colisión y se separa de otros zombis para no apilarse. */
   private slide(ctx: ZContext, dx: number, dy: number): void {
     moveWithCollision(ctx.map, this, dx, dy, this.def.radius);
     for (const o of ctx.others) {
@@ -329,7 +311,6 @@ export class Zombie {
     }
   }
 
-  /** Sprite (textura) según estado y animación. */
   sprite(): number {
     const base = this.def.spriteBase;
     if (this.state === ZState.Dead) return base + ZPose.Dead;

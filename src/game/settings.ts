@@ -1,17 +1,12 @@
-/** Ajustes persistentes. localStorage puede no existir o fallar (modo privado): todo va en try/catch. */
 
 export interface Settings {
-  musicVolume: number; // 0..1
-  sfxVolume: number; // 0..1
+  musicVolume: number;
+  sfxVolume: number;
   muted: boolean;
-  /** Multiplicador de la velocidad de giro (0.5–2). */
   sensitivity: number;
   aimAssist: boolean;
-  /** Giro con el ratón (Pointer Lock). */
   mouseLook: boolean;
-  /** Minimapa opcional (apagado por defecto: resta tensión). */
   minimap: boolean;
-  /** Mando táctil Game Boy: auto = solo en dispositivos táctiles. */
   touchControls: 'auto' | 'on' | 'off';
   controlsSeen: boolean;
 }
@@ -46,7 +41,6 @@ function defaultStorage(): StorageLike | null {
 const clamp = (v: unknown, lo: number, hi: number, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback;
 
-/** Valida y completa un objeto arbitrario (datos corruptos o de otra versión) con valores por defecto. */
 export function sanitize(raw: unknown): Settings {
   const r = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
   const d = DEFAULT_SETTINGS;
@@ -86,7 +80,6 @@ export class SettingsStore {
     try {
       this.storage?.setItem(KEY, JSON.stringify(this.value));
     } catch {
-      /* sin almacenamiento: los ajustes valen solo para esta sesión */
     }
     for (const l of this.listeners) l(this.value);
   }
@@ -97,5 +90,4 @@ export class SettingsStore {
   }
 }
 
-/** Instancia global compartida por todas las escenas. */
 export const settings = new SettingsStore();

@@ -19,14 +19,9 @@ function groupOf(keyName: string): keyof typeof GROUP_COLOR {
 
 interface Data {
   from?: string;
-  /** Primera vez: se muestra antes de la partida y al cerrar entra al juego. */
   first?: boolean;
 }
 
-/**
- * Pantalla de controles (escritorio / móvil). Todo se genera a partir de `game/controls.ts`: si cambia un atajo,
- * el diagrama y la tabla cambian solos. Reutilizable desde el título, la pausa y antes de la primera partida.
- */
 export class ControlsScene extends Phaser.Scene {
   private from = 'Title';
   private first = false;
@@ -48,7 +43,6 @@ export class ControlsScene extends Phaser.Scene {
     this.closing = false;
     this.pages = [];
     this.tabTexts = [];
-    // al abrirla por primera vez se recuerda que ya se vio
     if (this.first) settings.update({ controlsSeen: true });
   }
 
@@ -66,7 +60,6 @@ export class ControlsScene extends Phaser.Scene {
 
     this.pages = [this.buildDesktop(), this.buildMobile()];
 
-    // pie: objetivo, consejos y volver
     this.add.text(10, 175, 'OBJETIVO: encuentra la llave y escapa. La munición\nes escasa y los zombis oyen los disparos.', {
       fontFamily: FONT,
       fontSize: '8px',
@@ -81,7 +74,6 @@ export class ControlsScene extends Phaser.Scene {
 
     this.keys = this.input.keyboard!.addKeys('LEFT,RIGHT,TAB,ESC,ENTER,BACKSPACE,A,D') as Record<string, Phaser.Input.Keyboard.Key>;
     this.pad = new PadNav(this);
-    // abre primero la página que corresponde al dispositivo detectado
     const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     this.setTab(coarse ? 1 : 0, true);
   }
@@ -117,14 +109,11 @@ export class ControlsScene extends Phaser.Scene {
     this.scene.stop();
   }
 
-  // ---------- Escritorio ----------
-
   private buildDesktop(): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
     const g = this.add.graphics();
     c.add(g);
 
-    // teclado en miniatura con la distribución real; las teclas usadas se colorean por tipo de acción
     const rows: { y: number; x: number; keys: [string, string, number][] }[] = [
       { y: 28, x: 10, keys: [['ESC', 'Esc', 18], ['ONE', '1', 13], ['TWO', '2', 13], ['THREE', '3', 13]] },
       { y: 43, x: 10, keys: [['TAB', 'Tab', 20], ['Q', 'Q', 13], ['W', 'W', 13], ['E', 'E', 13], ['R', 'R', 13], ['T', 'T', 13], ['Y', 'Y', 13], ['U', 'U', 13], ['I', 'I', 13], ['O', 'O', 13], ['P', 'P', 13]] },
@@ -138,31 +127,26 @@ export class ControlsScene extends Phaser.Scene {
         x += w + 2;
       }
     }
-    // cursores (a la derecha de la barra espaciadora, sin tapar las filas de letras)
     const ax = 116;
     this.drawKey(c, g, ax + 15, 58, 13, 'UP', '↑');
     this.drawKey(c, g, ax, 73, 13, 'LEFT', '←');
     this.drawKey(c, g, ax + 15, 73, 13, 'DOWN', '↓');
     this.drawKey(c, g, ax + 30, 73, 13, 'RIGHT', '→');
 
-    // leyenda de colores
     const legend: [number, string][] = [[GROUP_COLOR.move, 'mover'], [GROUP_COLOR.combat, 'combate'], [GROUP_COLOR.use, 'usar']];
     legend.forEach(([col, name], i) => {
       g.fillStyle(col, 1).fillRect(10 + i * 50, 93, 7, 7);
       c.add(this.add.text(20 + i * 50, 92, name, { fontFamily: FONT, fontSize: '8px', color: C.dim }));
     });
 
-    // ratón
     g.lineStyle(1, 0x56705f, 1).strokeRoundedRect(12, 106, 20, 28, 8);
     g.fillStyle(GROUP_COLOR.combat, 1).fillRoundedRect(13, 107, 9, 11, { tl: 7, tr: 0, bl: 0, br: 0 });
     g.lineStyle(1, 0x56705f, 1).lineBetween(12, 119, 32, 119).lineBetween(22, 107, 22, 119);
     c.add(this.add.text(38, 106, 'Clic: disparar\nRueda: cambiar arma\nMover: girar (opcional)', { fontFamily: FONT, fontSize: '8px', color: C.text, lineSpacing: 2 }));
-    // mando (derivado de la tabla)
     const padActions = ['fire', 'interact', 'reload', 'heal', 'cycleWeapon'];
     const pad = CONTROLS.filter((b) => padActions.includes(b.action) && b.pad).map((b) => `${b.pad}: ${b.label.split(' ')[0].toLowerCase()}`);
     c.add(this.add.text(10, 136, 'MANDO: stick mueve y gira · ' + pad.join(' · '), { fontFamily: FONT, fontSize: '8px', color: C.dim, wordWrap: { width: 152 }, lineSpacing: 1 }));
 
-    // tabla de acciones (derivada de CONTROLS)
     const x0 = 172;
     CONTROLS.forEach((b, i) => {
       const y = 27 + i * 9.3;
@@ -179,8 +163,6 @@ export class ControlsScene extends Phaser.Scene {
     c.add(this.add.text(x + w / 2, y + 7, label, { fontFamily: FONT, fontSize: '8px', color: col === GROUP_COLOR.none ? '#3f5549' : '#e8e4d4' }).setOrigin(0.5, 0.5));
   }
 
-  // ---------- Móvil ----------
-
   private buildMobile(): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
     const g = this.add.graphics();
@@ -189,28 +171,22 @@ export class ControlsScene extends Phaser.Scene {
     const by = 54;
     const bw = 160;
     const bh = 106;
-    // cuerpo del mando (horizontal)
     g.fillStyle(0x16201c, 1).fillRoundedRect(bx, by, bw, bh, 10);
     g.lineStyle(1, 0x3f5549, 1).strokeRoundedRect(bx + 0.5, by + 0.5, bw - 1, bh - 1, 10);
-    g.fillStyle(0x050706, 1).fillRect(bx + 50, by + 8, 60, 38); // pantalla
+    g.fillStyle(0x050706, 1).fillRect(bx + 50, by + 8, 60, 38);
     g.lineStyle(1, 0x2e4038, 1).strokeRect(bx + 50.5, by + 8.5, 59, 37);
-    // hombros
     const sh = { l: { x: bx + 4, y: by - 9 }, r: { x: bx + bw - 38, y: by - 9 } };
     g.fillStyle(0x3f5549, 1).fillRoundedRect(sh.l.x, sh.l.y, 34, 9, 3).fillRoundedRect(sh.r.x, sh.r.y, 34, 9, 3);
-    // cruceta
     const dp = { x: bx + 28, y: by + 42 };
     g.fillStyle(0x050706, 1).fillRect(dp.x - 5, dp.y - 16, 10, 32).fillRect(dp.x - 16, dp.y - 5, 32, 10);
-    // A y B
     const A = { x: bx + bw - 16, y: by + 30 };
     const B = { x: bx + bw - 40, y: by + 46 };
     g.fillStyle(GROUP_COLOR.combat, 1).fillCircle(A.x, A.y, 8);
     g.fillStyle(GROUP_COLOR.use, 1).fillCircle(B.x, B.y, 8);
-    // SELECT / START
     const sel = { x: bx + 52, y: by + 78 };
     const sta = { x: bx + 108, y: by + 78 };
     g.fillStyle(0x3f5549, 1).fillRoundedRect(sel.x - 12, sel.y - 3, 24, 6, 3).fillRoundedRect(sta.x - 12, sta.y - 3, 24, 6, 3);
 
-    // rótulos: letra del botón + acción, todos derivados de la tabla de controles
     const txt = (x: number, y: number, s: string, color: string, ox = 0.5, oy = 0.5) =>
       c.add(this.add.text(x, y, s, { fontFamily: FONT, fontSize: '8px', color, align: 'center', lineSpacing: 1 }).setOrigin(ox, oy));
     const wrap = (s: string) => s.replace(' / ', '\n/ ');
@@ -228,7 +204,6 @@ export class ControlsScene extends Phaser.Scene {
     txt(bx + 80, by + 27, 'HORIZONTAL', '#3f5549');
     txt(10, 165, 'Orientación recomendada: HORIZONTAL', C.dim, 0, 0);
 
-    // lista derivada de la tabla (una fila por botón)
     const x0 = 176;
     let y = 27;
     const dpad = (['up', 'down', 'left', 'right'] as TouchButton[]).map((b) => actionsForTouch(b)[0]?.label ?? '');

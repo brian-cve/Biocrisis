@@ -13,7 +13,7 @@ describe('arena del jefe', () => {
     expect(arena.some((i) => i.kind === ItemKind.Smg)).toBe(true);
     const bullets = arena.filter((i) => i.kind === ItemKind.BulletCrate).length * CRATE_BULLETS + SMG.magSize;
     const needed = BOSS.hp / SMG.damage;
-    expect(bullets).toBeGreaterThan(needed * 2); // margen para errar la mitad
+    expect(bullets).toBeGreaterThan(needed * 2);
   });
 
   it('el jefe casi no se aturde ni se empuja con disparos', () => {
@@ -70,7 +70,7 @@ describe('arena del jefe', () => {
     w.ammo.bullets = 400;
     w.equipped = 'smg';
     w.aimAssist = 0.035;
-    const b = new Zombie({ ...BOSS, speed: 0 }, 9.5, 28.5); // inmóvil: mide solo el daño por segundo
+    const b = new Zombie({ ...BOSS, speed: 0 }, 9.5, 28.5);
     w.zombies.push(b);
     w.boss = b;
     w.player.x = 9.5;
@@ -78,12 +78,12 @@ describe('arena del jefe', () => {
     w.player.angle = Math.PI / 2;
     let t = 0;
     while (!b.dead && t < 40 && !w.dead) {
-      w.fire(); // equivale a mantener el disparo
+      w.fire();
       w.update(idle, 1 / 60);
       t += 1 / 60;
     }
     expect(b.dead).toBe(true);
-    expect(t).toBeGreaterThan(5); // no es trivial
+    expect(t).toBeGreaterThan(5);
     expect(w.bossDefeated).toBe(true);
     expect(MAX_HP).toBe(100);
   });

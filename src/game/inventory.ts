@@ -1,4 +1,3 @@
-/** Modelo de inventario clásico (TS puro): ranuras limitadas; la munición no ocupa ranura. */
 
 export const enum InvItem {
   Pistol = 0,
@@ -13,10 +12,8 @@ export const INVENTORY_COLS = 4;
 
 export interface InvItemInfo {
   name: string;
-  /** Verbo de la acción principal en el menú. */
   action: 'EQUIPAR' | 'USAR' | 'EXAMINAR';
   description: string;
-  /** Un objeto clave no se consume ni se puede descartar. */
   key: boolean;
 }
 
@@ -53,7 +50,6 @@ export const ITEM_INFO: Record<InvItem, InvItemInfo> = {
   },
 };
 
-/** Ranuras en cuadrícula. Cada objeto ocupa una ranura (los tónicos no se apilan). */
 export class Inventory {
   readonly slots: (InvItem | null)[];
 
@@ -77,7 +73,6 @@ export class Inventory {
     return this.slots.includes(item);
   }
 
-  /** Añade en la primera ranura libre. Devuelve false si no cabe. Las armas y la llave son únicas. */
   add(item: InvItem): boolean {
     if ((item !== InvItem.Tonic) && this.has(item)) return false;
     const i = this.slots.indexOf(null);
@@ -86,7 +81,6 @@ export class Inventory {
     return true;
   }
 
-  /** Quita un objeto concreto (el primero de ese tipo). Devuelve true si estaba. */
   removeOne(item: InvItem): boolean {
     const i = this.slots.indexOf(item);
     if (i < 0) return false;
